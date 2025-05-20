@@ -2,11 +2,11 @@
   "frame": {
     "version": "1",
     "name": "Farc App",
-    "iconUrl": "https://via.placeholder.com/512/3B82F6/FFFFFF?text=APP",
-    "homeUrl": "https://your-vercel-url.vercel.app",
-    "imageUrl": "https://via.placeholder.com/1200x630/3B82F6/FFFFFF?text=Merhaba+Farcaster",
-    "buttonTitle": "Farc App'",
-    "splashImageUrl": "https://via.placeholder.com/512/3B82F6/FFFFFF?text=Yükleniyor",
+    "iconUrl": "https://farc.vercel.app/logo.png",
+    "homeUrl": "https://farc.vercel.app",
+    "imageUrl": "https://farc.vercel.app/preview.png",
+    "buttonTitle": "Open Farc App",
+    "splashImageUrl": "https://farc.vercel.app/splash.png",
     "splashBackgroundColor": "#3B82F6"
   }
 }
