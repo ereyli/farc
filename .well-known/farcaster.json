@@ -1,12 +1,12 @@
 {
   "frame": {
     "version": "1",
-    "name": "Farc App",
+    "name": "Wheel of Fortune",
     "iconUrl": "https://farc.vercel.app/logo.png",
     "homeUrl": "https://farc.vercel.app",
     "imageUrl": "https://farc.vercel.app/preview.png",
-    "buttonTitle": "Open Farc App",
+    "buttonTitle": "Spin the Wheel",
     "splashImageUrl": "https://farc.vercel.app/splash.png",
-    "splashBackgroundColor": "#3B82F6"
+    "splashBackgroundColor": "#6200EA"
   }
 }
