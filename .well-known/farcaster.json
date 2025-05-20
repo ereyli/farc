@@ -1,0 +1,12 @@
+{
+  "frame": {
+    "version": "1",
+    "name": "Farc App",
+    "iconUrl": "https://via.placeholder.com/512/3B82F6/FFFFFF?text=APP",
+    "homeUrl": "https://your-vercel-url.vercel.app",
+    "imageUrl": "https://via.placeholder.com/1200x630/3B82F6/FFFFFF?text=Merhaba+Farcaster",
+    "buttonTitle": "Farc App'",
+    "splashImageUrl": "https://via.placeholder.com/512/3B82F6/FFFFFF?text=Yükleniyor",
+    "splashBackgroundColor": "#3B82F6"
+  }
+}
