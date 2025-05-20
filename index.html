@@ -3,114 +3,1198 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Basit Farcaster Mini App</title>
+  <title>BaseLuck</title>
   
-  <!-- Farcaster Frame Embed Meta Tag - Sosyal paylaşımlar için gerekli -->
-  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://via.placeholder.com/1200x630/3B82F6/FFFFFF?text=Merhaba+Farcaster","button":{"title":"Mini App'i Aç","action":{"type":"launch_frame","name":"Basit Mini App","url":"https://your-vercel-url.vercel.app","splashImageUrl":"https://via.placeholder.com/512/3B82F6/FFFFFF?text=Yükleniyor","splashBackgroundColor":"#3B82F6"}}}'>
+  <!-- Farcaster Frame Embed Meta Tag -->
+  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://via.placeholder.com/1200x630/1E40AF/FFFFFF?text=BaseLuck","button":{"title":"Base Ağında Şansını Dene","action":{"type":"launch_frame","name":"BaseLuck","url":"https://your-vercel-url.vercel.app","splashImageUrl":"https://via.placeholder.com/512/1E40AF/FFFFFF?text=BaseLuck","splashBackgroundColor":"#1E40AF"}}}'>
   
   <style>
+    :root {
+      --primary-color: #1E40AF; /* Base rengi - koyu mavi */
+      --secondary-color: #3B82F6;
+      --accent-color: #60A5FA;
+      --bg-color: #0F172A;
+      --text-color: #E2E8F0;
+      --card-bg: #1E293B;
+      --border-color: #334155;
+    }
+    
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       margin: 0;
       padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      align-items: center;
       min-height: 100vh;
-      color: #333;
-      background-color: #f5f5f5;
     }
-    .container {
-      max-width: 400px;
-      padding: 20px;
-      border-radius: 16px;
-      background-color: white;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    
+    .header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 16px;
       text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 10;
     }
-    h1 {
-      color: #3B82F6;
-      margin-bottom: 16px;
+    
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
     }
-    button {
-      background-color: #3B82F6;
+    
+    .header p {
+      margin: 4px 0 0;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .wallet-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--card-bg);
+      margin: 16px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .wallet-address {
+      font-size: 14px;
+      color: var(--accent-color);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 150px;
+    }
+    
+    .balance {
+      font-weight: bold;
+    }
+    
+    .eth-icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    
+    .connect-button {
+      background-color: var(--primary-color);
       color: white;
       border: none;
       border-radius: 8px;
-      padding: 12px 20px;
-      font-size: 16px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: bold;
       cursor: pointer;
-      margin-top: 24px;
       transition: background-color 0.2s;
     }
-    button:hover {
-      background-color: #2563EB;
+    
+    .connect-button:hover {
+      background-color: #1E3A8A;
     }
-    .counter {
-      font-size: 48px;
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      margin: 0 16px;
+    }
+    
+    .tab {
+      padding: 12px 16px;
+      font-size: 14px;
       font-weight: bold;
-      margin: 24px 0;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
     }
-    .user-info {
-      margin-top: 24px;
+    
+    .tab.active {
+      color: var(--accent-color);
+      border-bottom-color: var(--accent-color);
+    }
+    
+    .game-container {
+      padding: 16px;
+      flex: 1;
+    }
+    
+    .game-tab {
+      display: none;
+    }
+    
+    .game-tab.active {
+      display: block;
+    }
+    
+    .fortune-wheel-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: 24px auto;
+    }
+    
+    .fortune-wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--primary-color) 0% 10%,
+        var(--secondary-color) 10% 20%,
+        var(--accent-color) 20% 30%,
+        var(--primary-color) 30% 40%,
+        var(--secondary-color) 40% 50%,
+        var(--accent-color) 50% 60%,
+        var(--primary-color) 60% 70%,
+        var(--secondary-color) 70% 80%,
+        var(--accent-color) 80% 90%,
+        var(--primary-color) 90% 100%
+      );
+      transition: transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .wheel-center {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-color: var(--bg-color);
+      border: 2px solid var(--accent-color);
+      border-radius: 50%;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    
+    .wheel-marker {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 20px solid var(--accent-color);
+      z-index: 5;
+    }
+    
+    .bet-card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .bet-card h3 {
+      margin-top: 0;
+      color: var(--accent-color);
+      font-size: 18px;
+    }
+    
+    .bet-options {
+      display: flex;
+      margin: 16px 0;
+    }
+    
+    .bet-options .option {
+      flex: 1;
       padding: 12px;
-      background-color: #f0f9ff;
+      text-align: center;
+      border: 1px solid var(--border-color);
       border-radius: 8px;
-      text-align: left;
+      margin: 0 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .bet-options .option:first-child {
+      margin-left: 0;
+    }
+    
+    .bet-options .option:last-child {
+      margin-right: 0;
+    }
+    
+    .bet-options .option.selected {
+      background-color: var(--secondary-color);
+      border-color: var(--accent-color);
+    }
+    
+    .bet-options .option:hover {
+      border-color: var(--accent-color);
+    }
+    
+    .bet-amount {
+      margin: 16px 0;
+    }
+    
+    .bet-amount label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .amount-input {
+      display: flex;
+      align-items: center;
+    }
+    
+    .amount-input input {
+      flex: 1;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+    }
+    
+    .amount-input input:focus {
+      border-color: var(--accent-color);
+    }
+    
+    .eth-suffix {
+      margin-left: 8px;
+      font-weight: bold;
+    }
+    
+    .amount-presets {
+      display: flex;
+      margin-top: 8px;
+    }
+    
+    .amount-preset {
+      flex: 1;
+      text-align: center;
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      border-radius: 8px;
+      margin: 0 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    
+    .amount-preset:hover {
+      border-color: var(--accent-color);
+    }
+    
+    .bet-info {
+      background-color: rgba(30, 64, 175, 0.2);
+      border: 1px solid var(--primary-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px 0;
+      font-size: 14px;
+    }
+    
+    .bet-info p {
+      margin: 4px 0;
+    }
+    
+    .payout-info {
+      font-weight: bold;
+      color: var(--accent-color);
+    }
+    
+    .place-bet-button {
+      width: 100%;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-top: 16px;
+    }
+    
+    .place-bet-button:hover {
+      background-color: #1E3A8A;
+    }
+    
+    .disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .disabled:hover {
+      background-color: var(--primary-color);
+    }
+    
+    .result-container {
+      text-align: center;
+      margin: 16px 0;
+      padding: 16px;
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .result-win {
+      background-color: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10B981;
+    }
+    
+    .result-loss {
+      background-color: rgba(239, 68, 68, 0.2);
+      border: 1px solid #EF4444;
+    }
+    
+    .result-container h3 {
+      margin-top: 0;
+    }
+    
+    .recent-plays {
+      margin-top: 32px;
+    }
+    
+    .recent-plays h3 {
+      font-size: 18px;
+      color: var(--accent-color);
+      margin-bottom: 16px;
+    }
+    
+    .play-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .play-item {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .play-result {
+      font-weight: bold;
+    }
+    
+    .play-result.win {
+      color: #10B981;
+    }
+    
+    .play-result.lose {
+      color: #EF4444;
+    }
+    
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(15, 23, 42, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 4px solid rgba(96, 165, 250, 0.1);
+      border-top-color: var(--accent-color);
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+      margin-top: 16px;
+      font-weight: bold;
+    }
+    
+    .wrong-network {
+      text-align: center;
+      padding: 32px 16px;
+      color: #EF4444;
+      display: none;
+    }
+    
+    .wrong-network p {
+      margin-bottom: 16px;
+    }
+    
+    .switch-network-button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Basit Farcaster Mini App</h1>
-    <p>Farcaster'da ilk Mini App'imiz!</p>
+  <div class="header">
+    <h1>BaseLuck</h1>
+    <p>Base Ağında Şans Oyunları</p>
+  </div>
+  
+  <div class="wallet-info" id="wallet-info">
+    <div class="wallet-address" id="wallet-address">Cüzdan Bağlı Değil</div>
+    <button class="connect-button" id="connect-wallet">Cüzdan Bağla</button>
+  </div>
+  
+  <div class="tabs">
+    <div class="tab active" data-tab="wheel-game">Şans Çarkı</div>
+    <div class="tab" data-tab="high-low-game">Yüksek/Düşük</div>
+    <div class="tab" data-tab="even-odd-game">Tek/Çift</div>
+  </div>
+  
+  <div class="wrong-network" id="wrong-network">
+    <p>Bu uygulama Base ağında çalışmaktadır. Lütfen cüzdanınızı Base ağına geçirin.</p>
+    <button class="switch-network-button" id="switch-network">Base Ağına Geç</button>
+  </div>
+  
+  <div class="game-container">
+    <!-- Şans Çarkı Oyunu -->
+    <div class="game-tab active" id="wheel-game">
+      <div class="fortune-wheel-container">
+        <div class="fortune-wheel" id="wheel"></div>
+        <div class="wheel-center">ETH</div>
+        <div class="wheel-marker"></div>
+      </div>
+      
+      <div class="bet-card">
+        <h3>Şans Çarkı Bahsi</h3>
+        <p>Çarkın duracağı sayıyı tahmin edin (0-9 arası)</p>
+        
+        <div class="bet-options" id="wheel-options">
+          <div class="option" data-value="0">0</div>
+          <div class="option" data-value="1">1</div>
+          <div class="option" data-value="2">2</div>
+          <div class="option" data-value="3">3</div>
+          <div class="option" data-value="4">4</div>
+          <div class="option" data-value="5">5</div>
+          <div class="option" data-value="6">6</div>
+          <div class="option" data-value="7">7</div>
+          <div class="option" data-value="8">8</div>
+          <div class="option" data-value="9">9</div>
+        </div>
+        
+        <div class="bet-amount">
+          <label>Bahis Miktarı</label>
+          <div class="amount-input">
+            <input type="number" id="wheel-amount" placeholder="0.01" step="0.001" min="0.001" max="0.1">
+            <span class="eth-suffix">ETH</span>
+          </div>
+          <div class="amount-presets">
+            <div class="amount-preset" data-amount="0.001">0.001</div>
+            <div class="amount-preset" data-amount="0.01">0.01</div>
+            <div class="amount-preset" data-amount="0.05">0.05</div>
+            <div class="amount-preset" data-amount="0.1">0.1</div>
+          </div>
+        </div>
+        
+        <div class="bet-info">
+          <p>Minimum bahis: <strong>0.001 ETH</strong></p>
+          <p>Maximum bahis: <strong>0.1 ETH</strong></p>
+          <p class="payout-info">Potansiyel kazanç: <span id="wheel-payout">0.00 ETH</span></p>
+        </div>
+        
+        <button class="place-bet-button disabled" id="wheel-bet-button">Bahis Yap</button>
+      </div>
+      
+      <div class="result-container" id="wheel-result">
+        <h3>Sonuç</h3>
+        <p id="wheel-result-text"></p>
+      </div>
+    </div>
     
-    <div class="counter">0</div>
-    <button id="increment">Arttır</button>
+    <!-- Yüksek/Düşük Oyunu -->
+    <div class="game-tab" id="high-low-game">
+      <div class="bet-card">
+        <h3>Yüksek/Düşük Bahsi</h3>
+        <p>Sonucun 0-4 (düşük) mü yoksa 5-9 (yüksek) mı olacağına bahis yapın.</p>
+        
+        <div class="bet-options" id="high-low-options">
+          <div class="option" data-value="0">Düşük (0-4)</div>
+          <div class="option" data-value="1">Yüksek (5-9)</div>
+        </div>
+        
+        <div class="bet-amount">
+          <label>Bahis Miktarı</label>
+          <div class="amount-input">
+            <input type="number" id="high-low-amount" placeholder="0.01" step="0.001" min="0.001" max="0.1">
+            <span class="eth-suffix">ETH</span>
+          </div>
+          <div class="amount-presets">
+            <div class="amount-preset" data-amount="0.001">0.001</div>
+            <div class="amount-preset" data-amount="0.01">0.01</div>
+            <div class="amount-preset" data-amount="0.05">0.05</div>
+            <div class="amount-preset" data-amount="0.1">0.1</div>
+          </div>
+        </div>
+        
+        <div class="bet-info">
+          <p>Minimum bahis: <strong>0.001 ETH</strong></p>
+          <p>Maximum bahis: <strong>0.1 ETH</strong></p>
+          <p class="payout-info">Potansiyel kazanç: <span id="high-low-payout">0.00 ETH</span></p>
+        </div>
+        
+        <button class="place-bet-button disabled" id="high-low-bet-button">Bahis Yap</button>
+      </div>
+      
+      <div class="result-container" id="high-low-result">
+        <h3>Sonuç</h3>
+        <p id="high-low-result-text"></p>
+      </div>
+    </div>
     
-    <div class="user-info" id="user-info">
-      <p>Farcaster bilgileri yükleniyor...</p>
+    <!-- Tek/Çift Oyunu -->
+    <div class="game-tab" id="even-odd-game">
+      <div class="bet-card">
+        <h3>Tek/Çift Bahsi</h3>
+        <p>Sonucun tek mi çift mi olacağına bahis yapın.</p>
+        
+        <div class="bet-options" id="even-odd-options">
+          <div class="option" data-value="0">Çift (0,2,4,6,8)</div>
+          <div class="option" data-value="1">Tek (1,3,5,7,9)</div>
+        </div>
+        
+        <div class="bet-amount">
+          <label>Bahis Miktarı</label>
+          <div class="amount-input">
+            <input type="number" id="even-odd-amount" placeholder="0.01" step="0.001" min="0.001" max="0.1">
+            <span class="eth-suffix">ETH</span>
+          </div>
+          <div class="amount-presets">
+            <div class="amount-preset" data-amount="0.001">0.001</div>
+            <div class="amount-preset" data-amount="0.01">0.01</div>
+            <div class="amount-preset" data-amount="0.05">0.05</div>
+            <div class="amount-preset" data-amount="0.1">0.1</div>
+          </div>
+        </div>
+        
+        <div class="bet-info">
+          <p>Minimum bahis: <strong>0.001 ETH</strong></p>
+          <p>Maximum bahis: <strong>0.1 ETH</strong></p>
+          <p class="payout-info">Potansiyel kazanç: <span id="even-odd-payout">0.00 ETH</span></p>
+        </div>
+        
+        <button class="place-bet-button disabled" id="even-odd-bet-button">Bahis Yap</button>
+      </div>
+      
+      <div class="result-container" id="even-odd-result">
+        <h3>Sonuç</h3>
+        <p id="even-odd-result-text"></p>
+      </div>
+    </div>
+    
+    <div class="recent-plays">
+      <h3>Son Oyunlarınız</h3>
+      <ul class="play-list" id="recent-plays-list">
+        <li class="play-item">
+          <span>Henüz oyun geçmişiniz yok.</span>
+        </li>
+      </ul>
     </div>
   </div>
+  
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loading-text">İşleminiz gerçekleştiriliyor...</div>
+  </div>
 
-  <!-- Farcaster Frame SDK -->
+  <!-- Farcaster SDK ve Ethereum JS kütüphaneleri -->
   <script type="module">
     import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+    import { ethers } from 'https://esm.sh/ethers@6.10.0';
     
-    // Mini App hazır olduğunda splash screen'i kaldır
+    // BaseLuck sözleşme ABI
+    const contractABI = [
+      "function placeBet(uint8 _gameType, uint8 _playerChoice) external payable returns (uint256)",
+      "function getPlayerBets(address _player) external view returns (uint256[])",
+      "function bets(uint256) external view returns (address player, uint256 amount, uint8 gameType, uint8 playerChoice, bool settled, bool won)",
+      "function minBet() external view returns (uint256)",
+      "function maxBet() external view returns (uint256)"
+    ];
+    
+    // Base ağı ayarları 
+    const baseChainId = 8453; // Base Mainnet
+    const expectedNetwork = {
+      chainId: ethers.toQuantity(baseChainId),
+      chainName: "Base",
+      nativeCurrency: {
+        name: "Ethereum",
+        symbol: "ETH",
+        decimals: 18
+      },
+      rpcUrls: ["https://mainnet.base.org"],
+      blockExplorerUrls: ["https://basescan.org"]
+    };
+    
+    // Kontrat adresi - sözleşme deploy edildikten sonra güncellenecek
+    const contractAddress = "0xYourContractAddressHere";
+    
+    // Uygulama durumu
+    let provider;
+    let signer;
+    let contract;
+    let userAddress;
+    let selectedTab = 'wheel-game';
+    let wheelChoice = null;
+    let highLowChoice = null;
+    let evenOddChoice = null;
+    let wheelAmount = 0.01;
+    let highLowAmount = 0.01;
+    let evenOddAmount = 0.01;
+    let isCorrectNetwork = false;
+    let recentPlays = [];
+    
+    // DOM Elementleri
+    const wheelOptions = document.querySelectorAll('#wheel-options .option');
+    const highLowOptions = document.querySelectorAll('#high-low-options .option');
+    const evenOddOptions = document.querySelectorAll('#even-odd-options .option');
+    const wheelAmountInput = document.getElementById('wheel-amount');
+    const highLowAmountInput = document.getElementById('high-low-amount');
+    const evenOddAmountInput = document.getElementById('even-odd-amount');
+    const wheelPayoutElement = document.getElementById('wheel-payout');
+    const highLowPayoutElement = document.getElementById('high-low-payout');
+    const evenOddPayoutElement = document.getElementById('even-odd-payout');
+    const wheelBetButton = document.getElementById('wheel-bet-button');
+    const highLowBetButton = document.getElementById('high-low-bet-button');
+    const evenOddBetButton = document.getElementById('even-odd-bet-button');
+    const tabs = document.querySelectorAll('.tab');
+    const gameTabContents = document.querySelectorAll('.game-tab');
+    const wheelResult = document.getElementById('wheel-result');
+    const highLowResult = document.getElementById('high-low-result');
+    const evenOddResult = document.getElementById('even-odd-result');
+    const wheelResultText = document.getElementById('wheel-result-text');
+    const highLowResultText = document.getElementById('high-low-result-text');
+    const evenOddResultText = document.getElementById('even-odd-result-text');
+    const recentPlaysList = document.getElementById('recent-plays-list');
+    const connectWalletButton = document.getElementById('connect-wallet');
+    const walletAddressElement = document.getElementById('wallet-address');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingText = document.getElementById('loading-text');
+    const wrongNetworkElement = document.getElementById('wrong-network');
+    const switchNetworkButton = document.getElementById('switch-network');
+    const wheel = document.getElementById('wheel');
+    
+    // Miktar presets
+    const amountPresets = document.querySelectorAll('.amount-preset');
+    
+    // Mini App hazır olduğunda başlat
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         await sdk.actions.ready();
-        console.log('Mini App hazır!');
+        console.log('BaseLuck Mini App hazır!');
         
-        // Kullanıcı bilgilerini göster
-        const userElement = document.getElementById('user-info');
-        if (sdk.context && sdk.context.user) {
-          const user = sdk.context.user;
-          userElement.innerHTML = `
-            <h3>Hoşgeldin!</h3>
-            <p><strong>FID:</strong> ${user.fid || 'Bilinmiyor'}</p>
-            <p><strong>Kullanıcı Adı:</strong> ${user.username || 'Bilinmiyor'}</p>
-            <p><strong>İsim:</strong> ${user.displayName || 'Bilinmiyor'}</p>
-          `;
-        } else {
-          userElement.innerHTML = '<p>Kullanıcı bilgileri alınamadı.</p>';
-        }
+        // Başlangıç değerleri
+        wheelAmountInput.value = "0.01";
+        highLowAmountInput.value = "0.01";
+        evenOddAmountInput.value = "0.01";
+        
+        // Cüzdan bağlantısını kontrol et
+        checkConnection();
+        
+        // Event Listeners'ları ekle
+        setupEventListeners();
       } catch (error) {
-        console.error('Hata:', error);
+        console.error('Başlatma hatası:', error);
       }
     });
     
-    // Sayaç fonksiyonu
-    let count = 0;
-    const counterElement = document.querySelector('.counter');
-    const incrementButton = document.getElementById('increment');
+    // Event Listeners'ları ayarla
+    function setupEventListeners() {
+      // Tabs
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          selectedTab = tab.dataset.tab;
+          
+          gameTabContents.forEach(content => {
+            content.classList.remove('active');
+          });
+          document.getElementById(selectedTab).classList.add('active');
+        });
+      });
+      
+      // Seçenek tıklamaları
+      wheelOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          wheelOptions.forEach(o => o.classList.remove('selected'));
+          option.classList.add('selected');
+          wheelChoice = parseInt(option.dataset.value);
+          updateWheelPayoutInfo();
+          updateWheelButtonState();
+        });
+      });
+      
+      highLowOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          highLowOptions.forEach(o => o.classList.remove('selected'));
+          option.classList.add('selected');
+          highLowChoice = parseInt(option.dataset.value);
+          updateHighLowPayoutInfo();
+          updateHighLowButtonState();
+        });
+      });
+      
+      evenOddOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          evenOddOptions.forEach(o => o.classList.remove('selected'));
+          option.classList.add('selected');
+          evenOddChoice = parseInt(option.dataset.value);
+          updateEvenOddPayoutInfo();
+          updateEvenOddButtonState();
+        });
+      });
+      
+      // Miktar girişleri
+      wheelAmountInput.addEventListener('input', () => {
+        wheelAmount = parseFloat(wheelAmountInput.value) || 0;
+        updateWheelPayoutInfo();
+        updateWheelButtonState();
+      });
+      
+      highLowAmountInput.addEventListener('input', () => {
+        highLowAmount = parseFloat(highLowAmountInput.value) || 0;
+        updateHighLowPayoutInfo();
+        updateHighLowButtonState();
+      });
+      
+      evenOddAmountInput.addEventListener('input', () => {
+        evenOddAmount = parseFloat(evenOddAmountInput.value) || 0;
+        updateEvenOddPayoutInfo();
+        updateEvenOddButtonState();
+      });
+      
+      // Miktar önceden ayarlanmış değerler
+      amountPresets.forEach(preset => {
+        preset.addEventListener('click', () => {
+          const amount = preset.dataset.amount;
+          const parent = preset.closest('.bet-card');
+          
+          if (parent.querySelector('#wheel-amount')) {
+            wheelAmountInput.value = amount;
+            wheelAmount = parseFloat(amount);
+            updateWheelPayoutInfo();
+            updateWheelButtonState();
+          }
+          else if (parent.querySelector('#high-low-amount')) {
+            highLowAmountInput.value = amount;
+            highLowAmount = parseFloat(amount);
+            updateHighLowPayoutInfo();
+            updateHighLowButtonState();
+          }
+          else if (parent.querySelector('#even-odd-amount')) {
+            evenOddAmountInput.value = amount;
+            evenOddAmount = parseFloat(amount);
+            updateEvenOddPayoutInfo();
+            updateEvenOddButtonState();
+          }
+        });
+      });
+      
+      // Bahis butonları
+      wheelBetButton.addEventListener('click', () => placeBet(0, wheelChoice, wheelAmount));
+      highLowBetButton.addEventListener('click', () => placeBet(1, highLowChoice, highLowAmount));
+      evenOddBetButton.addEventListener('click', () => placeBet(2, evenOddChoice, evenOddAmount));
+      
+      // Cüzdan bağla butonu
+      connectWalletButton.addEventListener('click', connectWallet);
+      
+      // Ağ değiştir butonu
+      switchNetworkButton.addEventListener('click', switchToBaseNetwork);
+    }
     
-    incrementButton.addEventListener('click', () => {
-      count++;
-      counterElement.textContent = count;
-    });
+    // Cüzdan bağlantısını kontrol et
+    async function checkConnection() {
+      try {
+        // Farcaster SDK'dan ethProvider'ı al
+        provider = new ethers.BrowserProvider(sdk.wallet.ethProvider);
+        
+        // Ağı kontrol et
+        const network = await provider.getNetwork();
+        isCorrectNetwork = network.chainId === BigInt(baseChainId);
+        
+        if (!isCorrectNetwork) {
+          wrongNetworkElement.style.display = 'block';
+          document.querySelector('.game-container').style.display = 'none';
+          return;
+        } else {
+          wrongNetworkElement.style.display = 'none';
+          document.querySelector('.game-container').style.display = 'block';
+        }
+        
+        // Hesapları al
+        const accounts = await provider.listAccounts();
+        
+        if (accounts.length > 0) {
+          signer = accounts[0];
+          userAddress = signer.address;
+          
+          // Kısaltılmış adres göster
+          const shortenedAddress = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
+          walletAddressElement.textContent = shortenedAddress;
+          connectWalletButton.textContent = 'Bağlı';
+          
+          // Kontrat bağlantısı
+          contract = new ethers.Contract(contractAddress, contractABI, provider);
+          
+          // Oyun geçmişini yükle
+          await loadRecentPlays();
+        }
+      } catch (error) {
+        console.error('Bağlantı hatası:', error);
+      }
+    }
+    
+    // Cüzdanı bağla
+    async function connectWallet() {
+      try {
+        showLoading('Cüzdan bağlanıyor...');
+        
+        if (sdk.wallet.ethProvider.request) {
+          await sdk.wallet.ethProvider.request({ method: 'eth_requestAccounts' });
+          await checkConnection();
+        }
+        
+        hideLoading();
+      } catch (error) {
+        console.error('Cüzdan bağlama hatası:', error);
+        hideLoading();
+      }
+    }
+    
+    // Base ağına geç
+    async function switchToBaseNetwork() {
+      try {
+        showLoading('Base ağına geçiliyor...');
+        
+        if (sdk.wallet.ethProvider.request) {
+          try {
+            // Önce mevcut ağı değiştirmeyi dene
+            await sdk.wallet.ethProvider.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: expectedNetwork.chainId }],
+            });
+          } catch (switchError) {
+            // Ağ ekli değilse, ekle
+            if (switchError.code === 4902) {
+              await sdk.wallet.ethProvider.request({
+                method: 'wallet_addEthereumChain',
+                params: [expectedNetwork],
+              });
+            } else {
+              throw switchError;
+            }
+          }
+          
+          await checkConnection();
+        }
+        
+        hideLoading();
+      } catch (error) {
+        console.error('Ağ değiştirme hatası:', error);
+        hideLoading();
+      }
+    }
+    
+    // Bahis yap
+    async function placeBet(gameType, choice, amount) {
+      if (!signer || !contract || !isCorrectNetwork) {
+        if (!isCorrectNetwork) {
+          alert('Lütfen önce Base ağına geçin!');
+          return;
+        }
+        alert('Lütfen önce cüzdanınızı bağlayın!');
+        return;
+      }
+      
+      try {
+        showLoading('Bahis yapılıyor...');
+        
+        // Bahis için kontrat ile etkileşim
+        const amountWei = ethers.parseEther(amount.toString());
+        
+        // Kontratı signer ile bağla
+        const connectedContract = contract.connect(signer);
+        
+        // Bahsi yap
+        const tx = await connectedContract.placeBet(gameType, choice, {
+          value: amountWei,
+          gasLimit: 300000 // Gas limiti
+        });
+        
+        loadingText.textContent = 'İşlem onaylanıyor...';
+        
+        // İşlemin onaylanmasını bekle
+        const receipt = await tx.wait();
+        console.log('Bahis işlemi onaylandı:', receipt);
+        
+        // Sonucun blockchain sonuçlarını burada yorumlayacağız
+        // Gerçek uygulamada, bir olay (event) dinleyerek veya
+        // backend'den bilgi alarak sonucu belirleriz
+        
+        // Şimdilik rastgele bir sonuç oluşturalım (gerçek uygulamada backend'den gelecek)
+        const randomResult = Math.floor(Math.random() * 10);
+        
+        // Bahis sonucunu göster
+        let isWin = false;
+        if (gameType === 0) { // Wheel game
+          isWin = choice === randomResult;
+          spinWheel(randomResult);
+          showGameResult('wheel', randomResult, isWin, amount);
+        } 
+        else if (gameType === 1) { // High/Low
+          isWin = (randomResult <= 4 && choice === 0) || (randomResult >= 5 && choice === 1);
+          showGameResult('high-low', randomResult, isWin, amount);
+        }
+        else if (gameType === 2) { // Even/Odd
+          isWin = (randomResult % 2 === 0 && choice === 0) || (randomResult % 2 === 1 && choice === 1);
+          showGameResult('even-odd', randomResult, isWin, amount);
+        }
+        
+        // Oyunu kayda ekle
+        const newPlay = {
+          gameType: gameType,
+          choice: choice,
+          result: randomResult,
+          amount: amount,
+          isWin: isWin,
+          time: new Date().toISOString()
+        };
+        
+        recentPlays.unshift(newPlay);
+        updateRecentPlaysList();
+        
+        hideLoading();
+      } catch (error) {
+        console.error('Bahis hatası:', error);
+        hideLoading();
+        alert('Bahis yapılırken bir hata oluştu: ' + error.message);
+      }
+    }
+    
+    // Şans çarkını döndür
+    function spinWheel(result) {
+      // Çark segmentlerini hesapla
+      const segmentAngle = 360 / 10; // 10 segment (0-9)
+      const extraRotations = 5; // Ekstra dönüşler
+      const randomOffset = Math.random() * segmentAngle; // Segment içinde rastgele konum
+      const targetAngle = ((result) * segmentAngle) + randomOffset;
+      const totalRotation = (extraRotations * 360) + targetAngle;
+      
+      // Çarkı döndür
+      wheel.style.transform = `rotate(${totalRotation}deg)`;
+    }
+    
+    // Oyun sonucunu göster
+    function showGameResult(gameType, result, isWin, amount) {
+      let resultElement;
+      let resultTextElement;
+      let payoutAmount;
+      
+      if (gameType === 'wheel') {
+        resultElement = wheelResult;
+        resultTextElement = wheelResultText;
+        payoutAmount = isWin ? (amount * 9.5) : 0; // 10'da 1 şans için x9.5 ödeme
+      } 
+      else if (gameType === 'high-low') {
+        resultElement = highLowResult;
+        resultTextElement = highLowResultText;
+        payoutAmount = isWin ? (amount * 1.9) : 0; // 2'de 1 şans için x1.9 ödeme
+      }
+      else if (gameType === 'even-odd') {
+        resultElement = evenOddResult;
+        resultTextElement = evenOddResultText;
+        payoutAmount = isWin ? (amount * 1.9) : 0; // 2'de 1 şans için x1.9 ödeme
+      }
+      
+      // Sonuç mesajını hazırla
+      if (isWin) {
+        resultElement.className = 'result-container result-win';
+        resultTextElement.innerHTML = `
+          <strong>Tebrikler!</strong><br>
+          Sonuç: ${result}<br>
+          ${payoutAmount.toFixed(4)} ETH kazandınız!
+        `;
+      } else {
+        resultElement.className = 'result-container result-loss';
+        resultTextElement.innerHTML = `
+          <strong>Kaybettiniz</strong><br>
+          Sonuç: ${result}<br>
+          ${amount} ETH kaybettiniz.
+        `;
+      }
+      
+      resultElement.style.display = 'block';
+      
+      // 5 saniye sonra sonucu gizle
+      setTimeout(() => {
+        resultElement.style.display = 'none';
+      }, 5000);
+    }
+    
+    // Son oyunları yükle
+    async function loadRecentPlays() {
+      try {
+        if (!userAddress || !contract) return;
+        
+        // Gerçek uygulamada, kontratdan kullanıcının bahislerini çekeriz
+        // const betIds = await contract.getPlayerBets(userAddress);
+        
+        // Şimdilik demo veriler kullanıyoruz
+        recentPlays = [];
+        updateRecentPlaysList();
+      } catch (error) {
+        console.error('Oyun geçmişi yükleme hatası:', error);
+      }
+    }
+    
+    // Son oyunları listele
+    function updateRecentPlaysList() {
+      if (recentPlays.length === 0) {
+        recentPlaysList.innerHTML = `
+          <li class="play-item">
+            <span>Henüz oyun geçmişiniz yok.</span>
+          </li>
+        `;
+        return;
+      }
+      
+      recentPlaysList.innerHTML = '';
+      
+      recentPlays.slice(0, 5).forEach(play => {
+        const gameTypeName = ['Çark', 'Yüksek/Düşük', 'Tek/Çift'][play.gameType];
+        const choiceName = getChoiceName(play.gameType, play.choice);
+        const timeStr = new Date(play.time).toLocaleTimeString();
+        
+        const li = document.createElement('li');
+        li.className = 'play-item';
+        li.innerHTML = `
+          <div>
+            <strong>${gameTypeName}</strong>: ${choiceName}
+            <br>
+            <small>${play.amount} ETH, ${timeStr}</small>
+          </div>
+          <div class="play-result ${play.isWin ? 'win' : 'lose'}">
+            ${play.isWin ? 'Kazandı' : 'Kaybetti'}
+          </div>
+        `;
+        
+        recentPlaysList.appendChild(li);
+      });
+    }
+    
+    // Seçenek adını getir
+    function getChoiceName(gameType, choice) {
+      if (gameType === 0) { // Wheel
+        return choice.toString();
+      } 
+      else if (gameType === 1) { // High/Low
+        return choice === 0 ? 'Düşük (0-4)' : 'Yüksek (5-9)';
+      }
+      else if (gameType === 2) { // Even/Odd
+        return choice === 0 ? 'Çift' : 'Tek';
+      }
+      return '';
+    }
+    
+    // Wheel payout bilgisini güncelle
+    function updateWheelPayoutInfo() {
+      if (wheelChoice !== null && wheelAmount > 0) {
+        const payout = wheelAmount * 9.5; // x9.5 ödeme (%5 ev avantajı)
+        wheelPayoutElement.textContent = `${payout.toFixed(4)} ETH`;
+      } else {
+        wheelPayoutElement.textContent = '0.00 ETH';
+      }
+    }
+    
+    // High/Low payout bilgisini güncelle
+    function updateHighLowPayoutInfo() {
+      if (highLowChoice !== null && highLowAmount > 0) {
+        const payout = highLowAmount * 1.9; // x1.9 ödeme (%5 ev avantajı)
+        highLowPayoutElement.textContent = `${payout.toFixed(4)} ETH`;
+      } else {
+        highLowPayoutElement.textContent = '0.00 ETH';
+      }
+    }
+    
+    // Even/Odd payout bilgisini güncelle
+    function updateEvenOddPayoutInfo() {
+      if (evenOddChoice !== null && evenOddAmount > 0) {
+        const payout = evenOddAmount * 1.9; // x1.9 ödeme (%5 ev avantajı)
+        evenOddPayoutElement.textContent = `${payout.toFixed(4)} ETH`;
+      } else {
+        evenOddPayoutElement.textContent = '0.00 ETH';
+      }
+    }
+    
+    // Wheel buton durumunu güncelle
+    function updateWheelButtonState() {
+      if (wheelChoice !== null && wheelAmount >= 0.001 && wheelAmount <= 0.1) {
+        wheelBetButton.classList.remove('disabled');
+      } else {
+        wheelBetButton.classList.add('disabled');
+      }
+    }
+    
+    // High/Low buton durumunu güncelle
+    function updateHighLowButtonState() {
+      if (highLowChoice !== null && highLowAmount >= 0.001 && highLowAmount <= 0.1) {
+        highLowBetButton.classList.remove('disabled');
+      } else {
+        highLowBetButton.classList.add('disabled');
+      }
+    }
+    
+    // Even/Odd buton durumunu güncelle
+    function updateEvenOddButtonState() {
+      if (evenOddChoice !== null && evenOddAmount >= 0.001 && evenOddAmount <= 0.1) {
+        evenOddBetButton.classList.remove('disabled');
+      } else {
+        evenOddBetButton.classList.add('disabled');
+      }
+    }
+    
+    // Loading göster
+    function showLoading(text) {
+      loadingText.textContent = text;
+      loadingOverlay.style.display = 'flex';
+    }
+    
+    // Loading gizle
+    function hideLoading() {
+      loadingOverlay.style.display = 'none';
+    }
   </script>
 </body>
 </html>
