@@ -3,20 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BaseLuck</title>
+  <title>Wheel of Fortune</title>
   
   <!-- Farcaster Frame Embed Meta Tag -->
-  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://via.placeholder.com/1200x630/1E40AF/FFFFFF?text=BaseLuck","button":{"title":"Try Your Luck on Base","action":{"type":"launch_frame","name":"BaseLuck","url":"https://your-vercel-url.vercel.app","splashImageUrl":"https://via.placeholder.com/512/1E40AF/FFFFFF?text=BaseLuck","splashBackgroundColor":"#1E40AF"}}}'>
+  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://farc.vercel.app/preview.png","button":{"title":"Spin the Wheel","action":{"type":"launch_frame","name":"Wheel of Fortune","url":"https://farc.vercel.app","splashImageUrl":"https://farc.vercel.app/splash.png","splashBackgroundColor":"#6200EA"}}}'>
   
   <style>
     :root {
-      --primary-color: #1E40AF; /* Base blue */
-      --secondary-color: #3B82F6;
-      --accent-color: #60A5FA;
+      --primary-color: #6200EA;
+      --secondary-color: #B388FF;
+      --accent-color: #FF9100;
       --bg-color: #0F172A;
       --text-color: #E2E8F0;
       --card-bg: #1E293B;
       --border-color: #334155;
+      --success-color: #10B981;
+      --error-color: #EF4444;
     }
     
     body {
@@ -59,7 +61,22 @@
       margin: 16px;
       padding: 12px 16px;
       border-radius: 12px;
-      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .balance-container {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .balance-label {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    
+    .balance {
+      font-weight: bold;
+      font-size: 18px;
     }
     
     .wallet-address {
@@ -69,17 +86,6 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       max-width: 150px;
-    }
-    
-    .balance {
-      font-weight: bold;
-    }
-    
-    .eth-icon {
-      width: 16px;
-      height: 16px;
-      margin-right: 4px;
-      vertical-align: middle;
     }
     
     .connect-button {
@@ -95,49 +101,14 @@
     }
     
     .connect-button:hover {
-      background-color: #1E3A8A;
-    }
-    
-    .tabs {
-      display: flex;
-      border-bottom: 1px solid var(--border-color);
-      margin: 0 16px;
-    }
-    
-    .tab {
-      padding: 12px 16px;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      flex: 1;
-      text-align: center;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-    }
-    
-    .tab.active {
-      color: var(--accent-color);
-      border-bottom-color: var(--accent-color);
-    }
-    
-    .game-container {
-      padding: 16px;
-      flex: 1;
-    }
-    
-    .game-tab {
-      display: none;
-    }
-    
-    .game-tab.active {
-      display: block;
+      background-color: #5000D6;
     }
     
     .fortune-wheel-container {
       position: relative;
       width: 300px;
       height: 300px;
-      margin: 24px auto;
+      margin: 32px auto;
     }
     
     .fortune-wheel {
@@ -192,46 +163,69 @@
       z-index: 5;
     }
     
+    .wheel-numbers {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+    }
+    
+    .wheel-number {
+      position: absolute;
+      left: 50%;
+      top: 15px;
+      transform-origin: center 135px;
+      transform: translateX(-50%);
+      font-weight: bold;
+      font-size: 18px;
+      color: white;
+      text-shadow: 0 0 3px rgba(0,0,0,0.8);
+    }
+    
     .bet-card {
       background-color: var(--card-bg);
       border-radius: 12px;
       border: 1px solid var(--border-color);
       padding: 16px;
-      margin-bottom: 16px;
+      margin: 0 16px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
     .bet-card h3 {
       margin-top: 0;
       color: var(--accent-color);
       font-size: 18px;
+      text-align: center;
+    }
+    
+    .bet-card p {
+      text-align: center;
+      margin-bottom: 16px;
     }
     
     .bet-options {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
       margin: 16px 0;
     }
     
     .bet-options .option {
-      flex: 1;
-      padding: 12px;
+      padding: 12px 0;
       text-align: center;
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      margin: 0 8px;
       cursor: pointer;
       transition: all 0.2s;
-    }
-    
-    .bet-options .option:first-child {
-      margin-left: 0;
-    }
-    
-    .bet-options .option:last-child {
-      margin-right: 0;
+      font-weight: bold;
     }
     
     .bet-options .option.selected {
-      background-color: var(--secondary-color);
+      background-color: var(--primary-color);
       border-color: var(--accent-color);
     }
     
@@ -239,64 +233,8 @@
       border-color: var(--accent-color);
     }
     
-    .bet-amount {
-      margin: 16px 0;
-    }
-    
-    .bet-amount label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-    
-    .amount-input {
-      display: flex;
-      align-items: center;
-    }
-    
-    .amount-input input {
-      flex: 1;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 16px;
-      outline: none;
-    }
-    
-    .amount-input input:focus {
-      border-color: var(--accent-color);
-    }
-    
-    .eth-suffix {
-      margin-left: 8px;
-      font-weight: bold;
-    }
-    
-    .amount-presets {
-      display: flex;
-      margin-top: 8px;
-    }
-    
-    .amount-preset {
-      flex: 1;
-      text-align: center;
-      background-color: var(--bg-color);
-      border: 1px solid var(--border-color);
-      padding: 8px;
-      border-radius: 8px;
-      margin: 0 4px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    
-    .amount-preset:hover {
-      border-color: var(--accent-color);
-    }
-    
     .bet-info {
-      background-color: rgba(30, 64, 175, 0.2);
+      background-color: rgba(98, 0, 234, 0.1);
       border: 1px solid var(--primary-color);
       border-radius: 8px;
       padding: 12px;
@@ -305,7 +243,8 @@
     }
     
     .bet-info p {
-      margin: 4px 0;
+      margin: 8px 0;
+      text-align: left;
     }
     
     .payout-info {
@@ -313,8 +252,13 @@
       color: var(--accent-color);
     }
     
-    .place-bet-button {
-      width: 100%;
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .action-button {
       background-color: var(--primary-color);
       color: white;
       border: none;
@@ -324,11 +268,26 @@
       font-weight: bold;
       cursor: pointer;
       transition: background-color 0.2s;
-      margin-top: 16px;
     }
     
-    .place-bet-button:hover {
-      background-color: #1E3A8A;
+    .action-button:hover {
+      background-color: #5000D6;
+    }
+    
+    .action-button.deposit {
+      background-color: var(--success-color);
+    }
+    
+    .action-button.deposit:hover {
+      background-color: #0B9668;
+    }
+    
+    .action-button.withdraw {
+      background-color: var(--accent-color);
+    }
+    
+    .action-button.withdraw:hover {
+      background-color: #DD7D00;
     }
     
     .disabled {
@@ -342,7 +301,7 @@
     
     .result-container {
       text-align: center;
-      margin: 16px 0;
+      margin: 16px;
       padding: 16px;
       border-radius: 8px;
       display: none;
@@ -362,13 +321,61 @@
       margin-top: 0;
     }
     
+    .pool-info {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      padding: 16px;
+      margin: 0 16px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .pool-info h3 {
+      margin-top: 0;
+      color: var(--accent-color);
+      font-size: 18px;
+      text-align: center;
+    }
+    
+    .pool-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .pool-stat {
+      background-color: rgba(98, 0, 234, 0.1);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+    
+    .pool-stat-label {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+    
+    .pool-stat-value {
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
     .recent-plays {
-      margin-top: 32px;
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      padding: 16px;
+      margin: 0 16px 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
     .recent-plays h3 {
-      font-size: 18px;
+      margin-top: 0;
       color: var(--accent-color);
+      font-size: 18px;
+      text-align: center;
       margin-bottom: 16px;
     }
     
@@ -379,7 +386,7 @@
     }
     
     .play-item {
-      background-color: var(--card-bg);
+      background-color: rgba(98, 0, 234, 0.05);
       border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 12px;
@@ -394,11 +401,11 @@
     }
     
     .play-result.win {
-      color: #10B981;
+      color: var(--success-color);
     }
     
     .play-result.lose {
-      color: #EF4444;
+      color: var(--error-color);
     }
     
     .loading-overlay {
@@ -437,7 +444,7 @@
     .wrong-network {
       text-align: center;
       padding: 32px 16px;
-      color: #EF4444;
+      color: var(--error-color);
       display: none;
     }
     
@@ -455,23 +462,150 @@
       font-weight: bold;
       cursor: pointer;
     }
+    
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(15, 23, 42, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      display: none;
+    }
+    
+    .modal-content {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .modal-title {
+      margin: 0;
+      font-size: 18px;
+      color: var(--accent-color);
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-color);
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+    .modal-body {
+      margin-bottom: 16px;
+    }
+    
+    .amount-input {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .amount-input input {
+      flex: 1;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+    }
+    
+    .amount-input input:focus {
+      border-color: var(--accent-color);
+    }
+    
+    .eth-suffix {
+      margin-left: 8px;
+      font-weight: bold;
+    }
+    
+    .amount-presets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .amount-preset {
+      background-color: var(--bg-color);
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      text-align: center;
+      cursor: pointer;
+    }
+    
+    .amount-preset:hover {
+      border-color: var(--accent-color);
+    }
+    
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+    
+    .modal-button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .modal-button.cancel {
+      background-color: rgba(0,0,0,0.2);
+      color: var(--text-color);
+    }
+    
+    .modal-button.confirm {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    @media (max-width: 480px) {
+      .bet-options {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      
+      .pool-stats {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>BaseLuck</h1>
-    <p>Gambling Games on Base Network</p>
+    <h1>Wheel of Fortune</h1>
+    <p>Spin the wheel & test your luck on Base</p>
   </div>
   
   <div class="wallet-info" id="wallet-info">
-    <div class="wallet-address" id="wallet-address">Wallet Not Connected</div>
+    <div class="balance-container">
+      <div class="balance-label">Your Balance</div>
+      <div class="balance" id="player-balance">0.00 ETH</div>
+    </div>
     <button class="connect-button" id="connect-wallet">Connect Wallet</button>
-  </div>
-  
-  <div class="tabs">
-    <div class="tab active" data-tab="wheel-game">Lucky Wheel</div>
-    <div class="tab" data-tab="high-low-game">High/Low</div>
-    <div class="tab" data-tab="even-odd-game">Even/Odd</div>
   </div>
   
   <div class="wrong-network" id="wrong-network">
@@ -479,154 +613,141 @@
     <button class="switch-network-button" id="switch-network">Switch to Base</button>
   </div>
   
-  <div class="game-container">
-    <!-- Lucky Wheel Game -->
-    <div class="game-tab active" id="wheel-game">
-      <div class="fortune-wheel-container">
-        <div class="fortune-wheel" id="wheel"></div>
-        <div class="wheel-center">ETH</div>
-        <div class="wheel-marker"></div>
-      </div>
-      
-      <div class="bet-card">
-        <h3>Lucky Wheel Bet</h3>
-        <p>Guess where the wheel will stop (number between 0-9)</p>
-        
-        <div class="bet-options" id="wheel-options">
-          <div class="option" data-value="0">0</div>
-          <div class="option" data-value="1">1</div>
-          <div class="option" data-value="2">2</div>
-          <div class="option" data-value="3">3</div>
-          <div class="option" data-value="4">4</div>
-          <div class="option" data-value="5">5</div>
-          <div class="option" data-value="6">6</div>
-          <div class="option" data-value="7">7</div>
-          <div class="option" data-value="8">8</div>
-          <div class="option" data-value="9">9</div>
-        </div>
-        
-        <div class="bet-amount">
-          <label>Bet Amount</label>
-          <div class="amount-input">
-            <input type="number" id="wheel-amount" placeholder="0.01" step="0.001" min="0.001" max="0.1">
-            <span class="eth-suffix">ETH</span>
-          </div>
-          <div class="amount-presets">
-            <div class="amount-preset" data-amount="0.001">0.001</div>
-            <div class="amount-preset" data-amount="0.01">0.01</div>
-            <div class="amount-preset" data-amount="0.05">0.05</div>
-            <div class="amount-preset" data-amount="0.1">0.1</div>
-          </div>
-        </div>
-        
-        <div class="bet-info">
-          <p>Minimum bet: <strong>0.001 ETH</strong></p>
-          <p>Maximum bet: <strong>0.1 ETH</strong></p>
-          <p class="payout-info">Potential win: <span id="wheel-payout">0.00 ETH</span></p>
-        </div>
-        
-        <button class="place-bet-button disabled" id="wheel-bet-button">Place Bet</button>
-      </div>
-      
-      <div class="result-container" id="wheel-result">
-        <h3>Result</h3>
-        <p id="wheel-result-text"></p>
-      </div>
+  <div class="fortune-wheel-container">
+    <div class="fortune-wheel" id="wheel"></div>
+    <div class="wheel-center">Spin</div>
+    <div class="wheel-marker"></div>
+    
+    <div class="wheel-numbers">
+      <div class="wheel-number" style="transform: translateX(-50%) rotate(0deg)">0</div>
+      <div class="wheel-number" style="transform: translateX(-50%) rotate(36deg)">1</div>
+      <div class="wheel-number" style="transform: translateX(-50%) rotate(72deg)">2</div>
+      <div class="wheel-number" style="transform: translateX(-50%) rotate(108deg)">3</div>
+      <div class="wheel-number" style="transform: translateX(-50%) rotate(144deg)">4</div>
+      <div class="wheel-number" style="transform: translateX(-50%) rotate(180deg)">5</div>
+      <div class="wheel-number" style="transform: translateX(-50%) rotate(216deg)">6</div>
+      <div class="wheel-number" style="transform: translateX(-50%) rotate(252deg)">7</div>
+      <div class="wheel-number" style="transform: translateX(-50%) rotate(288deg)">8</div>
+      <div class="wheel-number" style="transform: translateX(-50%) rotate(324deg)">9</div>
+    </div>
+  </div>
+  
+  <div class="bet-card">
+    <h3>Select Your Number</h3>
+    <p>Guess where the wheel will stop (0-9)</p>
+    
+    <div class="bet-options" id="wheel-options">
+      <div class="option" data-value="0">0</div>
+      <div class="option" data-value="1">1</div>
+      <div class="option" data-value="2">2</div>
+      <div class="option" data-value="3">3</div>
+      <div class="option" data-value="4">4</div>
+      <div class="option" data-value="5">5</div>
+      <div class="option" data-value="6">6</div>
+      <div class="option" data-value="7">7</div>
+      <div class="option" data-value="8">8</div>
+      <div class="option" data-value="9">9</div>
     </div>
     
-    <!-- High/Low Game -->
-    <div class="game-tab" id="high-low-game">
-      <div class="bet-card">
-        <h3>High/Low Bet</h3>
-        <p>Bet whether the result will be 0-4 (low) or 5-9 (high).</p>
-        
-        <div class="bet-options" id="high-low-options">
-          <div class="option" data-value="0">Low (0-4)</div>
-          <div class="option" data-value="1">High (5-9)</div>
-        </div>
-        
-        <div class="bet-amount">
-          <label>Bet Amount</label>
-          <div class="amount-input">
-            <input type="number" id="high-low-amount" placeholder="0.01" step="0.001" min="0.001" max="0.1">
-            <span class="eth-suffix">ETH</span>
-          </div>
-          <div class="amount-presets">
-            <div class="amount-preset" data-amount="0.001">0.001</div>
-            <div class="amount-preset" data-amount="0.01">0.01</div>
-            <div class="amount-preset" data-amount="0.05">0.05</div>
-            <div class="amount-preset" data-amount="0.1">0.1</div>
-          </div>
-        </div>
-        
-        <div class="bet-info">
-          <p>Minimum bet: <strong>0.001 ETH</strong></p>
-          <p>Maximum bet: <strong>0.1 ETH</strong></p>
-          <p class="payout-info">Potential win: <span id="high-low-payout">0.00 ETH</span></p>
-        </div>
-        
-        <button class="place-bet-button disabled" id="high-low-bet-button">Place Bet</button>
-      </div>
-      
-      <div class="result-container" id="high-low-result">
-        <h3>Result</h3>
-        <p id="high-low-result-text"></p>
-      </div>
+    <div class="bet-info">
+      <p>Fixed bet amount: <strong>0.001 ETH</strong></p>
+      <p class="payout-info">Potential win: <span id="wheel-payout">0.00 ETH</span></p>
     </div>
     
-    <!-- Even/Odd Game -->
-    <div class="game-tab" id="even-odd-game">
-      <div class="bet-card">
-        <h3>Even/Odd Bet</h3>
-        <p>Bet whether the result will be even or odd.</p>
-        
-        <div class="bet-options" id="even-odd-options">
-          <div class="option" data-value="0">Even (0,2,4,6,8)</div>
-          <div class="option" data-value="1">Odd (1,3,5,7,9)</div>
-        </div>
-        
-        <div class="bet-amount">
-          <label>Bet Amount</label>
-          <div class="amount-input">
-            <input type="number" id="even-odd-amount" placeholder="0.01" step="0.001" min="0.001" max="0.1">
-            <span class="eth-suffix">ETH</span>
-          </div>
-          <div class="amount-presets">
-            <div class="amount-preset" data-amount="0.001">0.001</div>
-            <div class="amount-preset" data-amount="0.01">0.01</div>
-            <div class="amount-preset" data-amount="0.05">0.05</div>
-            <div class="amount-preset" data-amount="0.1">0.1</div>
-          </div>
-        </div>
-        
-        <div class="bet-info">
-          <p>Minimum bet: <strong>0.001 ETH</strong></p>
-          <p>Maximum bet: <strong>0.1 ETH</strong></p>
-          <p class="payout-info">Potential win: <span id="even-odd-payout">0.00 ETH</span></p>
-        </div>
-        
-        <button class="place-bet-button disabled" id="even-odd-bet-button">Place Bet</button>
+    <div class="action-buttons">
+      <button class="action-button deposit" id="deposit-button">Deposit</button>
+      <button class="action-button withdraw" id="withdraw-button">Withdraw</button>
+      <button class="action-button spin disabled" id="spin-button" style="grid-column: span 2;">Spin the Wheel</button>
+    </div>
+  </div>
+  
+  <div class="result-container" id="wheel-result">
+    <h3>Result</h3>
+    <p id="wheel-result-text"></p>
+  </div>
+  
+  <div class="pool-info">
+    <h3>Pool Information</h3>
+    <div class="pool-stats">
+      <div class="pool-stat">
+        <div class="pool-stat-label">Total Pool Balance</div>
+        <div class="pool-stat-value" id="pool-balance">0.00 ETH</div>
       </div>
-      
-      <div class="result-container" id="even-odd-result">
-        <h3>Result</h3>
-        <p id="even-odd-result-text"></p>
+      <div class="pool-stat">
+        <div class="pool-stat-label">Total Bets Placed</div>
+        <div class="pool-stat-value" id="total-bets">0</div>
+      </div>
+      <div class="pool-stat">
+        <div class="pool-stat-label">Total Winnings Paid</div>
+        <div class="pool-stat-value" id="total-winnings">0.00 ETH</div>
       </div>
     </div>
-    
-    <div class="recent-plays">
-      <h3>Your Recent Plays</h3>
-      <ul class="play-list" id="recent-plays-list">
-        <li class="play-item">
-          <span>No game history yet.</span>
-        </li>
-      </ul>
-    </div>
+  </div>
+  
+  <div class="recent-plays">
+    <h3>Your Recent Plays</h3>
+    <ul class="play-list" id="recent-plays-list">
+      <li class="play-item">
+        <span>No game history yet.</span>
+      </li>
+    </ul>
   </div>
   
   <div class="loading-overlay" id="loading-overlay">
     <div class="spinner"></div>
     <div class="loading-text" id="loading-text">Processing your transaction...</div>
+  </div>
+  
+  <div class="modal" id="deposit-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Deposit ETH</h3>
+        <button class="modal-close" id="deposit-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>How much ETH would you like to deposit to the pool?</p>
+        <div class="amount-input">
+          <input type="number" id="deposit-amount" placeholder="0.01" step="0.001" min="0.001">
+          <span class="eth-suffix">ETH</span>
+        </div>
+        <div class="amount-presets">
+          <div class="amount-preset" data-amount="0.001">0.001</div>
+          <div class="amount-preset" data-amount="0.01">0.01</div>
+          <div class="amount-preset" data-amount="0.05">0.05</div>
+          <div class="amount-preset" data-amount="0.1">0.1</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-button cancel" id="deposit-cancel">Cancel</button>
+        <button class="modal-button confirm" id="deposit-confirm">Deposit</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal" id="withdraw-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Withdraw ETH</h3>
+        <button class="modal-close" id="withdraw-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>How much ETH would you like to withdraw from the pool?</p>
+        <div class="amount-input">
+          <input type="number" id="withdraw-amount" placeholder="0.01" step="0.001" min="0.001">
+          <span class="eth-suffix">ETH</span>
+        </div>
+        <div class="amount-presets">
+          <div class="amount-preset" data-amount="0.001">0.001</div>
+          <div class="amount-preset" data-amount="0.01">0.01</div>
+          <div class="amount-preset" data-amount="0.05">0.05</div>
+          <div class="amount-preset" data-amount="0.1">0.1</div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-button cancel" id="withdraw-cancel">Cancel</button>
+        <button class="modal-button confirm" id="withdraw-confirm">Withdraw</button>
+      </div>
+    </div>
   </div>
 
   <!-- Farcaster SDK and Ethereum JS libraries -->
@@ -634,13 +755,20 @@
     import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
     import { ethers } from 'https://esm.sh/ethers@6.10.0';
     
-    // BaseLuck contract ABI
+    // WheelPool contract ABI
     const contractABI = [
-      "function placeBet(uint8 _gameType, uint8 _playerChoice) external payable returns (uint256)",
+      "function deposit() external payable",
+      "function withdraw(uint256 _amount) external",
+      "function placeBet(uint8 _choice) external returns (uint256)",
+      "function getPlayerBalance(address _player) external view returns (uint256)",
       "function getPlayerBets(address _player) external view returns (uint256[])",
-      "function bets(uint256) external view returns (address player, uint256 amount, uint8 gameType, uint8 playerChoice, bool settled, bool won)",
-      "function minBet() external view returns (uint256)",
-      "function maxBet() external view returns (uint256)"
+      "function getBetInfo(uint256 _betId) external view returns (address player, uint256 amount, uint8 choice, bool settled, bool won, uint256 payout)",
+      "function getPoolInfo() external view returns (uint256 totalBalance, uint256 totalBets, uint256 totalWinnings)",
+      "event BetPlaced(uint256 indexed betId, address indexed player, uint256 amount, uint8 choice)",
+      "event BetSettled(uint256 indexed betId, address indexed player, bool won, uint256 payout, uint8 result)",
+      "event FundsDeposited(address indexed player, uint256 amount)",
+      "event FundsWithdrawn(address indexed player, uint256 amount)",
+      "event WheelResult(uint256 indexed betId, uint8 result)"
     ];
     
     // Base network settings
@@ -665,59 +793,58 @@
     let signer;
     let contract;
     let userAddress;
-    let selectedTab = 'wheel-game';
     let wheelChoice = null;
-    let highLowChoice = null;
-    let evenOddChoice = null;
-    let wheelAmount = 0.01;
-    let highLowAmount = 0.01;
-    let evenOddAmount = 0.01;
+    let isSpinning = false;
     let isCorrectNetwork = false;
+    let playerBalance = 0;
     let recentPlays = [];
+    let poolInfo = {
+      totalBalance: 0,
+      totalBets: 0,
+      totalWinnings: 0
+    };
     
     // DOM Elements
     const wheelOptions = document.querySelectorAll('#wheel-options .option');
-    const highLowOptions = document.querySelectorAll('#high-low-options .option');
-    const evenOddOptions = document.querySelectorAll('#even-odd-options .option');
-    const wheelAmountInput = document.getElementById('wheel-amount');
-    const highLowAmountInput = document.getElementById('high-low-amount');
-    const evenOddAmountInput = document.getElementById('even-odd-amount');
     const wheelPayoutElement = document.getElementById('wheel-payout');
-    const highLowPayoutElement = document.getElementById('high-low-payout');
-    const evenOddPayoutElement = document.getElementById('even-odd-payout');
-    const wheelBetButton = document.getElementById('wheel-bet-button');
-    const highLowBetButton = document.getElementById('high-low-bet-button');
-    const evenOddBetButton = document.getElementById('even-odd-bet-button');
-    const tabs = document.querySelectorAll('.tab');
-    const gameTabContents = document.querySelectorAll('.game-tab');
+    const spinButton = document.getElementById('spin-button');
     const wheelResult = document.getElementById('wheel-result');
-    const highLowResult = document.getElementById('high-low-result');
-    const evenOddResult = document.getElementById('even-odd-result');
     const wheelResultText = document.getElementById('wheel-result-text');
-    const highLowResultText = document.getElementById('high-low-result-text');
-    const evenOddResultText = document.getElementById('even-odd-result-text');
     const recentPlaysList = document.getElementById('recent-plays-list');
     const connectWalletButton = document.getElementById('connect-wallet');
-    const walletAddressElement = document.getElementById('wallet-address');
+    const playerBalanceElement = document.getElementById('player-balance');
     const loadingOverlay = document.getElementById('loading-overlay');
     const loadingText = document.getElementById('loading-text');
     const wrongNetworkElement = document.getElementById('wrong-network');
     const switchNetworkButton = document.getElementById('switch-network');
     const wheel = document.getElementById('wheel');
     
-    // Amount presets
-    const amountPresets = document.querySelectorAll('.amount-preset');
+    // Pool info elements
+    const poolBalanceElement = document.getElementById('pool-balance');
+    const totalBetsElement = document.getElementById('total-bets');
+    const totalWinningsElement = document.getElementById('total-winnings');
+    
+    // Modal elements
+    const depositButton = document.getElementById('deposit-button');
+    const withdrawButton = document.getElementById('withdraw-button');
+    const depositModal = document.getElementById('deposit-modal');
+    const withdrawModal = document.getElementById('withdraw-modal');
+    const depositClose = document.getElementById('deposit-close');
+    const withdrawClose = document.getElementById('withdraw-close');
+    const depositCancel = document.getElementById('deposit-cancel');
+    const withdrawCancel = document.getElementById('withdraw-cancel');
+    const depositConfirm = document.getElementById('deposit-confirm');
+    const withdrawConfirm = document.getElementById('withdraw-confirm');
+    const depositAmount = document.getElementById('deposit-amount');
+    const withdrawAmount = document.getElementById('withdraw-amount');
+    const depositPresets = depositModal.querySelectorAll('.amount-preset');
+    const withdrawPresets = withdrawModal.querySelectorAll('.amount-preset');
     
     // Initialize when Mini App is ready
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         await sdk.actions.ready();
-        console.log('BaseLuck Mini App ready!');
-        
-        // Initialize default values
-        wheelAmountInput.value = "0.01";
-        highLowAmountInput.value = "0.01";
-        evenOddAmountInput.value = "0.01";
+        console.log('Wheel of Fortune Mini App ready!');
         
         // Check wallet connection
         checkConnection();
@@ -731,107 +858,70 @@
     
     // Setup event listeners
     function setupEventListeners() {
-      // Tabs
-      tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          tabs.forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          selectedTab = tab.dataset.tab;
-          
-          gameTabContents.forEach(content => {
-            content.classList.remove('active');
-          });
-          document.getElementById(selectedTab).classList.add('active');
-        });
-      });
-      
-      // Option clicks
+      // Wheel number options
       wheelOptions.forEach(option => {
         option.addEventListener('click', () => {
           wheelOptions.forEach(o => o.classList.remove('selected'));
           option.classList.add('selected');
           wheelChoice = parseInt(option.dataset.value);
           updateWheelPayoutInfo();
-          updateWheelButtonState();
+          updateSpinButtonState();
         });
       });
       
-      highLowOptions.forEach(option => {
-        option.addEventListener('click', () => {
-          highLowOptions.forEach(o => o.classList.remove('selected'));
-          option.classList.add('selected');
-          highLowChoice = parseInt(option.dataset.value);
-          updateHighLowPayoutInfo();
-          updateHighLowButtonState();
-        });
-      });
-      
-      evenOddOptions.forEach(option => {
-        option.addEventListener('click', () => {
-          evenOddOptions.forEach(o => o.classList.remove('selected'));
-          option.classList.add('selected');
-          evenOddChoice = parseInt(option.dataset.value);
-          updateEvenOddPayoutInfo();
-          updateEvenOddButtonState();
-        });
-      });
-      
-      // Amount inputs
-      wheelAmountInput.addEventListener('input', () => {
-        wheelAmount = parseFloat(wheelAmountInput.value) || 0;
-        updateWheelPayoutInfo();
-        updateWheelButtonState();
-      });
-      
-      highLowAmountInput.addEventListener('input', () => {
-        highLowAmount = parseFloat(highLowAmountInput.value) || 0;
-        updateHighLowPayoutInfo();
-        updateHighLowButtonState();
-      });
-      
-      evenOddAmountInput.addEventListener('input', () => {
-        evenOddAmount = parseFloat(evenOddAmountInput.value) || 0;
-        updateEvenOddPayoutInfo();
-        updateEvenOddButtonState();
-      });
-      
-      // Amount presets
-      amountPresets.forEach(preset => {
-        preset.addEventListener('click', () => {
-          const amount = preset.dataset.amount;
-          const parent = preset.closest('.bet-card');
-          
-          if (parent.querySelector('#wheel-amount')) {
-            wheelAmountInput.value = amount;
-            wheelAmount = parseFloat(amount);
-            updateWheelPayoutInfo();
-            updateWheelButtonState();
-          }
-          else if (parent.querySelector('#high-low-amount')) {
-            highLowAmountInput.value = amount;
-            highLowAmount = parseFloat(amount);
-            updateHighLowPayoutInfo();
-            updateHighLowButtonState();
-          }
-          else if (parent.querySelector('#even-odd-amount')) {
-            evenOddAmountInput.value = amount;
-            evenOddAmount = parseFloat(amount);
-            updateEvenOddPayoutInfo();
-            updateEvenOddButtonState();
-          }
-        });
-      });
-      
-      // Bet buttons
-      wheelBetButton.addEventListener('click', () => placeBet(0, wheelChoice, wheelAmount));
-      highLowBetButton.addEventListener('click', () => placeBet(1, highLowChoice, highLowAmount));
-      evenOddBetButton.addEventListener('click', () => placeBet(2, evenOddChoice, evenOddAmount));
+      // Spin button
+      spinButton.addEventListener('click', spinTheWheel);
       
       // Connect wallet button
       connectWalletButton.addEventListener('click', connectWallet);
       
       // Switch network button
       switchNetworkButton.addEventListener('click', switchToBaseNetwork);
+      
+      // Deposit & withdraw buttons
+      depositButton.addEventListener('click', () => {
+        depositModal.style.display = 'flex';
+      });
+      
+      withdrawButton.addEventListener('click', () => {
+        withdrawModal.style.display = 'flex';
+      });
+      
+      // Modal close buttons
+      depositClose.addEventListener('click', () => {
+        depositModal.style.display = 'none';
+      });
+      
+      withdrawClose.addEventListener('click', () => {
+        withdrawModal.style.display = 'none';
+      });
+      
+      // Modal cancel buttons
+      depositCancel.addEventListener('click', () => {
+        depositModal.style.display = 'none';
+      });
+      
+      withdrawCancel.addEventListener('click', () => {
+        withdrawModal.style.display = 'none';
+      });
+      
+      // Modal confirm buttons
+      depositConfirm.addEventListener('click', handleDeposit);
+      withdrawConfirm.addEventListener('click', handleWithdraw);
+      
+      // Deposit amount presets
+      depositPresets.forEach(preset => {
+        preset.addEventListener('click', () => {
+          depositAmount.value = preset.dataset.amount;
+        });
+      });
+      
+      // Withdraw amount presets
+      withdrawPresets.forEach(preset => {
+        preset.addEventListener('click', () => {
+          withdrawAmount.value = preset.dataset.amount;
+        });
+      });
     }
     
     // Check wallet connection
@@ -846,11 +936,17 @@
         
         if (!isCorrectNetwork) {
           wrongNetworkElement.style.display = 'block';
-          document.querySelector('.game-container').style.display = 'none';
+          document.querySelector('.fortune-wheel-container').style.display = 'none';
+          document.querySelector('.bet-card').style.display = 'none';
+          document.querySelector('.pool-info').style.display = 'none';
+          document.querySelector('.recent-plays').style.display = 'none';
           return;
         } else {
           wrongNetworkElement.style.display = 'none';
-          document.querySelector('.game-container').style.display = 'block';
+          document.querySelector('.fortune-wheel-container').style.display = 'block';
+          document.querySelector('.bet-card').style.display = 'block';
+          document.querySelector('.pool-info').style.display = 'block';
+          document.querySelector('.recent-plays').style.display = 'block';
         }
         
         // Get accounts
@@ -860,16 +956,24 @@
           signer = accounts[0];
           userAddress = signer.address;
           
-          // Show shortened address
-          const shortenedAddress = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
-          walletAddressElement.textContent = shortenedAddress;
-          connectWalletButton.textContent = 'Connected';
+          // Show wallet address
+          connectWalletButton.textContent = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
           
           // Contract connection
           contract = new ethers.Contract(contractAddress, contractABI, provider);
           
+          // Load player balance
+          await loadPlayerBalance();
+          
+          // Load pool info
+          await loadPoolInfo();
+          
           // Load game history
           await loadRecentPlays();
+          
+          // Update UI
+          updateWheelPayoutInfo();
+          updateSpinButtonState();
         }
       } catch (error) {
         console.error('Connection error:', error);
@@ -927,8 +1031,142 @@
       }
     }
     
-    // Place bet
-    async function placeBet(gameType, choice, amount) {
+    // Load player balance
+    async function loadPlayerBalance() {
+      try {
+        if (!userAddress || !contract) return;
+        
+        const balance = await contract.getPlayerBalance(userAddress);
+        playerBalance = parseFloat(ethers.formatEther(balance));
+        
+        playerBalanceElement.textContent = `${playerBalance.toFixed(4)} ETH`;
+      } catch (error) {
+        console.error('Balance loading error:', error);
+      }
+    }
+    
+    // Load pool info
+    async function loadPoolInfo() {
+      try {
+        if (!contract) return;
+        
+        const result = await contract.getPoolInfo();
+        
+        poolInfo = {
+          totalBalance: parseFloat(ethers.formatEther(result[0])),
+          totalBets: parseInt(result[1]),
+          totalWinnings: parseFloat(ethers.formatEther(result[2]))
+        };
+        
+        // Update UI
+        poolBalanceElement.textContent = `${poolInfo.totalBalance.toFixed(4)} ETH`;
+        totalBetsElement.textContent = poolInfo.totalBets;
+        totalWinningsElement.textContent = `${poolInfo.totalWinnings.toFixed(4)} ETH`;
+      } catch (error) {
+        console.error('Pool info loading error:', error);
+      }
+    }
+    
+    // Handle deposit
+    async function handleDeposit() {
+      if (!signer || !contract || !isCorrectNetwork) {
+        alert('Please connect your wallet to the Base network first!');
+        return;
+      }
+      
+      const amount = parseFloat(depositAmount.value);
+      if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+      
+      try {
+        depositModal.style.display = 'none';
+        showLoading('Depositing ETH...');
+        
+        // Connect contract with signer
+        const connectedContract = contract.connect(signer);
+        
+        // Deposit
+        const tx = await connectedContract.deposit({
+          value: ethers.parseEther(amount.toString()),
+          gasLimit: 300000 // Gas limit
+        });
+        
+        loadingText.textContent = 'Confirming transaction...';
+        
+        // Wait for transaction confirmation
+        const receipt = await tx.wait();
+        console.log('Deposit transaction confirmed:', receipt);
+        
+        // Reload balances
+        await loadPlayerBalance();
+        await loadPoolInfo();
+        
+        // Show confirmation
+        alert(`Successfully deposited ${amount} ETH`);
+        
+        hideLoading();
+      } catch (error) {
+        console.error('Deposit error:', error);
+        hideLoading();
+        alert('Error depositing: ' + error.message);
+      }
+    }
+    
+    // Handle withdraw
+    async function handleWithdraw() {
+      if (!signer || !contract || !isCorrectNetwork) {
+        alert('Please connect your wallet to the Base network first!');
+        return;
+      }
+      
+      const amount = parseFloat(withdrawAmount.value);
+      if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+      }
+      
+      if (amount > playerBalance) {
+        alert('Insufficient balance');
+        return;
+      }
+      
+      try {
+        withdrawModal.style.display = 'none';
+        showLoading('Withdrawing ETH...');
+        
+        // Connect contract with signer
+        const connectedContract = contract.connect(signer);
+        
+        // Withdraw
+        const tx = await connectedContract.withdraw(ethers.parseEther(amount.toString()), {
+          gasLimit: 300000 // Gas limit
+        });
+        
+        loadingText.textContent = 'Confirming transaction...';
+        
+        // Wait for transaction confirmation
+        const receipt = await tx.wait();
+        console.log('Withdraw transaction confirmed:', receipt);
+        
+        // Reload balances
+        await loadPlayerBalance();
+        await loadPoolInfo();
+        
+        // Show confirmation
+        alert(`Successfully withdrew ${amount} ETH`);
+        
+        hideLoading();
+      } catch (error) {
+        console.error('Withdraw error:', error);
+        hideLoading();
+        alert('Error withdrawing: ' + error.message);
+      }
+    }
+    
+    // Spin the wheel
+    async function spinTheWheel() {
       if (!signer || !contract || !isCorrectNetwork) {
         if (!isCorrectNetwork) {
           alert('Please switch to Base network first!');
@@ -938,72 +1176,112 @@
         return;
       }
       
+      if (isSpinning || wheelChoice === null) {
+        return;
+      }
+      
+      // Check if player has enough balance
+      if (playerBalance < 0.001) {
+        alert('Insufficient balance. Please deposit at least 0.001 ETH.');
+        return;
+      }
+      
       try {
         showLoading('Placing bet...');
-        
-        // Interact with contract for bet
-        const amountWei = ethers.parseEther(amount.toString());
+        isSpinning = true;
         
         // Connect contract with signer
         const connectedContract = contract.connect(signer);
         
         // Place bet
-        const tx = await connectedContract.placeBet(gameType, choice, {
-          value: amountWei,
+        const tx = await connectedContract.placeBet(wheelChoice, {
           gasLimit: 300000 // Gas limit
         });
         
-        loadingText.textContent = 'Confirming transaction...';
+        loadingText.textContent = 'Confirming bet...';
         
         // Wait for transaction confirmation
         const receipt = await tx.wait();
         console.log('Bet transaction confirmed:', receipt);
         
-        // In a real app, we would interpret blockchain results here
-        // Either by listening for events or getting information from a backend
+        // Look for events
+        let result = 0;
+        let betId = 0;
+        let won = false;
+        let payout = 0;
         
-        // For now, let's create a random result (in a real app, this would come from backend)
-        const randomResult = Math.floor(Math.random() * 10);
+        // Find the BetSettled event
+        for (const event of receipt.logs) {
+          try {
+            const parsedLog = contract.interface.parseLog(event);
+            
+            if (parsedLog && parsedLog.name === 'BetSettled') {
+              betId = parsedLog.args[0];
+              won = parsedLog.args[2];
+              payout = parseFloat(ethers.formatEther(parsedLog.args[3]));
+            }
+            
+            if (parsedLog && parsedLog.name === 'WheelResult') {
+              result = parsedLog.args[1];
+            }
+          } catch (e) {
+            // Not our event, skip
+          }
+        }
         
-        // Show bet result
-        let isWin = false;
-        if (gameType === 0) { // Wheel game
-          isWin = choice === randomResult;
-          spinWheel(randomResult);
-          showGameResult('wheel', randomResult, isWin, amount);
-        } 
-        else if (gameType === 1) { // High/Low
-          isWin = (randomResult <= 4 && choice === 0) || (randomResult >= 5 && choice === 1);
-          showGameResult('high-low', randomResult, isWin, amount);
+        // If we couldn't find the events, get bet info from contract
+        if (betId === 0) {
+          // Get last bet ID
+          const bets = await contract.getPlayerBets(userAddress);
+          if (bets.length > 0) {
+            betId = bets[bets.length - 1];
+            
+            // Get bet info
+            const betInfo = await contract.getBetInfo(betId);
+            won = betInfo[4];
+            payout = parseFloat(ethers.formatEther(betInfo[5]));
+            
+            // We don't know the result, so use a random one for animation
+            result = Math.floor(Math.random() * 10);
+          }
         }
-        else if (gameType === 2) { // Even/Odd
-          isWin = (randomResult % 2 === 0 && choice === 0) || (randomResult % 2 === 1 && choice === 1);
-          showGameResult('even-odd', randomResult, isWin, amount);
-        }
+        
+        // Animate the wheel
+        animateWheel(result);
+        
+        // Reload balances and pool info
+        await loadPlayerBalance();
+        await loadPoolInfo();
         
         // Add to play history
         const newPlay = {
-          gameType: gameType,
-          choice: choice,
-          result: randomResult,
-          amount: amount,
-          isWin: isWin,
+          choice: wheelChoice,
+          result: result,
+          amount: 0.001,
+          won: won,
+          payout: payout,
           time: new Date().toISOString()
         };
         
         recentPlays.unshift(newPlay);
         updateRecentPlaysList();
         
-        hideLoading();
+        // Show result after wheel animation finishes
+        setTimeout(() => {
+          showGameResult(result, won, payout);
+          isSpinning = false;
+          hideLoading();
+        }, 3000);
       } catch (error) {
         console.error('Bet error:', error);
+        isSpinning = false;
         hideLoading();
         alert('Error placing bet: ' + error.message);
       }
     }
     
-    // Spin the wheel
-    function spinWheel(result) {
+    // Animate wheel
+    function animateWheel(result) {
       // Calculate wheel segments
       const segmentAngle = 360 / 10; // 10 segments (0-9)
       const extraRotations = 5; // Extra rotations
@@ -1016,49 +1294,30 @@
     }
     
     // Show game result
-    function showGameResult(gameType, result, isWin, amount) {
-      let resultElement;
-      let resultTextElement;
-      let payoutAmount;
-      
-      if (gameType === 'wheel') {
-        resultElement = wheelResult;
-        resultTextElement = wheelResultText;
-        payoutAmount = isWin ? (amount * 9.5) : 0; // 1 in 10 chance pays 9.5x
-      } 
-      else if (gameType === 'high-low') {
-        resultElement = highLowResult;
-        resultTextElement = highLowResultText;
-        payoutAmount = isWin ? (amount * 1.9) : 0; // 1 in 2 chance pays 1.9x
-      }
-      else if (gameType === 'even-odd') {
-        resultElement = evenOddResult;
-        resultTextElement = evenOddResultText;
-        payoutAmount = isWin ? (amount * 1.9) : 0; // 1 in 2 chance pays 1.9x
-      }
-      
-      // Prepare result message
-      if (isWin) {
-        resultElement.className = 'result-container result-win';
-        resultTextElement.innerHTML = `
+    function showGameResult(result, won, payout) {
+      if (won) {
+        wheelResult.className = 'result-container result-win';
+        wheelResultText.innerHTML = `
           <strong>Congratulations!</strong><br>
           Result: ${result}<br>
-          You won ${payoutAmount.toFixed(4)} ETH!
+          You chose: ${wheelChoice}<br>
+          You won ${payout.toFixed(4)} ETH!
         `;
       } else {
-        resultElement.className = 'result-container result-loss';
-        resultTextElement.innerHTML = `
+        wheelResult.className = 'result-container result-loss';
+        wheelResultText.innerHTML = `
           <strong>You lost</strong><br>
           Result: ${result}<br>
-          You lost ${amount} ETH.
+          You chose: ${wheelChoice}<br>
+          You lost 0.001 ETH.
         `;
       }
       
-      resultElement.style.display = 'block';
+      wheelResult.style.display = 'block';
       
       // Hide result after 5 seconds
       setTimeout(() => {
-        resultElement.style.display = 'none';
+        wheelResult.style.display = 'none';
       }, 5000);
     }
     
@@ -1067,11 +1326,31 @@
       try {
         if (!userAddress || !contract) return;
         
-        // In a real app, we would fetch user's bets from the contract
-        // const betIds = await contract.getPlayerBets(userAddress);
+        // Get player bets
+        const betIds = await contract.getPlayerBets(userAddress);
         
-        // For now, use demo data
+        // Only fetch the last 5 bets
+        const recentBetIds = betIds.slice(-5);
+        
         recentPlays = [];
+        
+        // Load bet info for each bet
+        for (const betId of recentBetIds) {
+          const betInfo = await contract.getBetInfo(betId);
+          
+          // Skip if not settled
+          if (!betInfo[3]) continue;
+          
+          recentPlays.push({
+            choice: betInfo[2],
+            result: 0, // We don't have this info
+            amount: parseFloat(ethers.formatEther(betInfo[1])),
+            won: betInfo[4],
+            payout: parseFloat(ethers.formatEther(betInfo[5])),
+            time: new Date().toISOString() // We don't have timestamp
+          });
+        }
+        
         updateRecentPlaysList();
       } catch (error) {
         console.error('Game history loading error:', error);
@@ -1091,21 +1370,20 @@
       
       recentPlaysList.innerHTML = '';
       
-      recentPlays.slice(0, 5).forEach(play => {
-        const gameTypeName = ['Wheel', 'High/Low', 'Even/Odd'][play.gameType];
-        const choiceName = getChoiceName(play.gameType, play.choice);
+      recentPlays.forEach(play => {
         const timeStr = new Date(play.time).toLocaleTimeString();
         
         const li = document.createElement('li');
         li.className = 'play-item';
         li.innerHTML = `
           <div>
-            <strong>${gameTypeName}</strong>: ${choiceName}
+            <strong>Chosen: ${play.choice}</strong>
+            ${play.result !== undefined ? `Result: ${play.result}` : ''}
             <br>
             <small>${play.amount} ETH, ${timeStr}</small>
           </div>
-          <div class="play-result ${play.isWin ? 'win' : 'lose'}">
-            ${play.isWin ? 'Won' : 'Lost'}
+          <div class="play-result ${play.won ? 'win' : 'lose'}">
+            ${play.won ? `Won ${play.payout.toFixed(4)}` : 'Lost'}
           </div>
         `;
         
@@ -1113,74 +1391,23 @@
       });
     }
     
-    // Get choice name
-    function getChoiceName(gameType, choice) {
-      if (gameType === 0) { // Wheel
-        return choice.toString();
-      } 
-      else if (gameType === 1) { // High/Low
-        return choice === 0 ? 'Low (0-4)' : 'High (5-9)';
-      }
-      else if (gameType === 2) { // Even/Odd
-        return choice === 0 ? 'Even' : 'Odd';
-      }
-      return '';
-    }
-    
     // Update wheel payout info
     function updateWheelPayoutInfo() {
-      if (wheelChoice !== null && wheelAmount > 0) {
-        const payout = wheelAmount * 9.5; // 9.5x payout (5% house edge)
+      if (wheelChoice !== null) {
+        // 10 numbers, 1 chance, payout 9.5x to account for house edge
+        const payout = 0.001 * 9.5;
         wheelPayoutElement.textContent = `${payout.toFixed(4)} ETH`;
       } else {
         wheelPayoutElement.textContent = '0.00 ETH';
       }
     }
     
-    // Update High/Low payout info
-    function updateHighLowPayoutInfo() {
-      if (highLowChoice !== null && highLowAmount > 0) {
-        const payout = highLowAmount * 1.9; // 1.9x payout (5% house edge)
-        highLowPayoutElement.textContent = `${payout.toFixed(4)} ETH`;
+    // Update spin button state
+    function updateSpinButtonState() {
+      if (wheelChoice !== null && playerBalance >= 0.001 && !isSpinning) {
+        spinButton.classList.remove('disabled');
       } else {
-        highLowPayoutElement.textContent = '0.00 ETH';
-      }
-    }
-    
-    // Update Even/Odd payout info
-    function updateEvenOddPayoutInfo() {
-      if (evenOddChoice !== null && evenOddAmount > 0) {
-        const payout = evenOddAmount * 1.9; // 1.9x payout (5% house edge)
-        evenOddPayoutElement.textContent = `${payout.toFixed(4)} ETH`;
-      } else {
-        evenOddPayoutElement.textContent = '0.00 ETH';
-      }
-    }
-    
-    // Update wheel button state
-    function updateWheelButtonState() {
-      if (wheelChoice !== null && wheelAmount >= 0.001 && wheelAmount <= 0.1) {
-        wheelBetButton.classList.remove('disabled');
-      } else {
-        wheelBetButton.classList.add('disabled');
-      }
-    }
-    
-    // Update High/Low button state
-    function updateHighLowButtonState() {
-      if (highLowChoice !== null && highLowAmount >= 0.001 && highLowAmount <= 0.1) {
-        highLowBetButton.classList.remove('disabled');
-      } else {
-        highLowBetButton.classList.add('disabled');
-      }
-    }
-    
-    // Update Even/Odd button state
-    function updateEvenOddButtonState() {
-      if (evenOddChoice !== null && evenOddAmount >= 0.001 && evenOddAmount <= 0.1) {
-        evenOddBetButton.classList.remove('disabled');
-      } else {
-        evenOddBetButton.classList.add('disabled');
+        spinButton.classList.add('disabled');
       }
     }
     
