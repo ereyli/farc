@@ -6,11 +6,11 @@
   <title>BaseLuck</title>
   
   <!-- Farcaster Frame Embed Meta Tag -->
-  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://via.placeholder.com/1200x630/1E40AF/FFFFFF?text=BaseLuck","button":{"title":"Base Ağında Şansını Dene","action":{"type":"launch_frame","name":"BaseLuck","url":"https://your-vercel-url.vercel.app","splashImageUrl":"https://via.placeholder.com/512/1E40AF/FFFFFF?text=BaseLuck","splashBackgroundColor":"#1E40AF"}}}'>
+  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://via.placeholder.com/1200x630/1E40AF/FFFFFF?text=BaseLuck","button":{"title":"Try Your Luck on Base","action":{"type":"launch_frame","name":"BaseLuck","url":"https://your-vercel-url.vercel.app","splashImageUrl":"https://via.placeholder.com/512/1E40AF/FFFFFF?text=BaseLuck","splashBackgroundColor":"#1E40AF"}}}'>
   
   <style>
     :root {
-      --primary-color: #1E40AF; /* Base rengi - koyu mavi */
+      --primary-color: #1E40AF; /* Base blue */
       --secondary-color: #3B82F6;
       --accent-color: #60A5FA;
       --bg-color: #0F172A;
@@ -460,27 +460,27 @@
 <body>
   <div class="header">
     <h1>BaseLuck</h1>
-    <p>Base Ağında Şans Oyunları</p>
+    <p>Gambling Games on Base Network</p>
   </div>
   
   <div class="wallet-info" id="wallet-info">
-    <div class="wallet-address" id="wallet-address">Cüzdan Bağlı Değil</div>
-    <button class="connect-button" id="connect-wallet">Cüzdan Bağla</button>
+    <div class="wallet-address" id="wallet-address">Wallet Not Connected</div>
+    <button class="connect-button" id="connect-wallet">Connect Wallet</button>
   </div>
   
   <div class="tabs">
-    <div class="tab active" data-tab="wheel-game">Şans Çarkı</div>
-    <div class="tab" data-tab="high-low-game">Yüksek/Düşük</div>
-    <div class="tab" data-tab="even-odd-game">Tek/Çift</div>
+    <div class="tab active" data-tab="wheel-game">Lucky Wheel</div>
+    <div class="tab" data-tab="high-low-game">High/Low</div>
+    <div class="tab" data-tab="even-odd-game">Even/Odd</div>
   </div>
   
   <div class="wrong-network" id="wrong-network">
-    <p>Bu uygulama Base ağında çalışmaktadır. Lütfen cüzdanınızı Base ağına geçirin.</p>
-    <button class="switch-network-button" id="switch-network">Base Ağına Geç</button>
+    <p>This app runs on the Base network. Please switch your wallet to Base.</p>
+    <button class="switch-network-button" id="switch-network">Switch to Base</button>
   </div>
   
   <div class="game-container">
-    <!-- Şans Çarkı Oyunu -->
+    <!-- Lucky Wheel Game -->
     <div class="game-tab active" id="wheel-game">
       <div class="fortune-wheel-container">
         <div class="fortune-wheel" id="wheel"></div>
@@ -489,8 +489,8 @@
       </div>
       
       <div class="bet-card">
-        <h3>Şans Çarkı Bahsi</h3>
-        <p>Çarkın duracağı sayıyı tahmin edin (0-9 arası)</p>
+        <h3>Lucky Wheel Bet</h3>
+        <p>Guess where the wheel will stop (number between 0-9)</p>
         
         <div class="bet-options" id="wheel-options">
           <div class="option" data-value="0">0</div>
@@ -506,7 +506,7 @@
         </div>
         
         <div class="bet-amount">
-          <label>Bahis Miktarı</label>
+          <label>Bet Amount</label>
           <div class="amount-input">
             <input type="number" id="wheel-amount" placeholder="0.01" step="0.001" min="0.001" max="0.1">
             <span class="eth-suffix">ETH</span>
@@ -520,33 +520,33 @@
         </div>
         
         <div class="bet-info">
-          <p>Minimum bahis: <strong>0.001 ETH</strong></p>
-          <p>Maximum bahis: <strong>0.1 ETH</strong></p>
-          <p class="payout-info">Potansiyel kazanç: <span id="wheel-payout">0.00 ETH</span></p>
+          <p>Minimum bet: <strong>0.001 ETH</strong></p>
+          <p>Maximum bet: <strong>0.1 ETH</strong></p>
+          <p class="payout-info">Potential win: <span id="wheel-payout">0.00 ETH</span></p>
         </div>
         
-        <button class="place-bet-button disabled" id="wheel-bet-button">Bahis Yap</button>
+        <button class="place-bet-button disabled" id="wheel-bet-button">Place Bet</button>
       </div>
       
       <div class="result-container" id="wheel-result">
-        <h3>Sonuç</h3>
+        <h3>Result</h3>
         <p id="wheel-result-text"></p>
       </div>
     </div>
     
-    <!-- Yüksek/Düşük Oyunu -->
+    <!-- High/Low Game -->
     <div class="game-tab" id="high-low-game">
       <div class="bet-card">
-        <h3>Yüksek/Düşük Bahsi</h3>
-        <p>Sonucun 0-4 (düşük) mü yoksa 5-9 (yüksek) mı olacağına bahis yapın.</p>
+        <h3>High/Low Bet</h3>
+        <p>Bet whether the result will be 0-4 (low) or 5-9 (high).</p>
         
         <div class="bet-options" id="high-low-options">
-          <div class="option" data-value="0">Düşük (0-4)</div>
-          <div class="option" data-value="1">Yüksek (5-9)</div>
+          <div class="option" data-value="0">Low (0-4)</div>
+          <div class="option" data-value="1">High (5-9)</div>
         </div>
         
         <div class="bet-amount">
-          <label>Bahis Miktarı</label>
+          <label>Bet Amount</label>
           <div class="amount-input">
             <input type="number" id="high-low-amount" placeholder="0.01" step="0.001" min="0.001" max="0.1">
             <span class="eth-suffix">ETH</span>
@@ -560,33 +560,33 @@
         </div>
         
         <div class="bet-info">
-          <p>Minimum bahis: <strong>0.001 ETH</strong></p>
-          <p>Maximum bahis: <strong>0.1 ETH</strong></p>
-          <p class="payout-info">Potansiyel kazanç: <span id="high-low-payout">0.00 ETH</span></p>
+          <p>Minimum bet: <strong>0.001 ETH</strong></p>
+          <p>Maximum bet: <strong>0.1 ETH</strong></p>
+          <p class="payout-info">Potential win: <span id="high-low-payout">0.00 ETH</span></p>
         </div>
         
-        <button class="place-bet-button disabled" id="high-low-bet-button">Bahis Yap</button>
+        <button class="place-bet-button disabled" id="high-low-bet-button">Place Bet</button>
       </div>
       
       <div class="result-container" id="high-low-result">
-        <h3>Sonuç</h3>
+        <h3>Result</h3>
         <p id="high-low-result-text"></p>
       </div>
     </div>
     
-    <!-- Tek/Çift Oyunu -->
+    <!-- Even/Odd Game -->
     <div class="game-tab" id="even-odd-game">
       <div class="bet-card">
-        <h3>Tek/Çift Bahsi</h3>
-        <p>Sonucun tek mi çift mi olacağına bahis yapın.</p>
+        <h3>Even/Odd Bet</h3>
+        <p>Bet whether the result will be even or odd.</p>
         
         <div class="bet-options" id="even-odd-options">
-          <div class="option" data-value="0">Çift (0,2,4,6,8)</div>
-          <div class="option" data-value="1">Tek (1,3,5,7,9)</div>
+          <div class="option" data-value="0">Even (0,2,4,6,8)</div>
+          <div class="option" data-value="1">Odd (1,3,5,7,9)</div>
         </div>
         
         <div class="bet-amount">
-          <label>Bahis Miktarı</label>
+          <label>Bet Amount</label>
           <div class="amount-input">
             <input type="number" id="even-odd-amount" placeholder="0.01" step="0.001" min="0.001" max="0.1">
             <span class="eth-suffix">ETH</span>
@@ -600,25 +600,25 @@
         </div>
         
         <div class="bet-info">
-          <p>Minimum bahis: <strong>0.001 ETH</strong></p>
-          <p>Maximum bahis: <strong>0.1 ETH</strong></p>
-          <p class="payout-info">Potansiyel kazanç: <span id="even-odd-payout">0.00 ETH</span></p>
+          <p>Minimum bet: <strong>0.001 ETH</strong></p>
+          <p>Maximum bet: <strong>0.1 ETH</strong></p>
+          <p class="payout-info">Potential win: <span id="even-odd-payout">0.00 ETH</span></p>
         </div>
         
-        <button class="place-bet-button disabled" id="even-odd-bet-button">Bahis Yap</button>
+        <button class="place-bet-button disabled" id="even-odd-bet-button">Place Bet</button>
       </div>
       
       <div class="result-container" id="even-odd-result">
-        <h3>Sonuç</h3>
+        <h3>Result</h3>
         <p id="even-odd-result-text"></p>
       </div>
     </div>
     
     <div class="recent-plays">
-      <h3>Son Oyunlarınız</h3>
+      <h3>Your Recent Plays</h3>
       <ul class="play-list" id="recent-plays-list">
         <li class="play-item">
-          <span>Henüz oyun geçmişiniz yok.</span>
+          <span>No game history yet.</span>
         </li>
       </ul>
     </div>
@@ -626,15 +626,15 @@
   
   <div class="loading-overlay" id="loading-overlay">
     <div class="spinner"></div>
-    <div class="loading-text" id="loading-text">İşleminiz gerçekleştiriliyor...</div>
+    <div class="loading-text" id="loading-text">Processing your transaction...</div>
   </div>
 
-  <!-- Farcaster SDK ve Ethereum JS kütüphaneleri -->
+  <!-- Farcaster SDK and Ethereum JS libraries -->
   <script type="module">
     import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
     import { ethers } from 'https://esm.sh/ethers@6.10.0';
     
-    // BaseLuck sözleşme ABI
+    // BaseLuck contract ABI
     const contractABI = [
       "function placeBet(uint8 _gameType, uint8 _playerChoice) external payable returns (uint256)",
       "function getPlayerBets(address _player) external view returns (uint256[])",
@@ -643,7 +643,7 @@
       "function maxBet() external view returns (uint256)"
     ];
     
-    // Base ağı ayarları 
+    // Base network settings
     const baseChainId = 8453; // Base Mainnet
     const expectedNetwork = {
       chainId: ethers.toQuantity(baseChainId),
@@ -657,10 +657,10 @@
       blockExplorerUrls: ["https://basescan.org"]
     };
     
-    // Kontrat adresi - sözleşme deploy edildikten sonra güncellenecek
+    // Contract address - update after deploying the contract
     const contractAddress = "0xYourContractAddressHere";
     
-    // Uygulama durumu
+    // App state
     let provider;
     let signer;
     let contract;
@@ -675,7 +675,7 @@
     let isCorrectNetwork = false;
     let recentPlays = [];
     
-    // DOM Elementleri
+    // DOM Elements
     const wheelOptions = document.querySelectorAll('#wheel-options .option');
     const highLowOptions = document.querySelectorAll('#high-low-options .option');
     const evenOddOptions = document.querySelectorAll('#even-odd-options .option');
@@ -705,31 +705,31 @@
     const switchNetworkButton = document.getElementById('switch-network');
     const wheel = document.getElementById('wheel');
     
-    // Miktar presets
+    // Amount presets
     const amountPresets = document.querySelectorAll('.amount-preset');
     
-    // Mini App hazır olduğunda başlat
+    // Initialize when Mini App is ready
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         await sdk.actions.ready();
-        console.log('BaseLuck Mini App hazır!');
+        console.log('BaseLuck Mini App ready!');
         
-        // Başlangıç değerleri
+        // Initialize default values
         wheelAmountInput.value = "0.01";
         highLowAmountInput.value = "0.01";
         evenOddAmountInput.value = "0.01";
         
-        // Cüzdan bağlantısını kontrol et
+        // Check wallet connection
         checkConnection();
         
-        // Event Listeners'ları ekle
+        // Setup event listeners
         setupEventListeners();
       } catch (error) {
-        console.error('Başlatma hatası:', error);
+        console.error('Initialization error:', error);
       }
     });
     
-    // Event Listeners'ları ayarla
+    // Setup event listeners
     function setupEventListeners() {
       // Tabs
       tabs.forEach(tab => {
@@ -745,7 +745,7 @@
         });
       });
       
-      // Seçenek tıklamaları
+      // Option clicks
       wheelOptions.forEach(option => {
         option.addEventListener('click', () => {
           wheelOptions.forEach(o => o.classList.remove('selected'));
@@ -776,7 +776,7 @@
         });
       });
       
-      // Miktar girişleri
+      // Amount inputs
       wheelAmountInput.addEventListener('input', () => {
         wheelAmount = parseFloat(wheelAmountInput.value) || 0;
         updateWheelPayoutInfo();
@@ -795,7 +795,7 @@
         updateEvenOddButtonState();
       });
       
-      // Miktar önceden ayarlanmış değerler
+      // Amount presets
       amountPresets.forEach(preset => {
         preset.addEventListener('click', () => {
           const amount = preset.dataset.amount;
@@ -822,25 +822,25 @@
         });
       });
       
-      // Bahis butonları
+      // Bet buttons
       wheelBetButton.addEventListener('click', () => placeBet(0, wheelChoice, wheelAmount));
       highLowBetButton.addEventListener('click', () => placeBet(1, highLowChoice, highLowAmount));
       evenOddBetButton.addEventListener('click', () => placeBet(2, evenOddChoice, evenOddAmount));
       
-      // Cüzdan bağla butonu
+      // Connect wallet button
       connectWalletButton.addEventListener('click', connectWallet);
       
-      // Ağ değiştir butonu
+      // Switch network button
       switchNetworkButton.addEventListener('click', switchToBaseNetwork);
     }
     
-    // Cüzdan bağlantısını kontrol et
+    // Check wallet connection
     async function checkConnection() {
       try {
-        // Farcaster SDK'dan ethProvider'ı al
+        // Get ethProvider from Farcaster SDK
         provider = new ethers.BrowserProvider(sdk.wallet.ethProvider);
         
-        // Ağı kontrol et
+        // Check network
         const network = await provider.getNetwork();
         isCorrectNetwork = network.chainId === BigInt(baseChainId);
         
@@ -853,33 +853,33 @@
           document.querySelector('.game-container').style.display = 'block';
         }
         
-        // Hesapları al
+        // Get accounts
         const accounts = await provider.listAccounts();
         
         if (accounts.length > 0) {
           signer = accounts[0];
           userAddress = signer.address;
           
-          // Kısaltılmış adres göster
+          // Show shortened address
           const shortenedAddress = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
           walletAddressElement.textContent = shortenedAddress;
-          connectWalletButton.textContent = 'Bağlı';
+          connectWalletButton.textContent = 'Connected';
           
-          // Kontrat bağlantısı
+          // Contract connection
           contract = new ethers.Contract(contractAddress, contractABI, provider);
           
-          // Oyun geçmişini yükle
+          // Load game history
           await loadRecentPlays();
         }
       } catch (error) {
-        console.error('Bağlantı hatası:', error);
+        console.error('Connection error:', error);
       }
     }
     
-    // Cüzdanı bağla
+    // Connect wallet
     async function connectWallet() {
       try {
-        showLoading('Cüzdan bağlanıyor...');
+        showLoading('Connecting wallet...');
         
         if (sdk.wallet.ethProvider.request) {
           await sdk.wallet.ethProvider.request({ method: 'eth_requestAccounts' });
@@ -888,25 +888,25 @@
         
         hideLoading();
       } catch (error) {
-        console.error('Cüzdan bağlama hatası:', error);
+        console.error('Wallet connection error:', error);
         hideLoading();
       }
     }
     
-    // Base ağına geç
+    // Switch to Base network
     async function switchToBaseNetwork() {
       try {
-        showLoading('Base ağına geçiliyor...');
+        showLoading('Switching to Base network...');
         
         if (sdk.wallet.ethProvider.request) {
           try {
-            // Önce mevcut ağı değiştirmeyi dene
+            // Try to switch network first
             await sdk.wallet.ethProvider.request({
               method: 'wallet_switchEthereumChain',
               params: [{ chainId: expectedNetwork.chainId }],
             });
           } catch (switchError) {
-            // Ağ ekli değilse, ekle
+            // If network isn't added, add it
             if (switchError.code === 4902) {
               await sdk.wallet.ethProvider.request({
                 method: 'wallet_addEthereumChain',
@@ -922,51 +922,50 @@
         
         hideLoading();
       } catch (error) {
-        console.error('Ağ değiştirme hatası:', error);
+        console.error('Network switching error:', error);
         hideLoading();
       }
     }
     
-    // Bahis yap
+    // Place bet
     async function placeBet(gameType, choice, amount) {
       if (!signer || !contract || !isCorrectNetwork) {
         if (!isCorrectNetwork) {
-          alert('Lütfen önce Base ağına geçin!');
+          alert('Please switch to Base network first!');
           return;
         }
-        alert('Lütfen önce cüzdanınızı bağlayın!');
+        alert('Please connect your wallet first!');
         return;
       }
       
       try {
-        showLoading('Bahis yapılıyor...');
+        showLoading('Placing bet...');
         
-        // Bahis için kontrat ile etkileşim
+        // Interact with contract for bet
         const amountWei = ethers.parseEther(amount.toString());
         
-        // Kontratı signer ile bağla
+        // Connect contract with signer
         const connectedContract = contract.connect(signer);
         
-        // Bahsi yap
+        // Place bet
         const tx = await connectedContract.placeBet(gameType, choice, {
           value: amountWei,
-          gasLimit: 300000 // Gas limiti
+          gasLimit: 300000 // Gas limit
         });
         
-        loadingText.textContent = 'İşlem onaylanıyor...';
+        loadingText.textContent = 'Confirming transaction...';
         
-        // İşlemin onaylanmasını bekle
+        // Wait for transaction confirmation
         const receipt = await tx.wait();
-        console.log('Bahis işlemi onaylandı:', receipt);
+        console.log('Bet transaction confirmed:', receipt);
         
-        // Sonucun blockchain sonuçlarını burada yorumlayacağız
-        // Gerçek uygulamada, bir olay (event) dinleyerek veya
-        // backend'den bilgi alarak sonucu belirleriz
+        // In a real app, we would interpret blockchain results here
+        // Either by listening for events or getting information from a backend
         
-        // Şimdilik rastgele bir sonuç oluşturalım (gerçek uygulamada backend'den gelecek)
+        // For now, let's create a random result (in a real app, this would come from backend)
         const randomResult = Math.floor(Math.random() * 10);
         
-        // Bahis sonucunu göster
+        // Show bet result
         let isWin = false;
         if (gameType === 0) { // Wheel game
           isWin = choice === randomResult;
@@ -982,7 +981,7 @@
           showGameResult('even-odd', randomResult, isWin, amount);
         }
         
-        // Oyunu kayda ekle
+        // Add to play history
         const newPlay = {
           gameType: gameType,
           choice: choice,
@@ -997,26 +996,26 @@
         
         hideLoading();
       } catch (error) {
-        console.error('Bahis hatası:', error);
+        console.error('Bet error:', error);
         hideLoading();
-        alert('Bahis yapılırken bir hata oluştu: ' + error.message);
+        alert('Error placing bet: ' + error.message);
       }
     }
     
-    // Şans çarkını döndür
+    // Spin the wheel
     function spinWheel(result) {
-      // Çark segmentlerini hesapla
-      const segmentAngle = 360 / 10; // 10 segment (0-9)
-      const extraRotations = 5; // Ekstra dönüşler
-      const randomOffset = Math.random() * segmentAngle; // Segment içinde rastgele konum
+      // Calculate wheel segments
+      const segmentAngle = 360 / 10; // 10 segments (0-9)
+      const extraRotations = 5; // Extra rotations
+      const randomOffset = Math.random() * segmentAngle; // Random position within segment
       const targetAngle = ((result) * segmentAngle) + randomOffset;
       const totalRotation = (extraRotations * 360) + targetAngle;
       
-      // Çarkı döndür
+      // Spin wheel
       wheel.style.transform = `rotate(${totalRotation}deg)`;
     }
     
-    // Oyun sonucunu göster
+    // Show game result
     function showGameResult(gameType, result, isWin, amount) {
       let resultElement;
       let resultTextElement;
@@ -1025,66 +1024,66 @@
       if (gameType === 'wheel') {
         resultElement = wheelResult;
         resultTextElement = wheelResultText;
-        payoutAmount = isWin ? (amount * 9.5) : 0; // 10'da 1 şans için x9.5 ödeme
+        payoutAmount = isWin ? (amount * 9.5) : 0; // 1 in 10 chance pays 9.5x
       } 
       else if (gameType === 'high-low') {
         resultElement = highLowResult;
         resultTextElement = highLowResultText;
-        payoutAmount = isWin ? (amount * 1.9) : 0; // 2'de 1 şans için x1.9 ödeme
+        payoutAmount = isWin ? (amount * 1.9) : 0; // 1 in 2 chance pays 1.9x
       }
       else if (gameType === 'even-odd') {
         resultElement = evenOddResult;
         resultTextElement = evenOddResultText;
-        payoutAmount = isWin ? (amount * 1.9) : 0; // 2'de 1 şans için x1.9 ödeme
+        payoutAmount = isWin ? (amount * 1.9) : 0; // 1 in 2 chance pays 1.9x
       }
       
-      // Sonuç mesajını hazırla
+      // Prepare result message
       if (isWin) {
         resultElement.className = 'result-container result-win';
         resultTextElement.innerHTML = `
-          <strong>Tebrikler!</strong><br>
-          Sonuç: ${result}<br>
-          ${payoutAmount.toFixed(4)} ETH kazandınız!
+          <strong>Congratulations!</strong><br>
+          Result: ${result}<br>
+          You won ${payoutAmount.toFixed(4)} ETH!
         `;
       } else {
         resultElement.className = 'result-container result-loss';
         resultTextElement.innerHTML = `
-          <strong>Kaybettiniz</strong><br>
-          Sonuç: ${result}<br>
-          ${amount} ETH kaybettiniz.
+          <strong>You lost</strong><br>
+          Result: ${result}<br>
+          You lost ${amount} ETH.
         `;
       }
       
       resultElement.style.display = 'block';
       
-      // 5 saniye sonra sonucu gizle
+      // Hide result after 5 seconds
       setTimeout(() => {
         resultElement.style.display = 'none';
       }, 5000);
     }
     
-    // Son oyunları yükle
+    // Load recent plays
     async function loadRecentPlays() {
       try {
         if (!userAddress || !contract) return;
         
-        // Gerçek uygulamada, kontratdan kullanıcının bahislerini çekeriz
+        // In a real app, we would fetch user's bets from the contract
         // const betIds = await contract.getPlayerBets(userAddress);
         
-        // Şimdilik demo veriler kullanıyoruz
+        // For now, use demo data
         recentPlays = [];
         updateRecentPlaysList();
       } catch (error) {
-        console.error('Oyun geçmişi yükleme hatası:', error);
+        console.error('Game history loading error:', error);
       }
     }
     
-    // Son oyunları listele
+    // Update recent plays list
     function updateRecentPlaysList() {
       if (recentPlays.length === 0) {
         recentPlaysList.innerHTML = `
           <li class="play-item">
-            <span>Henüz oyun geçmişiniz yok.</span>
+            <span>No game history yet.</span>
           </li>
         `;
         return;
@@ -1093,7 +1092,7 @@
       recentPlaysList.innerHTML = '';
       
       recentPlays.slice(0, 5).forEach(play => {
-        const gameTypeName = ['Çark', 'Yüksek/Düşük', 'Tek/Çift'][play.gameType];
+        const gameTypeName = ['Wheel', 'High/Low', 'Even/Odd'][play.gameType];
         const choiceName = getChoiceName(play.gameType, play.choice);
         const timeStr = new Date(play.time).toLocaleTimeString();
         
@@ -1106,7 +1105,7 @@
             <small>${play.amount} ETH, ${timeStr}</small>
           </div>
           <div class="play-result ${play.isWin ? 'win' : 'lose'}">
-            ${play.isWin ? 'Kazandı' : 'Kaybetti'}
+            ${play.isWin ? 'Won' : 'Lost'}
           </div>
         `;
         
@@ -1114,51 +1113,51 @@
       });
     }
     
-    // Seçenek adını getir
+    // Get choice name
     function getChoiceName(gameType, choice) {
       if (gameType === 0) { // Wheel
         return choice.toString();
       } 
       else if (gameType === 1) { // High/Low
-        return choice === 0 ? 'Düşük (0-4)' : 'Yüksek (5-9)';
+        return choice === 0 ? 'Low (0-4)' : 'High (5-9)';
       }
       else if (gameType === 2) { // Even/Odd
-        return choice === 0 ? 'Çift' : 'Tek';
+        return choice === 0 ? 'Even' : 'Odd';
       }
       return '';
     }
     
-    // Wheel payout bilgisini güncelle
+    // Update wheel payout info
     function updateWheelPayoutInfo() {
       if (wheelChoice !== null && wheelAmount > 0) {
-        const payout = wheelAmount * 9.5; // x9.5 ödeme (%5 ev avantajı)
+        const payout = wheelAmount * 9.5; // 9.5x payout (5% house edge)
         wheelPayoutElement.textContent = `${payout.toFixed(4)} ETH`;
       } else {
         wheelPayoutElement.textContent = '0.00 ETH';
       }
     }
     
-    // High/Low payout bilgisini güncelle
+    // Update High/Low payout info
     function updateHighLowPayoutInfo() {
       if (highLowChoice !== null && highLowAmount > 0) {
-        const payout = highLowAmount * 1.9; // x1.9 ödeme (%5 ev avantajı)
+        const payout = highLowAmount * 1.9; // 1.9x payout (5% house edge)
         highLowPayoutElement.textContent = `${payout.toFixed(4)} ETH`;
       } else {
         highLowPayoutElement.textContent = '0.00 ETH';
       }
     }
     
-    // Even/Odd payout bilgisini güncelle
+    // Update Even/Odd payout info
     function updateEvenOddPayoutInfo() {
       if (evenOddChoice !== null && evenOddAmount > 0) {
-        const payout = evenOddAmount * 1.9; // x1.9 ödeme (%5 ev avantajı)
+        const payout = evenOddAmount * 1.9; // 1.9x payout (5% house edge)
         evenOddPayoutElement.textContent = `${payout.toFixed(4)} ETH`;
       } else {
         evenOddPayoutElement.textContent = '0.00 ETH';
       }
     }
     
-    // Wheel buton durumunu güncelle
+    // Update wheel button state
     function updateWheelButtonState() {
       if (wheelChoice !== null && wheelAmount >= 0.001 && wheelAmount <= 0.1) {
         wheelBetButton.classList.remove('disabled');
@@ -1167,7 +1166,7 @@
       }
     }
     
-    // High/Low buton durumunu güncelle
+    // Update High/Low button state
     function updateHighLowButtonState() {
       if (highLowChoice !== null && highLowAmount >= 0.001 && highLowAmount <= 0.1) {
         highLowBetButton.classList.remove('disabled');
@@ -1176,7 +1175,7 @@
       }
     }
     
-    // Even/Odd buton durumunu güncelle
+    // Update Even/Odd button state
     function updateEvenOddButtonState() {
       if (evenOddChoice !== null && evenOddAmount >= 0.001 && evenOddAmount <= 0.1) {
         evenOddBetButton.classList.remove('disabled');
@@ -1185,13 +1184,13 @@
       }
     }
     
-    // Loading göster
+    // Show loading
     function showLoading(text) {
       loadingText.textContent = text;
       loadingOverlay.style.display = 'flex';
     }
     
-    // Loading gizle
+    // Hide loading
     function hideLoading() {
       loadingOverlay.style.display = 'none';
     }
