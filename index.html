@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Basit Farcaster Mini App</title>
+  
+  <!-- Farcaster Frame Embed Meta Tag - Sosyal paylaşımlar için gerekli -->
+  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://via.placeholder.com/1200x630/3B82F6/FFFFFF?text=Merhaba+Farcaster","button":{"title":"Mini App'i Aç","action":{"type":"launch_frame","name":"Basit Mini App","url":"https://your-vercel-url.vercel.app","splashImageUrl":"https://via.placeholder.com/512/3B82F6/FFFFFF?text=Yükleniyor","splashBackgroundColor":"#3B82F6"}}}'>
+  
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 400px;
+      padding: 20px;
+      border-radius: 16px;
+      background-color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      color: #3B82F6;
+      margin-bottom: 16px;
+    }
+    button {
+      background-color: #3B82F6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background-color: #2563EB;
+    }
+    .counter {
+      font-size: 48px;
+      font-weight: bold;
+      margin: 24px 0;
+    }
+    .user-info {
+      margin-top: 24px;
+      padding: 12px;
+      background-color: #f0f9ff;
+      border-radius: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Basit Farcaster Mini App</h1>
+    <p>Farcaster'da ilk Mini App'imiz!</p>
+    
+    <div class="counter">0</div>
+    <button id="increment">Arttır</button>
+    
+    <div class="user-info" id="user-info">
+      <p>Farcaster bilgileri yükleniyor...</p>
+    </div>
+  </div>
+
+  <!-- Farcaster Frame SDK -->
+  <script type="module">
+    import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+    
+    // Mini App hazır olduğunda splash screen'i kaldır
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        await sdk.actions.ready();
+        console.log('Mini App hazır!');
+        
+        // Kullanıcı bilgilerini göster
+        const userElement = document.getElementById('user-info');
+        if (sdk.context && sdk.context.user) {
+          const user = sdk.context.user;
+          userElement.innerHTML = `
+            <h3>Hoşgeldin!</h3>
+            <p><strong>FID:</strong> ${user.fid || 'Bilinmiyor'}</p>
+            <p><strong>Kullanıcı Adı:</strong> ${user.username || 'Bilinmiyor'}</p>
+            <p><strong>İsim:</strong> ${user.displayName || 'Bilinmiyor'}</p>
+          `;
+        } else {
+          userElement.innerHTML = '<p>Kullanıcı bilgileri alınamadı.</p>';
+        }
+      } catch (error) {
+        console.error('Hata:', error);
+      }
+    });
+    
+    // Sayaç fonksiyonu
+    let count = 0;
+    const counterElement = document.querySelector('.counter');
+    const incrementButton = document.getElementById('increment');
+    
+    incrementButton.addEventListener('click', () => {
+      count++;
+      counterElement.textContent = count;
+    });
+  </script>
+</body>
+</html>
