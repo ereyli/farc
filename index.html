@@ -130,9 +130,6 @@
       transition: transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
       position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
     
     .wheel-center {
@@ -148,6 +145,9 @@
       justify-content: center;
       color: white;
       font-weight: bold;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
     }
     
     .wheel-marker {
@@ -167,23 +167,27 @@
       position: absolute;
       width: 100%;
       height: 100%;
+      top: 0;
+      left: 0;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       z-index: 3;
+      pointer-events: none;
     }
     
     .wheel-number {
       position: absolute;
-      left: 50%;
-      top: 15px;
-      transform-origin: center 135px;
-      transform: translateX(-50%);
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      line-height: 30px;
       font-weight: bold;
-      font-size: 18px;
+      font-size: 20px;
       color: white;
-      text-shadow: 0 0 3px rgba(0,0,0,0.8);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+      transform-origin: center center;
+      left: calc(50% - 15px);
+      top: 50%;
+      margin-top: -15px;
     }
     
     .bet-card {
@@ -619,16 +623,16 @@
     <div class="wheel-marker"></div>
     
     <div class="wheel-numbers">
-      <div class="wheel-number" style="transform: translateX(-50%) rotate(0deg)">0</div>
-      <div class="wheel-number" style="transform: translateX(-50%) rotate(36deg)">1</div>
-      <div class="wheel-number" style="transform: translateX(-50%) rotate(72deg)">2</div>
-      <div class="wheel-number" style="transform: translateX(-50%) rotate(108deg)">3</div>
-      <div class="wheel-number" style="transform: translateX(-50%) rotate(144deg)">4</div>
-      <div class="wheel-number" style="transform: translateX(-50%) rotate(180deg)">5</div>
-      <div class="wheel-number" style="transform: translateX(-50%) rotate(216deg)">6</div>
-      <div class="wheel-number" style="transform: translateX(-50%) rotate(252deg)">7</div>
-      <div class="wheel-number" style="transform: translateX(-50%) rotate(288deg)">8</div>
-      <div class="wheel-number" style="transform: translateX(-50%) rotate(324deg)">9</div>
+      <div class="wheel-number" style="transform: translateY(-120px)">0</div>
+      <div class="wheel-number" style="transform: rotate(36deg) translateY(-120px)">1</div>
+      <div class="wheel-number" style="transform: rotate(72deg) translateY(-120px)">2</div>
+      <div class="wheel-number" style="transform: rotate(108deg) translateY(-120px)">3</div>
+      <div class="wheel-number" style="transform: rotate(144deg) translateY(-120px)">4</div>
+      <div class="wheel-number" style="transform: rotate(180deg) translateY(-120px)">5</div>
+      <div class="wheel-number" style="transform: rotate(216deg) translateY(-120px)">6</div>
+      <div class="wheel-number" style="transform: rotate(252deg) translateY(-120px)">7</div>
+      <div class="wheel-number" style="transform: rotate(288deg) translateY(-120px)">8</div>
+      <div class="wheel-number" style="transform: rotate(324deg) translateY(-120px)">9</div>
     </div>
   </div>
   
@@ -840,222 +844,157 @@
     const depositPresets = depositModal.querySelectorAll('.amount-preset');
     const withdrawPresets = withdrawModal.querySelectorAll('.amount-preset');
     
-    // Initialize when Mini App is ready
+   // Initialize when Mini App is ready
     document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        await sdk.actions.ready();
-        console.log('Wheel of Fortune Mini App ready!');
+      // Check for window.ethereum (MetaMask or other injected wallets)
+      if (window.ethereum) {
+        provider = new ethers.BrowserProvider(window.ethereum);
         
-        // Check wallet connection
-        checkConnection();
+        // Subscribe to chain changes
+        window.ethereum.on('chainChanged', handleChainChanged);
         
-        // Setup event listeners
-        setupEventListeners();
-      } catch (error) {
-        console.error('Initialization error:', error);
+        // Subscribe to account changes
+        window.ethereum.on('accountsChanged', handleAccountsChanged);
+        
+        // Check if wallet is already connected
+        try {
+          const accounts = await provider.listAccounts();
+          if (accounts.length > 0) {
+            await connectWallet();
+          }
+        } catch (error) {
+          console.error("Error checking accounts", error);
+        }
+      } else {
+        connectWalletButton.textContent = "Install MetaMask";
+        connectWalletButton.onclick = () => {
+          window.open("https://metamask.io/download.html", "_blank");
+        };
       }
+      
+      // Setup event listeners
+      setupEventListeners();
     });
     
-    // Setup event listeners
-    function setupEventListeners() {
-      // Wheel number options
-      wheelOptions.forEach(option => {
-        option.addEventListener('click', () => {
-          wheelOptions.forEach(o => o.classList.remove('selected'));
-          option.classList.add('selected');
-          wheelChoice = parseInt(option.dataset.value);
-          updateWheelPayoutInfo();
-          updateSpinButtonState();
-        });
-      });
-      
-      // Spin button
-      spinButton.addEventListener('click', spinTheWheel);
-      
-      // Connect wallet button
-      connectWalletButton.addEventListener('click', connectWallet);
-      
-      // Switch network button
-      switchNetworkButton.addEventListener('click', switchToBaseNetwork);
-      
-      // Deposit & withdraw buttons
-      depositButton.addEventListener('click', () => {
-        depositModal.style.display = 'flex';
-      });
-      
-      withdrawButton.addEventListener('click', () => {
-        withdrawModal.style.display = 'flex';
-      });
-      
-      // Modal close buttons
-      depositClose.addEventListener('click', () => {
-        depositModal.style.display = 'none';
-      });
-      
-      withdrawClose.addEventListener('click', () => {
-        withdrawModal.style.display = 'none';
-      });
-      
-      // Modal cancel buttons
-      depositCancel.addEventListener('click', () => {
-        depositModal.style.display = 'none';
-      });
-      
-      withdrawCancel.addEventListener('click', () => {
-        withdrawModal.style.display = 'none';
-      });
-      
-      // Modal confirm buttons
-      depositConfirm.addEventListener('click', handleDeposit);
-      withdrawConfirm.addEventListener('click', handleWithdraw);
-      
-      // Deposit amount presets
-      depositPresets.forEach(preset => {
-        preset.addEventListener('click', () => {
-          depositAmount.value = preset.dataset.amount;
-        });
-      });
-      
-      // Withdraw amount presets
-      withdrawPresets.forEach(preset => {
-        preset.addEventListener('click', () => {
-          withdrawAmount.value = preset.dataset.amount;
-        });
-      });
-    }
-    
-    // Check wallet connection
-    async function checkConnection() {
-      try {
-        // Get ethProvider from Farcaster SDK
-        provider = new ethers.BrowserProvider(sdk.wallet.ethProvider);
-        
-        // Check network
-        const network = await provider.getNetwork();
-        isCorrectNetwork = network.chainId === BigInt(baseChainId);
-        
-        if (!isCorrectNetwork) {
-          wrongNetworkElement.style.display = 'block';
-          document.querySelector('.fortune-wheel-container').style.display = 'none';
-          document.querySelector('.bet-card').style.display = 'none';
-          document.querySelector('.pool-info').style.display = 'none';
-          document.querySelector('.recent-plays').style.display = 'none';
-          return;
-        } else {
-          wrongNetworkElement.style.display = 'none';
-          document.querySelector('.fortune-wheel-container').style.display = 'block';
-          document.querySelector('.bet-card').style.display = 'block';
-          document.querySelector('.pool-info').style.display = 'block';
-          document.querySelector('.recent-plays').style.display = 'block';
-        }
-        
-        // Get accounts
-        const accounts = await provider.listAccounts();
-        
-        if (accounts.length > 0) {
-          signer = accounts[0];
-          userAddress = signer.address;
-          
-          // Show wallet address
-          connectWalletButton.textContent = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
-          
-          // Contract connection
-          contract = new ethers.Contract(contractAddress, contractABI, provider);
-          
-          // Load player balance
-          await loadPlayerBalance();
-          
-          // Load pool info
-          await loadPoolInfo();
-          
-          // Load game history
-          await loadRecentPlays();
-          
-          // Update UI
-          updateWheelPayoutInfo();
-          updateSpinButtonState();
-        }
-      } catch (error) {
-        console.error('Connection error:', error);
-      }
-    }
-    
-    // Connect wallet
     async function connectWallet() {
       try {
-        showLoading('Connecting wallet...');
+        loadingOverlay.style.display = "flex";
+        loadingText.textContent = "Connecting wallet...";
         
-        if (sdk.wallet.ethProvider.request) {
-          await sdk.wallet.ethProvider.request({ method: 'eth_requestAccounts' });
-          await checkConnection();
-        }
+        // Request account access
+        const accounts = await provider.send("eth_requestAccounts", []);
+        userAddress = accounts[0];
         
-        hideLoading();
-      } catch (error) {
-        console.error('Wallet connection error:', error);
-        hideLoading();
-      }
-    }
-    
-    // Switch to Base network
-    async function switchToBaseNetwork() {
-      try {
-        showLoading('Switching to Base network...');
+        // Get chain ID
+        const { chainId } = await provider.getNetwork();
+        isCorrectNetwork = Number(chainId) === baseChainId;
         
-        if (sdk.wallet.ethProvider.request) {
-          try {
-            // Try to switch network first
-            await sdk.wallet.ethProvider.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: expectedNetwork.chainId }],
-            });
-          } catch (switchError) {
-            // If network isn't added, add it
-            if (switchError.code === 4902) {
-              await sdk.wallet.ethProvider.request({
-                method: 'wallet_addEthereumChain',
-                params: [expectedNetwork],
-              });
-            } else {
-              throw switchError;
-            }
-          }
+        if (isCorrectNetwork) {
+          signer = await provider.getSigner();
+          contract = new ethers.Contract(contractAddress, contractABI, signer);
           
-          await checkConnection();
+          // Update UI for connected state
+          connectWalletButton.textContent = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
+          connectWalletButton.disabled = true;
+          spinButton.classList.remove('disabled');
+          wrongNetworkElement.style.display = "none";
+          
+          // Update player balance
+          await updatePlayerBalance();
+          
+          // Update pool info
+          await updatePoolInfo();
+          
+          // Get player's recent bets
+          await loadPlayerBets();
+        } else {
+          // Show wrong network warning
+          wrongNetworkElement.style.display = "block";
         }
-        
-        hideLoading();
       } catch (error) {
-        console.error('Network switching error:', error);
-        hideLoading();
+        console.error("Error connecting wallet:", error);
+      } finally {
+        loadingOverlay.style.display = "none";
       }
     }
     
-    // Load player balance
-    async function loadPlayerBalance() {
+    async function switchToBase() {
       try {
-        if (!userAddress || !contract) return;
+        loadingOverlay.style.display = "flex";
+        loadingText.textContent = "Switching network...";
         
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [expectedNetwork]
+        });
+        
+        isCorrectNetwork = true;
+        wrongNetworkElement.style.display = "none";
+      } catch (error) {
+        console.error("Error switching network:", error);
+      } finally {
+        loadingOverlay.style.display = "none";
+      }
+    }
+    
+    function handleChainChanged() {
+      // Reload the page
+      window.location.reload();
+    }
+    
+    async function handleAccountsChanged(accounts) {
+      if (accounts.length === 0) {
+        // User disconnected wallet
+        window.location.reload();
+      } else {
+        // User switched accounts
+        userAddress = accounts[0];
+        
+        if (signer) {
+          signer = await provider.getSigner();
+          contract = new ethers.Contract(contractAddress, contractABI, signer);
+          
+          // Update balance
+          await updatePlayerBalance();
+          
+          // Update UI
+          connectWalletButton.textContent = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
+          
+          // Load player bets
+          await loadPlayerBets();
+        }
+      }
+    }
+    
+    async function updatePlayerBalance() {
+      try {
+        // Get player balance from contract
         const balance = await contract.getPlayerBalance(userAddress);
-        playerBalance = parseFloat(ethers.formatEther(balance));
+        playerBalance = Number(ethers.formatEther(balance));
         
+        // Update UI
         playerBalanceElement.textContent = `${playerBalance.toFixed(4)} ETH`;
+        
+        // Enable/disable withdraw button based on balance
+        if (playerBalance <= 0) {
+          withdrawButton.classList.add('disabled');
+        } else {
+          withdrawButton.classList.remove('disabled');
+        }
       } catch (error) {
-        console.error('Balance loading error:', error);
+        console.error("Error getting player balance:", error);
       }
     }
     
-    // Load pool info
-    async function loadPoolInfo() {
+    async function updatePoolInfo() {
       try {
-        if (!contract) return;
-        
-        const result = await contract.getPoolInfo();
+        // Get pool info from contract
+        const info = await contract.getPoolInfo();
         
         poolInfo = {
-          totalBalance: parseFloat(ethers.formatEther(result[0])),
-          totalBets: parseInt(result[1]),
-          totalWinnings: parseFloat(ethers.formatEther(result[2]))
+          totalBalance: Number(ethers.formatEther(info[0])),
+          totalBets: Number(info[1]),
+          totalWinnings: Number(ethers.formatEther(info[2]))
         };
         
         // Update UI
@@ -1063,363 +1002,410 @@
         totalBetsElement.textContent = poolInfo.totalBets;
         totalWinningsElement.textContent = `${poolInfo.totalWinnings.toFixed(4)} ETH`;
       } catch (error) {
-        console.error('Pool info loading error:', error);
+        console.error("Error getting pool info:", error);
       }
     }
     
-    // Handle deposit
-    async function handleDeposit() {
-      if (!signer || !contract || !isCorrectNetwork) {
-        alert('Please connect your wallet to the Base network first!');
-        return;
-      }
-      
-      const amount = parseFloat(depositAmount.value);
-      if (isNaN(amount) || amount <= 0) {
-        alert('Please enter a valid amount');
-        return;
-      }
-      
+    async function loadPlayerBets() {
       try {
-        depositModal.style.display = 'none';
-        showLoading('Depositing ETH...');
-        
-        // Connect contract with signer
-        const connectedContract = contract.connect(signer);
-        
-        // Deposit
-        const tx = await connectedContract.deposit({
-          value: ethers.parseEther(amount.toString()),
-          gasLimit: 300000 // Gas limit
-        });
-        
-        loadingText.textContent = 'Confirming transaction...';
-        
-        // Wait for transaction confirmation
-        const receipt = await tx.wait();
-        console.log('Deposit transaction confirmed:', receipt);
-        
-        // Reload balances
-        await loadPlayerBalance();
-        await loadPoolInfo();
-        
-        // Show confirmation
-        alert(`Successfully deposited ${amount} ETH`);
-        
-        hideLoading();
-      } catch (error) {
-        console.error('Deposit error:', error);
-        hideLoading();
-        alert('Error depositing: ' + error.message);
-      }
-    }
-    
-    // Handle withdraw
-    async function handleWithdraw() {
-      if (!signer || !contract || !isCorrectNetwork) {
-        alert('Please connect your wallet to the Base network first!');
-        return;
-      }
-      
-      const amount = parseFloat(withdrawAmount.value);
-      if (isNaN(amount) || amount <= 0) {
-        alert('Please enter a valid amount');
-        return;
-      }
-      
-      if (amount > playerBalance) {
-        alert('Insufficient balance');
-        return;
-      }
-      
-      try {
-        withdrawModal.style.display = 'none';
-        showLoading('Withdrawing ETH...');
-        
-        // Connect contract with signer
-        const connectedContract = contract.connect(signer);
-        
-        // Withdraw
-        const tx = await connectedContract.withdraw(ethers.parseEther(amount.toString()), {
-          gasLimit: 300000 // Gas limit
-        });
-        
-        loadingText.textContent = 'Confirming transaction...';
-        
-        // Wait for transaction confirmation
-        const receipt = await tx.wait();
-        console.log('Withdraw transaction confirmed:', receipt);
-        
-        // Reload balances
-        await loadPlayerBalance();
-        await loadPoolInfo();
-        
-        // Show confirmation
-        alert(`Successfully withdrew ${amount} ETH`);
-        
-        hideLoading();
-      } catch (error) {
-        console.error('Withdraw error:', error);
-        hideLoading();
-        alert('Error withdrawing: ' + error.message);
-      }
-    }
-    
-    // Spin the wheel
-    async function spinTheWheel() {
-      if (!signer || !contract || !isCorrectNetwork) {
-        if (!isCorrectNetwork) {
-          alert('Please switch to Base network first!');
-          return;
-        }
-        alert('Please connect your wallet first!');
-        return;
-      }
-      
-      if (isSpinning || wheelChoice === null) {
-        return;
-      }
-      
-      // Check if player has enough balance
-      if (playerBalance < 0.001) {
-        alert('Insufficient balance. Please deposit at least 0.001 ETH.');
-        return;
-      }
-      
-      try {
-        showLoading('Placing bet...');
-        isSpinning = true;
-        
-        // Connect contract with signer
-        const connectedContract = contract.connect(signer);
-        
-        // Place bet
-        const tx = await connectedContract.placeBet(wheelChoice, {
-          gasLimit: 300000 // Gas limit
-        });
-        
-        loadingText.textContent = 'Confirming bet...';
-        
-        // Wait for transaction confirmation
-        const receipt = await tx.wait();
-        console.log('Bet transaction confirmed:', receipt);
-        
-        // Look for events
-        let result = 0;
-        let betId = 0;
-        let won = false;
-        let payout = 0;
-        
-        // Find the BetSettled event
-        for (const event of receipt.logs) {
-          try {
-            const parsedLog = contract.interface.parseLog(event);
-            
-            if (parsedLog && parsedLog.name === 'BetSettled') {
-              betId = parsedLog.args[0];
-              won = parsedLog.args[2];
-              payout = parseFloat(ethers.formatEther(parsedLog.args[3]));
-            }
-            
-            if (parsedLog && parsedLog.name === 'WheelResult') {
-              result = parsedLog.args[1];
-            }
-          } catch (e) {
-            // Not our event, skip
-          }
-        }
-        
-        // If we couldn't find the events, get bet info from contract
-        if (betId === 0) {
-          // Get last bet ID
-          const bets = await contract.getPlayerBets(userAddress);
-          if (bets.length > 0) {
-            betId = bets[bets.length - 1];
-            
-            // Get bet info
-            const betInfo = await contract.getBetInfo(betId);
-            won = betInfo[4];
-            payout = parseFloat(ethers.formatEther(betInfo[5]));
-            
-            // We don't know the result, so use a random one for animation
-            result = Math.floor(Math.random() * 10);
-          }
-        }
-        
-        // Animate the wheel
-        animateWheel(result);
-        
-        // Reload balances and pool info
-        await loadPlayerBalance();
-        await loadPoolInfo();
-        
-        // Add to play history
-        const newPlay = {
-          choice: wheelChoice,
-          result: result,
-          amount: 0.001,
-          won: won,
-          payout: payout,
-          time: new Date().toISOString()
-        };
-        
-        recentPlays.unshift(newPlay);
-        updateRecentPlaysList();
-        
-        // Show result after wheel animation finishes
-        setTimeout(() => {
-          showGameResult(result, won, payout);
-          isSpinning = false;
-          hideLoading();
-        }, 3000);
-      } catch (error) {
-        console.error('Bet error:', error);
-        isSpinning = false;
-        hideLoading();
-        alert('Error placing bet: ' + error.message);
-      }
-    }
-    
-    // Animate wheel
-    function animateWheel(result) {
-      // Calculate wheel segments
-      const segmentAngle = 360 / 10; // 10 segments (0-9)
-      const extraRotations = 5; // Extra rotations
-      const randomOffset = Math.random() * segmentAngle; // Random position within segment
-      const targetAngle = ((result) * segmentAngle) + randomOffset;
-      const totalRotation = (extraRotations * 360) + targetAngle;
-      
-      // Spin wheel
-      wheel.style.transform = `rotate(${totalRotation}deg)`;
-    }
-    
-    // Show game result
-    function showGameResult(result, won, payout) {
-      if (won) {
-        wheelResult.className = 'result-container result-win';
-        wheelResultText.innerHTML = `
-          <strong>Congratulations!</strong><br>
-          Result: ${result}<br>
-          You chose: ${wheelChoice}<br>
-          You won ${payout.toFixed(4)} ETH!
-        `;
-      } else {
-        wheelResult.className = 'result-container result-loss';
-        wheelResultText.innerHTML = `
-          <strong>You lost</strong><br>
-          Result: ${result}<br>
-          You chose: ${wheelChoice}<br>
-          You lost 0.001 ETH.
-        `;
-      }
-      
-      wheelResult.style.display = 'block';
-      
-      // Hide result after 5 seconds
-      setTimeout(() => {
-        wheelResult.style.display = 'none';
-      }, 5000);
-    }
-    
-    // Load recent plays
-    async function loadRecentPlays() {
-      try {
-        if (!userAddress || !contract) return;
-        
-        // Get player bets
+        // Get player's bet IDs
         const betIds = await contract.getPlayerBets(userAddress);
         
-        // Only fetch the last 5 bets
-        const recentBetIds = betIds.slice(-5);
-        
+        // Reset recent plays
         recentPlays = [];
         
-        // Load bet info for each bet
+        // Get details for each bet (limit to last 5)
+        const recentBetIds = betIds.slice(-5).reverse();
+        
         for (const betId of recentBetIds) {
           const betInfo = await contract.getBetInfo(betId);
           
-          // Skip if not settled
-          if (!betInfo[3]) continue;
-          
-          recentPlays.push({
-            choice: betInfo[2],
-            result: 0, // We don't have this info
-            amount: parseFloat(ethers.formatEther(betInfo[1])),
-            won: betInfo[4],
-            payout: parseFloat(ethers.formatEther(betInfo[5])),
-            time: new Date().toISOString() // We don't have timestamp
-          });
+          if (betInfo.settled) {
+            recentPlays.push({
+              id: Number(betId),
+              amount: Number(ethers.formatEther(betInfo.amount)),
+              choice: betInfo.choice,
+              won: betInfo.won,
+              payout: Number(ethers.formatEther(betInfo.payout)),
+              result: null // We need to get this from events
+            });
+          }
         }
         
-        updateRecentPlaysList();
+        // Get result for each bet from events
+        for (const play of recentPlays) {
+          const filter = contract.filters.WheelResult(play.id);
+          const events = await contract.queryFilter(filter);
+          
+          if (events.length > 0) {
+            play.result = events[0].args.result;
+          }
+        }
+        
+        // Update UI
+        updateRecentPlaysUI();
       } catch (error) {
-        console.error('Game history loading error:', error);
+        console.error("Error loading player bets:", error);
       }
     }
     
-    // Update recent plays list
-    function updateRecentPlaysList() {
+    function updateRecentPlaysUI() {
+      // Clear list
+      recentPlaysList.innerHTML = "";
+      
       if (recentPlays.length === 0) {
-        recentPlaysList.innerHTML = `
-          <li class="play-item">
-            <span>No game history yet.</span>
-          </li>
-        `;
+        const emptyItem = document.createElement('li');
+        emptyItem.classList.add('play-item');
+        emptyItem.innerHTML = `<span>No game history yet.</span>`;
+        recentPlaysList.appendChild(emptyItem);
         return;
       }
       
-      recentPlaysList.innerHTML = '';
-      
-      recentPlays.forEach(play => {
-        const timeStr = new Date(play.time).toLocaleTimeString();
+      // Add items
+      for (const play of recentPlays) {
+        const item = document.createElement('li');
+        item.classList.add('play-item');
         
-        const li = document.createElement('li');
-        li.className = 'play-item';
-        li.innerHTML = `
-          <div>
-            <strong>Chosen: ${play.choice}</strong>
-            ${play.result !== undefined ? `Result: ${play.result}` : ''}
-            <br>
-            <small>${play.amount} ETH, ${timeStr}</small>
-          </div>
-          <div class="play-result ${play.won ? 'win' : 'lose'}">
-            ${play.won ? `Won ${play.payout.toFixed(4)}` : 'Lost'}
-          </div>
+        const resultClass = play.won ? 'win' : 'lose';
+        const resultText = play.won ? 'Won' : 'Lost';
+        
+        item.innerHTML = `
+          <span>Bet ${play.amount.toFixed(4)} ETH on ${play.choice}</span>
+          <span class="play-result ${resultClass}">
+            ${resultText} ${play.won ? `(+${play.payout.toFixed(4)} ETH)` : ''}
+            [Result: ${play.result}]
+          </span>
         `;
         
-        recentPlaysList.appendChild(li);
-      });
-    }
-    
-    // Update wheel payout info
-    function updateWheelPayoutInfo() {
-      if (wheelChoice !== null) {
-        // 10 numbers, 1 chance, payout 9.5x to account for house edge
-        const payout = 0.001 * 9.5;
-        wheelPayoutElement.textContent = `${payout.toFixed(4)} ETH`;
-      } else {
-        wheelPayoutElement.textContent = '0.00 ETH';
+        recentPlaysList.appendChild(item);
       }
     }
     
-    // Update spin button state
-    function updateSpinButtonState() {
-      if (wheelChoice !== null && playerBalance >= 0.001 && !isSpinning) {
-        spinButton.classList.remove('disabled');
-      } else {
+    async function placeBet() {
+      if (!wheelChoice) {
+        alert("Please select a number first!");
+        return;
+      }
+      
+      if (isSpinning) return;
+      
+      try {
+        isSpinning = true;
+        loadingOverlay.style.display = "flex";
+        loadingText.textContent = "Placing your bet...";
+        
+        // Disable spin button
         spinButton.classList.add('disabled');
+        
+        // Place bet
+        const tx = await contract.placeBet(wheelChoice);
+        
+        // Wait for transaction to be mined
+        loadingText.textContent = "Waiting for confirmation...";
+        await tx.wait();
+        
+        // Get bet ID from events
+        const filter = contract.filters.BetPlaced(null, userAddress);
+        const events = await contract.queryFilter(filter, tx.blockNumber, tx.blockNumber);
+        
+        if (events.length > 0) {
+          const betId = events[0].args.betId;
+          
+          // Start the wheel animation
+          spinWheel(betId);
+        } else {
+          console.error("No BetPlaced event found");
+          isSpinning = false;
+          loadingOverlay.style.display = "none";
+        }
+        
+        // Update player balance
+        await updatePlayerBalance();
+        
+        // Update pool info
+        await updatePoolInfo();
+      } catch (error) {
+        console.error("Error placing bet:", error);
+        alert("Failed to place bet. Please check your balance and try again.");
+        isSpinning = false;
+        spinButton.classList.remove('disabled');
+        loadingOverlay.style.display = "none";
       }
     }
     
-    // Show loading
-    function showLoading(text) {
-      loadingText.textContent = text;
-      loadingOverlay.style.display = 'flex';
+    async function spinWheel(betId) {
+      try {
+        loadingText.textContent = "Spinning the wheel...";
+        
+        // Listen for result event
+        const filter = contract.filters.WheelResult(betId);
+        const events = await contract.queryFilter(filter);
+        
+        if (events.length > 0) {
+          const result = events[0].args.result;
+          
+          // Set random rotation (between 2 and 5 full rotations) plus the specific position
+          const fullRotations = 2 + Math.random() * 3;
+          const resultPosition = result * 36;
+          const rotation = 360 * fullRotations + resultPosition;
+          
+          // Animate wheel
+          wheel.style.transform = `rotate(${rotation}deg)`;
+          
+          // Wait for animation to complete
+          setTimeout(async () => {
+            // Check if bet was won
+            const betSettledFilter = contract.filters.BetSettled(betId);
+            const betSettledEvents = await contract.queryFilter(betSettledFilter);
+            
+            if (betSettledEvents.length > 0) {
+              const event = betSettledEvents[0];
+              const won = event.args.won;
+              const payout = Number(ethers.formatEther(event.args.payout));
+              
+              // Show result
+              wheelResult.className = 'result-container';
+              wheelResult.classList.add(won ? 'result-win' : 'result-loss');
+              
+              if (won) {
+                wheelResultText.textContent = `🎉 Congratulations! You won ${payout.toFixed(4)} ETH!`;
+              } else {
+                wheelResultText.textContent = `Better luck next time! The result was ${result}.`;
+              }
+              
+              wheelResult.style.display = 'block';
+              
+              // Update player balance
+              await updatePlayerBalance();
+              
+              // Update pool info
+              await updatePoolInfo();
+              
+              // Reload player bets
+              await loadPlayerBets();
+            }
+            
+            // Reset state
+            isSpinning = false;
+            spinButton.classList.remove('disabled');
+            loadingOverlay.style.display = "none";
+          }, 3000);
+        } else {
+          console.error("No WheelResult event found");
+          isSpinning = false;
+          spinButton.classList.remove('disabled');
+          loadingOverlay.style.display = "none";
+        }
+      } catch (error) {
+        console.error("Error spinning wheel:", error);
+        isSpinning = false;
+        spinButton.classList.remove('disabled');
+        loadingOverlay.style.display = "none";
+      }
     }
     
-    // Hide loading
-    function hideLoading() {
-      loadingOverlay.style.display = 'none';
+    async function depositFunds(amount) {
+      try {
+        loadingOverlay.style.display = "flex";
+        loadingText.textContent = "Processing deposit...";
+        
+        // Convert amount to wei
+        const weiAmount = ethers.parseEther(amount.toString());
+        
+        // Deposit funds
+        const tx = await contract.deposit({ value: weiAmount });
+        
+        // Wait for transaction to be mined
+        loadingText.textContent = "Waiting for confirmation...";
+        await tx.wait();
+        
+        // Update player balance
+        await updatePlayerBalance();
+        
+        // Update pool info
+        await updatePoolInfo();
+        
+        // Hide modal
+        depositModal.style.display = "none";
+        
+        // Reset input
+        depositAmount.value = "";
+        
+        alert("Deposit successful!");
+      } catch (error) {
+        console.error("Error depositing funds:", error);
+        alert("Failed to deposit funds. Please try again.");
+      } finally {
+        loadingOverlay.style.display = "none";
+      }
+    }
+    
+    async function withdrawFunds(amount) {
+      try {
+        loadingOverlay.style.display = "flex";
+        loadingText.textContent = "Processing withdrawal...";
+        
+        // Convert amount to wei
+        const weiAmount = ethers.parseEther(amount.toString());
+        
+        // Withdraw funds
+        const tx = await contract.withdraw(weiAmount);
+        
+        // Wait for transaction to be mined
+        loadingText.textContent = "Waiting for confirmation...";
+        await tx.wait();
+        
+        // Update player balance
+        await updatePlayerBalance();
+        
+        // Update pool info
+        await updatePoolInfo();
+        
+        // Hide modal
+        withdrawModal.style.display = "none";
+        
+        // Reset input
+        withdrawAmount.value = "";
+        
+        alert("Withdrawal successful!");
+      } catch (error) {
+        console.error("Error withdrawing funds:", error);
+        alert("Failed to withdraw funds. Please try again.");
+      } finally {
+        loadingOverlay.style.display = "none";
+      }
+    }
+    
+    function updatePayout() {
+      if (wheelChoice !== null) {
+        // Fixed payout ratio (9x)
+        const potentialWin = 0.001 * 9;
+        wheelPayoutElement.textContent = `${potentialWin.toFixed(4)} ETH`;
+      } else {
+        wheelPayoutElement.textContent = "0.00 ETH";
+      }
+    }
+    
+    function setupEventListeners() {
+      // Connect wallet button
+      connectWalletButton.addEventListener('click', connectWallet);
+      
+      // Switch network button
+      switchNetworkButton.addEventListener('click', switchToBase);
+      
+      // Wheel options
+      wheelOptions.forEach(option => {
+        option.addEventListener('click', () => {
+          // Remove selected class from all options
+          wheelOptions.forEach(opt => opt.classList.remove('selected'));
+          
+          // Add selected class to clicked option
+          option.classList.add('selected');
+          
+          // Update choice
+          wheelChoice = Number(option.getAttribute('data-value'));
+          
+          // Update potential payout
+          updatePayout();
+          
+          // Enable spin button if not already spinning
+          if (!isSpinning) {
+            spinButton.classList.remove('disabled');
+          }
+        });
+      });
+      
+      // Spin button
+      spinButton.addEventListener('click', () => {
+        if (!spinButton.classList.contains('disabled') && !isSpinning) {
+          placeBet();
+        }
+      });
+      
+      // Wheel center also triggers spin
+      document.querySelector('.wheel-center').addEventListener('click', () => {
+        if (!spinButton.classList.contains('disabled') && !isSpinning) {
+          placeBet();
+        }
+      });
+      
+      // Deposit button
+      depositButton.addEventListener('click', () => {
+        depositModal.style.display = "flex";
+      });
+      
+      // Withdraw button
+      withdrawButton.addEventListener('click', () => {
+        if (!withdrawButton.classList.contains('disabled')) {
+          withdrawModal.style.display = "flex";
+        }
+      });
+      
+      // Close and cancel buttons for modals
+      depositClose.addEventListener('click', () => {
+        depositModal.style.display = "none";
+      });
+      
+      withdrawClose.addEventListener('click', () => {
+        withdrawModal.style.display = "none";
+      });
+      
+      depositCancel.addEventListener('click', () => {
+        depositModal.style.display = "none";
+      });
+      
+      withdrawCancel.addEventListener('click', () => {
+        withdrawModal.style.display = "none";
+      });
+      
+      // Confirm buttons for modals
+      depositConfirm.addEventListener('click', () => {
+        const amount = parseFloat(depositAmount.value);
+        if (isNaN(amount) || amount <= 0) {
+          alert("Please enter a valid amount.");
+          return;
+        }
+        
+        depositFunds(amount);
+      });
+      
+      withdrawConfirm.addEventListener('click', () => {
+        const amount = parseFloat(withdrawAmount.value);
+        if (isNaN(amount) || amount <= 0) {
+          alert("Please enter a valid amount.");
+          return;
+        }
+        
+        if (amount > playerBalance) {
+          alert("You don't have enough balance to withdraw this amount.");
+          return;
+        }
+        
+        withdrawFunds(amount);
+      });
+      
+      // Amount presets
+      depositPresets.forEach(preset => {
+        preset.addEventListener('click', () => {
+          depositAmount.value = preset.getAttribute('data-amount');
+        });
+      });
+      
+      withdrawPresets.forEach(preset => {
+        preset.addEventListener('click', () => {
+          withdrawAmount.value = preset.getAttribute('data-amount');
+        });
+      });
+      
+      // Close modals when clicking outside
+      window.addEventListener('click', (event) => {
+        if (event.target === depositModal) {
+          depositModal.style.display = "none";
+        }
+        if (event.target === withdrawModal) {
+          withdrawModal.style.display = "none";
+        }
+      });
     }
   </script>
 </body>
