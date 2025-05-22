@@ -117,6 +117,7 @@
                 <img src="/farc.png" alt="FARC Logo" class="logo">
                 <h1>$FARC</h1>
                 <p>The Official Farcaster Token</p>
+                <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
             </div>
             
             <div class="card">
@@ -185,23 +186,22 @@
         
         async function tryFarcasterConnect() {
             try {
-                // Check if we're in Farcaster context
-                if (window.parent !== window) {
-                    console.log('Running in Farcaster frame context');
+                // Wait for Farcaster context to be available
+                if (window.farcasterUser) {
+                    farcasterUser = window.farcasterUser;
+                    console.log('Farcaster user found:', farcasterUser);
                     
-                    // Try to get Farcaster user info
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const fid = urlParams.get('fid');
-                    
-                    if (fid) {
-                        console.log('Farcaster ID found:', fid);
-                        updateUIForFarcaster(fid);
+                    // Auto-connect if verified address exists
+                    if (farcasterUser.verifiedAddresses?.ethAddresses?.length > 0) {
+                        const address = farcasterUser.verifiedAddresses.ethAddresses[0];
+                        await handleConnection(address);
+                        
+                        // Update UI to show it's Farcaster wallet
+                        document.getElementById('wallet-info').innerHTML = 
+                            `<span style="color: #8B5CF6;">🟣 Farcaster Wallet</span><br>${address.slice(0, 6)}...${address.slice(-4)}`;
                     }
-                }
-                
-                // Also check for ethereum provider
-                if (typeof window.ethereum !== 'undefined') {
-                    // Check if already connected
+                } else if (!isInFarcasterApp && typeof window.ethereum !== 'undefined') {
+                    // Not in Farcaster, check for regular wallet
                     const accounts = await window.ethereum.request({ 
                         method: 'eth_accounts' 
                     });
@@ -278,9 +278,14 @@
             userAddress = address;
             updateConnectButton();
             
-            // Show wallet info
-            document.getElementById('wallet-info').textContent = 
-                `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`;
+            // Show wallet info - different style for Farcaster
+            if (isInFarcasterApp || farcasterUser) {
+                document.getElementById('wallet-info').innerHTML = 
+                    `<span style="color: #8B5CF6;">🟣 Farcaster Wallet</span><br>${address.slice(0, 6)}...${address.slice(-4)}`;
+            } else {
+                document.getElementById('wallet-info').textContent = 
+                    `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`;
+            }
         }
         
         function updateConnectButton() {
