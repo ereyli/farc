@@ -1,407 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$FARC - The Farcaster Token</title>
-    <link rel="icon" type="image/png" href="/farc.png">
-    <link rel="manifest" href="/farcaster.json">
-    
-    <!-- Farcaster Mini App Meta -->
-    <meta name="fc:frame" content="vNext">
-    <meta name="fc:frame:image" content="https://farc.vercel.app/farc.png">
-    <meta name="fc:frame:button:1" content="Launch App">
-    <meta name="fc:frame:button:1:action" content="launch_frame">
-    <meta name="fc:frame:button:1:target" content="https://farc.vercel.app">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
-            color: white;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .logo {
-            width: 120px;
-            height: 120px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-        }
-        
-        h1 {
-            font-size: 36px;
-            margin-bottom: 10px;
-        }
-        
-        .card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .button {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .button-primary {
-            background: #10b981;
-            color: white;
-        }
-        
-        .button-primary:hover {
-            background: #059669;
-        }
-        
-        .button-secondary {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            margin-top: 10px;
-        }
-        
-        .button-secondary:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 50px;
-        }
-        
-        .hidden {
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>$FARC - The Farcaster Token</title>
+  <link rel="icon" type="image/png" href="/farc.png" />
+  <link rel="manifest" href="/farcaster.json" />
+
+  <!-- Farcaster Mini App Meta -->
+  <meta name="fc:frame" content="vNext" />
+  <meta name="fc:frame:image" content="https://farc.vercel.app/farc.png" />
+  <meta name="fc:frame:button:1" content="Launch App" />
+  <meta name="fc:frame:button:1:action" content="launch_frame" />
+  <meta name="fc:frame:button:1:target" content="https://farc.vercel.app" />
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+      color: white;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo {
+      width: 120px;
+      height: 120px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .button-primary {
+      background: #10b981;
+      color: white;
+    }
+
+    .button-primary:hover {
+      background: #059669;
+    }
+
+    .button-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      margin-top: 10px;
+    }
+
+    .button-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 50px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div id="loading" class="loading">
-            <h2>Loading $FARC...</h2>
-        </div>
-        
-        <div id="app" class="hidden">
-            <div class="header">
-                <img src="/farc.png" alt="FARC Logo" class="logo">
-                <h1>$FARC</h1>
-                <p>The Official Farcaster Token</p>
-                <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
-            </div>
-            
-            <div class="card">
-                <h2>🔥 Presale LIVE</h2>
-                <div class="info-row">
-                    <span>Price:</span>
-                    <strong>0.01 ETH = 1M FARC</strong>
-                </div>
-                <div class="info-row">
-                    <span>Max per wallet:</span>
-                    <strong>5M FARC</strong>
-                </div>
-                <div class="info-row">
-                    <span>Sold:</span>
-                    <strong id="tokens-sold">125M / 500M</strong>
-                </div>
-            </div>
-            
-            <div class="card">
-                <h3>Buy $FARC</h3>
-                <input 
-                    type="number" 
-                    id="amount-input" 
-                    placeholder="Amount in ETH (e.g. 0.01)"
-                    step="0.001"
-                    min="0.001"
-                    style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: none;"
-                >
-                <div id="wallet-info" style="text-align: center; margin: 10px 0; font-size: 14px; opacity: 0.8;"></div>
-                <button id="connect-button" class="button button-primary">
-                    Connect Wallet
-                </button>
-                <button class="button button-secondary" onclick="share()">
-                    Share $FARC 📢
-                </button>
-            </div>
-        </div>
+  <div class="container">
+    <div id="loading" class="loading">
+      <h2>Loading $FARC...</h2>
     </div>
 
-    <script>
-        // Global variables
-        let isConnected = false;
-        let userAddress = null;
-        let farcasterUser = null;
-        let isInFarcasterApp = false;
-        
-        // Simple initialization
-        async function init() {
-            console.log('FARC App Starting...');
-            
-            // Check if we're in Farcaster app
-            isInFarcasterApp = window.parent !== window || window.location !== window.parent.location;
-            
-            // Hide loading, show app
-            setTimeout(() => {
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-            }, 500);
-            
-            // Connect button
-            document.getElementById('connect-button').onclick = connectWallet;
-            
-            // Try to auto-connect to Farcaster wallet
-            await tryFarcasterConnect();
+    <div id="app" class="hidden">
+      <div class="header">
+        <img src="/farc.png" alt="FARC Logo" class="logo" />
+        <h1>$FARC</h1>
+        <p>The Official Farcaster Token</p>
+        <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
+      </div>
+
+      <div class="card">
+        <h2>🔥 Presale LIVE</h2>
+        <div class="info-row">
+          <span>Price:</span>
+          <strong>0.01 ETH = 1M FARC</strong>
+        </div>
+        <div class="info-row">
+          <span>Max per wallet:</span>
+          <strong>5M FARC</strong>
+        </div>
+        <div class="info-row">
+          <span>Sold:</span>
+          <strong id="tokens-sold">125M / 500M</strong>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Buy $FARC</h3>
+        <input
+          type="number"
+          id="amount-input"
+          placeholder="Amount in ETH (e.g. 0.01)"
+          step="0.001"
+          min="0.001"
+          style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: none;"
+        />
+        <div id="wallet-info" style="text-align: center; margin: 10px 0; font-size: 14px; opacity: 0.8;"></div>
+        <button id="connect-button" class="button button-primary">Connect Farcaster Wallet</button>
+        <button class="button button-secondary" onclick="share()">Share $FARC 📢</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+
+    // MetaMask gibi dış cüzdanları devre dışı bırak
+    window.ethereum = null;
+
+    window.handleConnection = async function(address) {
+      const walletInfo = document.getElementById('wallet-info');
+      const button = document.getElementById('connect-button');
+      button.textContent = 'Buy FARC 🚀';
+      walletInfo.innerHTML = `<span style="color: #8B5CF6;">🟣 Farcaster Wallet</span><br>${address.slice(0, 6)}...${address.slice(-4)}`;
+
+      button.onclick = async () => {
+        const amount = document.getElementById('amount-input').value;
+        if (!amount || parseFloat(amount) <= 0) {
+          alert('Please enter a valid amount');
+          return;
         }
-        
-        async function tryFarcasterConnect() {
-            try {
-                // Wait for Farcaster context to be available
-                if (window.farcasterUser) {
-                    farcasterUser = window.farcasterUser;
-                    console.log('Farcaster user found:', farcasterUser);
-                    
-                    // Auto-connect if verified address exists
-                    if (farcasterUser.verifiedAddresses?.ethAddresses?.length > 0) {
-                        const address = farcasterUser.verifiedAddresses.ethAddresses[0];
-                        await handleConnection(address);
-                        
-                        // Update UI to show it's Farcaster wallet
-                        document.getElementById('wallet-info').innerHTML = 
-                            `<span style="color: #8B5CF6;">🟣 Farcaster Wallet</span><br>${address.slice(0, 6)}...${address.slice(-4)}`;
-                    }
-                } else if (!isInFarcasterApp && typeof window.ethereum !== 'undefined') {
-                    // Not in Farcaster, check for regular wallet
-                    const accounts = await window.ethereum.request({ 
-                        method: 'eth_accounts' 
-                    });
-                    
-                    if (accounts.length > 0) {
-                        await handleConnection(accounts[0]);
-                    }
-                }
-            } catch (error) {
-                console.log('Auto-connect error:', error);
-            }
+
+        const ethAmount = parseFloat(amount);
+        const tokensToReceive = ethAmount * 100;
+
+        alert(
+          `✅ Purchase Ready!\n\nYou will receive ${tokensToReceive}M FARC.\n\nSmart contract coming soon.`
+        );
+      };
+    };
+
+    window.share = function() {
+      const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\nhttps://farc.vercel.app';
+
+      if (navigator.share) {
+        navigator.share({ title: '$FARC Token', text });
+      } else {
+        navigator.clipboard.writeText(text);
+        alert('Share text copied to clipboard!');
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        await sdk.actions.ready();
+        const context = await sdk.context;
+
+        if (!context?.user) {
+          document.getElementById('loading').innerHTML = `<h2>Please open this app inside Farcaster 🟣</h2>`;
+          return;
         }
-        
-        async function connectWallet() {
-            if (isConnected) {
-                // If already connected, this becomes the buy button
-                await buyTokens();
-                return;
-            }
-            
-            try {
-                // If in Farcaster app, use Farcaster wallet
-                if (isInFarcasterApp || farcasterUser) {
-                    console.log('Using Farcaster wallet...');
-                    
-                    // Check if Farcaster user has verified addresses
-                    if (farcasterUser?.verifiedAddresses?.ethAddresses?.length > 0) {
-                        const address = farcasterUser.verifiedAddresses.ethAddresses[0];
-                        await handleConnection(address);
-                    } else {
-                        alert(
-                            'No verified wallet found in your Farcaster account.\n\n' +
-                            'Please add a verified address in Warpcast:\n' +
-                            'Settings → Verified Addresses'
-                        );
-                    }
-                    return;
-                }
-                
-                // Desktop or mobile browser (not in Farcaster)
-                if (typeof window.ethereum !== 'undefined') {
-                    const accounts = await window.ethereum.request({ 
-                        method: 'eth_requestAccounts' 
-                    });
-                    
-                    if (accounts.length > 0) {
-                        await handleConnection(accounts[0]);
-                    }
-                } else {
-                    // No wallet detected
-                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                    
-                    if (isMobile) {
-                        alert(
-                            'Please use one of these options:\n\n' +
-                            '1. Open in MetaMask mobile browser\n' +
-                            '2. Open in Warpcast app (recommended)\n' +
-                            '3. Use a desktop browser with MetaMask'
-                        );
-                    } else {
-                        if (confirm('No wallet detected. Would you like to install MetaMask?')) {
-                            window.open('https://metamask.io/download/', '_blank');
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Connection error:', error);
-                alert('Failed to connect wallet: ' + error.message);
-            }
+
+        window.farcasterUser = context.user;
+        const address = context.user.verifiedAddresses?.ethAddresses?.[0];
+
+        if (!address) {
+          document.getElementById('wallet-info').innerHTML =
+            `<span style="color: #f87171;">⚠️ No verified address</span><br><small>Add one in Warpcast Settings → Verified Addresses</small>`;
+        } else {
+          window.handleConnection(address);
         }
-        
-        async function handleConnection(address) {
-            isConnected = true;
-            userAddress = address;
-            updateConnectButton();
-            
-            // Show wallet info - different style for Farcaster
-            if (isInFarcasterApp || farcasterUser) {
-                document.getElementById('wallet-info').innerHTML = 
-                    `<span style="color: #8B5CF6;">🟣 Farcaster Wallet</span><br>${address.slice(0, 6)}...${address.slice(-4)}`;
-            } else {
-                document.getElementById('wallet-info').textContent = 
-                    `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`;
-            }
+
+        const header = document.querySelector('.header p');
+        if (header && context.user.username) {
+          header.innerHTML = `The Official Farcaster Token<br><small>👤 @${context.user.username}</small>`;
         }
-        
-        function updateConnectButton() {
-            const button = document.getElementById('connect-button');
-            if (isConnected && userAddress) {
-                button.textContent = 'Buy FARC 🚀';
-                button.style.background = '#10b981';
-            } else {
-                button.textContent = 'Connect Wallet';
-                button.style.background = '#10b981';
-            }
-        }
-        
-        async function buyTokens() {
-            const amount = document.getElementById('amount-input').value;
-            if (!amount || parseFloat(amount) <= 0) {
-                alert('Please enter a valid amount');
-                return;
-            }
-            
-            if (!isConnected) {
-                await connectWallet();
-                return;
-            }
-            
-            // Calculate tokens
-            const ethAmount = parseFloat(amount);
-            const tokensToReceive = ethAmount * 100; // 100M tokens per ETH
-            
-            const confirmed = confirm(
-                `Purchase Summary:\n\n` +
-                `You pay: ${ethAmount} ETH\n` +
-                `You receive: ${tokensToReceive}M FARC tokens\n\n` +
-                `Proceed with purchase?`
-            );
-            
-            if (confirmed) {
-                alert(
-                    `✅ Ready to purchase!\n\n` +
-                    `Waiting for smart contract deployment...\n\n` +
-                    `Treasury: 0xf7AD40...9C32D`
-                );
-            }
-        }
-        
-        function share() {
-            const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\nhttps://farc.vercel.app';
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: '$FARC Token',
-                    text: text
-                });
-            } else {
-                navigator.clipboard.writeText(text);
-                alert('Share text copied to clipboard!');
-            }
-        }
-        
-        // Listen for wallet changes
-        if (window.ethereum) {
-            window.ethereum.on('accountsChanged', (accounts) => {
-                if (accounts.length > 0) {
-                    handleConnection(accounts[0]);
-                } else {
-                    isConnected = false;
-                    userAddress = null;
-                    updateConnectButton();
-                }
-            });
-        }
-        
-        // Start app when page loads
-        window.addEventListener('DOMContentLoaded', init);
-    </script>
-    
-    <script type="module">
-        import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
-        
-        window.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Notify Farcaster that the app is ready
-                await sdk.actions.ready();
-                
-                // Get user context if available
-                const context = await sdk.context;
-                console.log('Farcaster context:', context);
-                
-                if (context?.user) {
-                    // Update UI with Farcaster user info
-                    window.farcasterUser = context.user;
-                    
-                    // Show Farcaster user info
-                    const header = document.querySelector('.header p');
-                    if (header && context.user.username) {
-                        header.innerHTML = `The Official Farcaster Token<br><small>👤 @${context.user.username}</small>`;
-                    }
-                    
-                    // Try to connect their verified address
-                    if (context.user.verifiedAddresses?.ethAddresses?.length > 0) {
-                        const address = context.user.verifiedAddresses.ethAddresses[0];
-                        if (window.handleConnection) {
-                            window.handleConnection(address);
-                        }
-                    }
-                }
-                
-                // Add handler for opening external links
-                window.openExternalLink = (url) => {
-                    sdk.actions.openUrl({ url });
-                };
-                
-            } catch (error) {
-                console.log('Farcaster SDK initialization error:', error);
-            }
-        });
-    </script>
+
+      } catch (err) {
+        console.error('Error initializing Farcaster SDK:', err);
+        document.getElementById('loading').innerHTML = `<h2>Failed to load Farcaster context</h2>`;
+      } finally {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+      }
+    });
+  </script>
 </body>
 </html>
