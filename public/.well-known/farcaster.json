@@ -8,7 +8,7 @@
     "splashBackgroundColor": "#8B5CF6"
   },
   "frame": {
-    "version": "0.1.0",
+    "version": "1",
     "name": "FARC Token",
     "homeUrl": "https://farc.vercel.app",
     "iconUrl": "https://farc.vercel.app/farc.png",
