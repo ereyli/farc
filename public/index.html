@@ -3,110 +3,84 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>$FARC - The Farcaster Token</title>
-  <link rel="icon" type="image/png" href="/farc.png" />
-  <link rel="manifest" href="/farcaster.json" />
+  <title>$FARC - Farcaster Mini App</title>
+  <link rel="icon" href="/farc.png" type="image/png" />
 
-  <!-- Farcaster Mini App Meta -->
+  <!-- Farcaster Meta -->
   <meta name="fc:frame" content="vNext" />
   <meta name="fc:frame:image" content="https://farc.vercel.app/farc.png" />
-  <meta name="fc:frame:button:1" content="Launch App" />
-  <meta name="fc:frame:button:1:action" content="launch_frame" />
+  <meta name="fc:frame:button:1" content="Buy" />
+  <meta name="fc:frame:button:1:action" content="link" />
   <meta name="fc:frame:button:1:target" content="https://farc.vercel.app" />
 
   <style>
     body {
+      margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
       color: white;
-      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 20px;
       min-height: 100vh;
-    }
-
-    .container {
-      max-width: 400px;
-      margin: 0 auto;
       text-align: center;
     }
 
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      margin-top: 40px;
+    }
+
     .logo {
-      width: 120px;
-      height: 120px;
-      border-radius: 20px;
+      width: 100px;
+      height: 100px;
+      border-radius: 16px;
       margin-bottom: 20px;
     }
 
-    .card {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 20px;
-      margin-top: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
     .button {
-      width: 100%;
-      padding: 15px;
+      margin-top: 20px;
+      padding: 14px 20px;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       font-size: 16px;
       font-weight: bold;
+      color: white;
+      background-color: #10b981;
       cursor: pointer;
+    }
+
+    .address {
       margin-top: 10px;
-    }
-
-    .primary {
-      background: #10b981;
-      color: white;
-    }
-
-    .secondary {
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-    }
-
-    input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
+      font-size: 14px;
+      opacity: 0.9;
     }
 
     .error {
-      margin-top: 40px;
       color: #fecaca;
-      font-size: 18px;
+      font-size: 16px;
+      margin-top: 40px;
     }
   </style>
 </head>
 <body>
-  <div class="container" id="app" style="display:none;">
-    <img src="/farc.png" alt="FARC Logo" class="logo" />
-    <h1>$FARC</h1>
-    <p>The Official Farcaster Token</p>
-    <p style="font-size: 14px; opacity: 0.8;">🟣 Farcaster Exclusive</p>
-
-    <div class="card">
-      <h2>🔥 Presale LIVE</h2>
-      <p><strong>0.01 ETH = 1M FARC</strong></p>
-      <p><strong>Max per wallet: 5M FARC</strong></p>
-      <p><strong>Sold: 125M / 500M</strong></p>
-    </div>
-
-    <div class="card">
-      <h3>Buy $FARC</h3>
-      <input type="number" id="amount-input" placeholder="Amount in ETH (e.g. 0.01)" step="0.001" min="0.001" />
-      <div id="wallet-info" style="margin: 10px 0; font-size: 14px; opacity: 0.8;"></div>
-      <button id="buy-button" class="button primary">Connect Farcaster Wallet</button>
-      <button onclick="share()" class="button secondary">Share $FARC 📢</button>
-    </div>
+  <div class="card" id="app" style="display: none;">
+    <img src="/farc.png" class="logo" alt="$FARC Logo" />
+    <h1>$FARC Token</h1>
+    <p>The official Farcaster token</p>
+    <div id="wallet-info"></div>
+    <input id="amount" type="number" min="0.001" step="0.001" placeholder="ETH amount" style="margin-top:20px;width:100%;padding:10px;border-radius:8px;border:none;" />
+    <button class="button" id="buy-button">Buy FARC</button>
   </div>
 
-  <div id="error" class="error" style="display:none;">
+  <div class="error" id="error" style="display: none;">
     ⚠️ Please open this app inside <strong>Farcaster</strong> (Warpcast).
   </div>
 
@@ -115,73 +89,47 @@
 
     const isInFarcaster = window.parent !== window || window.location !== window.parent.location;
 
-    if (!isInFarcaster) {
-      document.getElementById('error').style.display = 'block';
-      throw new Error("Not in Farcaster app");
-    }
-
     const app = document.getElementById('app');
+    const errorBox = document.getElementById('error');
     const walletInfo = document.getElementById('wallet-info');
     const buyButton = document.getElementById('buy-button');
-    let userAddress = null;
 
-    function handleConnection(address) {
-      userAddress = address;
-      walletInfo.innerHTML = `🟣 ${address.slice(0, 6)}...${address.slice(-4)}`;
-      buyButton.textContent = 'Buy FARC 🚀';
-      buyButton.onclick = buyTokens;
+    if (!isInFarcaster) {
+      errorBox.style.display = 'block';
+      throw new Error('Not in Farcaster');
     }
 
-    function buyTokens() {
-      const amount = parseFloat(document.getElementById('amount-input').value);
-      if (!amount || amount <= 0) {
-        alert('Enter a valid amount');
-        return;
+    try {
+      await sdk.actions.ready();
+      const context = await sdk.context;
+
+      if (!context || !context.user) {
+        errorBox.innerText = '⚠️ Failed to load Farcaster context.';
+        errorBox.style.display = 'block';
+        throw new Error('No Farcaster user');
       }
-      const tokens = amount * 100;
-      alert(`✅ You will receive ${tokens}M FARC.\n\nSmart contract coming soon.`);
-    }
 
-    window.share = function () {
-      const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\nhttps://farc.vercel.app';
-      if (navigator.share) {
-        navigator.share({ title: '$FARC Token', text });
+      const ethAddress = context.user.verifiedAddresses?.ethAddresses?.[0];
+      if (!ethAddress) {
+        walletInfo.innerHTML = `<p style="color:#f87171;">No verified wallet address found.<br>Please verify in Warpcast settings.</p>`;
+        buyButton.disabled = true;
       } else {
-        navigator.clipboard.writeText(text);
-        alert('Share text copied to clipboard!');
+        walletInfo.innerHTML = `<div class="address">🟣 ${ethAddress.slice(0, 6)}...${ethAddress.slice(-4)}</div>`;
+        buyButton.onclick = () => {
+          const amount = parseFloat(document.getElementById('amount').value);
+          if (!amount || amount <= 0) {
+            alert('Enter a valid ETH amount');
+            return;
+          }
+          alert(`✅ You will receive ${amount * 100}M $FARC tokens.\n\nSmart contract coming soon.`);
+        };
       }
-    };
 
-    window.addEventListener('DOMContentLoaded', async () => {
-      try {
-        await sdk.actions.ready();
-        const context = await sdk.context;
-
-        if (!context?.user) {
-          document.getElementById('error').style.display = 'block';
-          return;
-        }
-
-        const header = document.querySelector('.header p');
-        if (context.user.username && header) {
-          header.innerHTML = `The Official Farcaster Token<br><small>👤 @${context.user.username}</small>`;
-        }
-
-        const address = context.user.verifiedAddresses?.ethAddresses?.[0];
-        if (!address) {
-          walletInfo.innerHTML = '⚠️ No verified wallet. Add one in Warpcast settings.';
-          buyButton.disabled = true;
-          buyButton.textContent = 'No Verified Address';
-        } else {
-          handleConnection(address);
-        }
-
-        app.style.display = 'block';
-      } catch (err) {
-        console.error('Farcaster SDK error:', err);
-        document.getElementById('error').style.display = 'block';
-      }
-    });
+      app.style.display = 'block';
+    } catch (err) {
+      console.error(err);
+      errorBox.style.display = 'block';
+    }
   </script>
 </body>
 </html>
