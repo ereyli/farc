@@ -8,17 +8,16 @@
     "splashBackgroundColor": "#8B5CF6"
   },
   "frame": {
-    "version": "1",
+    "version": "0.1.0",
     "name": "FARC Token",
     "homeUrl": "https://farc.vercel.app",
     "iconUrl": "https://farc.vercel.app/farc.png",
     "splashUrl": "https://farc.vercel.app/splash.png",
     "webhookUrl": "https://farc.vercel.app/api/webhook"
   },
-  {
   "accountAssociation": {
-    "header": "eyJmaWQiOjEwODc2NzQsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg3M0E1Mjc1OGRlRjE5ZWJBRDc1MkI5ZTA1NTM0MzYzNTZkNjJGY0Y0In0",
-    "payload": "eyJkb21haW4iOiJmYXJjLnZlcmNlbC5hcHAifQ",
-    "signature": "MHg5MjY5OTljMmFhNzZhNDZhZWUzOGIxNjY3YjcwODYxOTMxMmEwMGE2Y2JkZDk5OWI4NDY5MTdkMDUxMDJmMjljMTVmMTNmNGY2MGFmMmI1Y2EzOTI2NmJmYjlhMzdhOTU0NGIzNGZlMzIxY2Q5YzgzNmUwMGNmOWNmYjk2NWRlMTFj"
+    "header": "BURAYA_WARPCAST_HEADER",
+    "payload": "BURAYA_WARPCAST_PAYLOAD",
+    "signature": "BURAYA_WARPCAST_SIGNATURE"
   }
 }
