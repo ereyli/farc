@@ -141,9 +141,14 @@
                     type="number" 
                     id="amount-input" 
                     placeholder="Amount in ETH (e.g. 0.01)"
+                    step="0.001"
+                    min="0.001"
                     style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: none;"
                 >
-                <button id="connect-button" class="button button-primary">
+                <button id="buy-button" class="button button-primary" disabled style="opacity: 0.6; margin-bottom: 10px;">
+                    Connect Wallet First
+                </button>
+                <button id="connect-button" class="button button-secondary">
                     Connect Wallet
                 </button>
                 <button class="button button-secondary" onclick="share()">
@@ -154,31 +159,144 @@
     </div>
 
     <script>
+        // Global variables
+        let isConnected = false;
+        let userAddress = null;
+        let farcasterUser = null;
+        
         // Simple initialization
-        function init() {
+        async function init() {
             console.log('FARC App Starting...');
             
             // Hide loading, show app
             setTimeout(() => {
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
-            }, 1000);
+            }, 500);
             
             // Connect button
             document.getElementById('connect-button').onclick = connectWallet;
+            
+            // Try to auto-connect to Farcaster wallet
+            await tryFarcasterConnect();
         }
         
-        function connectWallet() {
-            if (typeof window.ethereum !== 'undefined') {
-                console.log('MetaMask is installed!');
-                alert('Wallet connection coming soon!');
-            } else {
-                alert('Please install MetaMask!');
+        async function tryFarcasterConnect() {
+            try {
+                // Check if we're in Farcaster context
+                if (window.parent !== window) {
+                    console.log('Running in Farcaster frame context');
+                    
+                    // Try to get Farcaster user info
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const fid = urlParams.get('fid');
+                    
+                    if (fid) {
+                        console.log('Farcaster ID found:', fid);
+                        updateUIForFarcaster(fid);
+                    }
+                }
+                
+                // Also check for ethereum provider
+                if (typeof window.ethereum !== 'undefined') {
+                    // Check if already connected
+                    const accounts = await window.ethereum.request({ 
+                        method: 'eth_accounts' 
+                    });
+                    
+                    if (accounts.length > 0) {
+                        await handleConnection(accounts[0]);
+                    }
+                }
+            } catch (error) {
+                console.log('Auto-connect error:', error);
             }
         }
         
+        async function connectWallet() {
+            if (isConnected) {
+                // Disconnect
+                isConnected = false;
+                userAddress = null;
+                updateConnectButton();
+                return;
+            }
+            
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    // Request account access
+                    const accounts = await window.ethereum.request({ 
+                        method: 'eth_requestAccounts' 
+                    });
+                    
+                    if (accounts.length > 0) {
+                        await handleConnection(accounts[0]);
+                    }
+                } else {
+                    // Try Farcaster embedded wallet
+                    alert('Connecting to Farcaster Wallet...\n\nIf this doesn\'t work, please make sure you have a wallet connected to your Farcaster account.');
+                    
+                    // In a real implementation, this would use Farcaster's wallet API
+                    // For now, we'll show instructions
+                    window.open('https://warpcast.com/settings/verified-addresses', '_blank');
+                }
+            } catch (error) {
+                console.error('Connection error:', error);
+                alert('Failed to connect wallet: ' + error.message);
+            }
+        }
+        
+        async function handleConnection(address) {
+            isConnected = true;
+            userAddress = address;
+            updateConnectButton();
+            
+            // Enable buy button
+            const buyButton = document.getElementById('buy-button');
+            if (buyButton) {
+                buyButton.disabled = false;
+                buyButton.textContent = 'Buy FARC 🚀';
+                buyButton.onclick = buyTokens;
+            }
+        }
+        
+        function updateConnectButton() {
+            const button = document.getElementById('connect-button');
+            if (isConnected && userAddress) {
+                button.textContent = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
+                button.style.background = 'rgba(16, 185, 129, 0.2)';
+            } else {
+                button.textContent = 'Connect Wallet';
+                button.style.background = '#10b981';
+            }
+        }
+        
+        function updateUIForFarcaster(fid) {
+            // Update UI to show Farcaster connection
+            const header = document.querySelector('.header p');
+            if (header) {
+                header.innerHTML = `The Official Farcaster Token<br><small>Connected as Farcaster user #${fid}</small>`;
+            }
+        }
+        
+        async function buyTokens() {
+            const amount = document.getElementById('amount-input').value;
+            if (!amount || parseFloat(amount) <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+            
+            if (!isConnected) {
+                alert('Please connect your wallet first');
+                return;
+            }
+            
+            // For now, just show a message
+            alert(`Ready to buy ${parseFloat(amount) * 100} Million FARC tokens!\n\nContract deployment coming soon...`);
+        }
+        
         function share() {
-            const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\n\nhttps://farc.vercel.app';
+            const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\nhttps://farc.vercel.app';
             
             if (navigator.share) {
                 navigator.share({
@@ -191,6 +309,19 @@
             }
         }
         
+        // Listen for wallet changes
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length > 0) {
+                    handleConnection(accounts[0]);
+                } else {
+                    isConnected = false;
+                    userAddress = null;
+                    updateConnectButton();
+                }
+            });
+        }
+        
         // Start app when page loads
         window.addEventListener('DOMContentLoaded', init);
     </script>
@@ -198,8 +329,42 @@
     <script type="module">
         import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
         
-        window.addEventListener('DOMContentLoaded', () => {
-            sdk.actions.ready();
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Notify Farcaster that the app is ready
+                await sdk.actions.ready();
+                
+                // Get user context if available
+                const context = await sdk.context;
+                console.log('Farcaster context:', context);
+                
+                if (context?.user) {
+                    // Update UI with Farcaster user info
+                    window.farcasterUser = context.user;
+                    
+                    // Show Farcaster user info
+                    const header = document.querySelector('.header p');
+                    if (header && context.user.username) {
+                        header.innerHTML = `The Official Farcaster Token<br><small>👤 @${context.user.username}</small>`;
+                    }
+                    
+                    // Try to connect their verified address
+                    if (context.user.verifiedAddresses?.ethAddresses?.length > 0) {
+                        const address = context.user.verifiedAddresses.ethAddresses[0];
+                        if (window.handleConnection) {
+                            window.handleConnection(address);
+                        }
+                    }
+                }
+                
+                // Add handler for opening external links
+                window.openExternalLink = (url) => {
+                    sdk.actions.openUrl({ url });
+                };
+                
+            } catch (error) {
+                console.log('Farcaster SDK initialization error:', error);
+            }
         });
     </script>
 </body>
