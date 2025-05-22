@@ -578,17 +578,19 @@ Get yours before it's too late!`);
 
         // Auto-refresh presale info every 30 seconds
         setInterval(updatePresaleInfo, 30000);
-
-       <!-- Farcaster SDK - classic version to fix white screen -->
+        
+<!-- Farcaster SDK – classic version to fix white screen -->
 <script src="https://unpkg.com/@farcaster/frame-sdk@latest/dist/frame.umd.js"></script>
+<script>
+  const { sdk } = window.frameSdk;
 
-    <script type="module">
-  import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
-
-  window.addEventListener('DOMContentLoaded', () => {
-    sdk.actions.ready();
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      await sdk.actions.ready(); // Farcaster frame ekranı için zorunlu
+      document.getElementById('loading')?.classList.add('hidden');
+      document.getElementById('main-content')?.classList.remove('hidden');
+    } catch (err) {
+      console.error('sdk.actions.ready() failed:', err);
+    }
   });
 </script>
-
-</body>
-</html>
