@@ -579,12 +579,20 @@ Get yours before it's too late!`);
         // Auto-refresh presale info every 30 seconds
         setInterval(updatePresaleInfo, 30000);
 
-        // Initialize app when DOM is loaded
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
-    </script>
+       <!-- Farcaster SDK - classic version to fix white screen -->
+<script src="https://unpkg.com/@farcaster/frame-sdk@latest/dist/frame.umd.js"></script>
+<script>
+  const { sdk } = window.frameSdk;
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      await sdk.actions.ready();
+      console.log("✅ Farcaster MiniApp is ready!");
+    } catch (err) {
+      console.error("❌ sdk.actions.ready() failed:", err);
+    }
+  });
+</script>
+
 </body>
 </html>
