@@ -5,10 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>$FARC - The Farcaster Token</title>
     <link rel="icon" href="/farc.png" type="image/png">
+    
+    <!-- Open Graph tags -->
     <meta property="og:title" content="$FARC - The Farcaster Token">
     <meta property="og:description" content="Join the $FARC presale! 0.01 ETH = 1M tokens. Max 5M per wallet.">
     <meta property="og:image" content="https://farc.vercel.app/farc.png">
     <meta property="og:type" content="website">
+    
+    <!-- Farcaster Frame tags -->
+    <meta property="fc:frame" content="vNext">
+    <meta property="fc:frame:image" content="https://farc.vercel.app/farc.png">
+    <meta property="fc:frame:button:1" content="Open App">
+    <meta property="fc:frame:button:1:action" content="link">
+    <meta property="fc:frame:button:1:target" content="https://farc.vercel.app">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
     <style>
@@ -170,9 +180,11 @@
             <div class="glass-effect rounded-3xl p-6 mb-6">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
-                        <img id="user-avatar" src="" alt="Avatar" class="w-12 h-12 rounded-full mr-3 border-2 border-white border-opacity-20">
+                        <div class="w-12 h-12 rounded-full mr-3 border-2 border-white border-opacity-20 bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold">
+                            <span id="user-initial">?</span>
+                        </div>
                         <div>
-                            <p id="user-name" class="font-semibold"></p>
+                            <p id="user-name" class="font-semibold">Wallet User</p>
                             <p id="wallet-address" class="text-sm opacity-70">Not connected</p>
                         </div>
                     </div>
@@ -289,21 +301,6 @@
     </div>
 
     <script type="module">
-        // Import Farcaster SDK
-        import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
-
-        // Contract configuration - BUNLARI DEĞİŞTİR
-        const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"; // Deploy edilen kontrat adresi
-        const TREASURY_ADDRESS = "0x742d35Cc6634C0532925a3b844Bc9e7595f2bD7e"; // Senin cüzdan adresin
-        const CONTRACT_ABI = [
-            "function buyTokens() external payable",
-            "function purchasedAmount(address) view returns (uint256)",
-            "function getRemainingPurchaseAmount(address) view returns (uint256)",
-            "function getPresaleInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)",
-            "function balanceOf(address) view returns (uint256)",
-            "function decimals() view returns (uint8)"
-        ];
-
         // Global variables
         let userContext = null;
         let provider = null;
@@ -316,23 +313,24 @@
         const MOCK_ETH_PRICE = 3500; // $3500 per ETH
         const FARC_PRICE = 0.00001 * MOCK_ETH_PRICE; // Price per FARC in USD
 
+        // Contract configuration - BUNLARI DEĞİŞTİR
+        const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"; // Deploy edilen kontrat adresi
+        const TREASURY_ADDRESS = "0xf7AD40Fb6c9b9dC5DEA886B4656215a84289C32D"; // Treasury cüzdan adresi
+        const CONTRACT_ABI = [
+            "function buyTokens() external payable",
+            "function purchasedAmount(address) view returns (uint256)",
+            "function getRemainingPurchaseAmount(address) view returns (uint256)",
+            "function getPresaleInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)",
+            "function balanceOf(address) view returns (uint256)",
+            "function decimals() view returns (uint8)"
+        ];
+
         // Initialize the app
         async function init() {
             try {
-                // Get context from Farcaster
-                userContext = sdk.context;
+                // Skip Farcaster SDK for now - it may be causing the issue
+                console.log('Initializing FARC app...');
                 
-                // Update UI with user info
-                if (userContext?.user) {
-                    document.getElementById('user-name').textContent = userContext.user.displayName || userContext.user.username || 'Farcaster User';
-                    
-                    if (userContext.user.pfpUrl) {
-                        document.getElementById('user-avatar').src = userContext.user.pfpUrl;
-                    } else {
-                        document.getElementById('user-avatar').src = `https://api.dicebear.com/7.x/shapes/svg?seed=${userContext.user.fid}`;
-                    }
-                }
-
                 // Initialize Ethereum provider
                 if (window.ethereum) {
                     provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -362,11 +360,9 @@
                     document.getElementById('main-content').classList.remove('hidden');
                 }, 1500);
                 
-                // Notify SDK that app is ready
-                await sdk.actions.ready();
-                
             } catch (error) {
                 console.error('Initialization error:', error);
+                // Still show the app even if there's an error
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
             }
@@ -551,28 +547,36 @@
             }
         });
 
-        // Share button handler
+        // Share button handler - simplified
         document.getElementById('share-button').addEventListener('click', () => {
-            const text = encodeURIComponent(`Just discovered $FARC - The Official Farcaster Token! 🚀
+            const text = `Just discovered $FARC - The Official Farcaster Token! 🚀
 
 💜 Built for the Farcaster community
 💰 Presale: 0.01 ETH = 1M FARC
 🎯 Max 5M per wallet
 
-Get yours before it's too late!`);
+Get yours at: https://farc.vercel.app`;
             
-            sdk.actions.openUrl({
-                url: `https://warpcast.com/~/compose?text=${text}&embeds[]=https://your-domain.com`
-            });
+            // Try to use Web Share API first
+            if (navigator.share) {
+                navigator.share({
+                    title: '$FARC Token Presale',
+                    text: text,
+                    url: 'https://farc.vercel.app'
+                }).catch(err => console.log('Share failed:', err));
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('Share text copied to clipboard!');
+                }).catch(err => {
+                    console.error('Copy failed:', err);
+                });
+            }
         });
 
-        // Add app button handler
-        document.getElementById('add-app-btn').addEventListener('click', async () => {
-            try {
-                await sdk.actions.addFrame();
-            } catch (error) {
-                console.error('Add app error:', error);
-            }
+        // Add app button handler - simplified
+        document.getElementById('add-app-btn').addEventListener('click', () => {
+            alert('To add this app:\n1. Open this link in Warpcast\n2. Click the "Add" button\n3. Enjoy!');
         });
 
         // Auto-refresh presale info every 30 seconds
