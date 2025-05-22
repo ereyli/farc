@@ -10,7 +10,7 @@
     <meta property="og:image" content="https://ipfs.io/ipfs/bafybeieqqvq2m2dzaox5enzu3lpwhoqnrx5qpqqdqq3hss2dnvbta5xpfy/farc.png">
     <meta property="og:type" content="website">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
         
@@ -585,14 +585,17 @@ Get yours before it's too late!`);
   const { sdk } = window.frameSdk;
 
   window.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('loading')?.classList.add('hidden');
+    document.getElementById('main-content')?.classList.remove('hidden');
+
     try {
       await sdk.actions.ready();
-      console.log("✅ Farcaster MiniApp is ready!");
     } catch (err) {
-      console.error("❌ sdk.actions.ready() failed:", err);
+      console.error('sdk.actions.ready() failed:', err);
     }
   });
 </script>
+
 
 </body>
 </html>
