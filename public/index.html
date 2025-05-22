@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$FARC - The Farcaster Token</title>
+    <link rel="icon" href="https://ipfs.io/ipfs/bafybeieqqvq2m2dzaox5enzu3lpwhoqnrx5qpqqdqq3hss2dnvbta5xpfy/farc.png" type="image/png">
+    <meta property="og:title" content="$FARC - The Farcaster Token">
+    <meta property="og:description" content="Join the $FARC presale! 0.01 ETH = 1M tokens. Max 5M per wallet.">
+    <meta property="og:image" content="https://ipfs.io/ipfs/bafybeieqqvq2m2dzaox5enzu3lpwhoqnrx5qpqqdqq3hss2dnvbta5xpfy/farc.png">
+    <meta property="og:type" content="website">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.5),
+                           0 0 40px rgba(139, 92, 246, 0.3);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(139, 92, 246, 0.8),
+                           0 0 60px rgba(139, 92, 246, 0.5);
+            }
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #8B5CF6 100%);
+            background-size: 200% 200%;
+            animation: gradient-shift 10s ease infinite;
+        }
+        
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .token-logo {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(139, 92, 246, 0.4);
+            background: rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .token-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .buy-button-gradient {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .buy-button-gradient:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <div id="app" class="container mx-auto p-4 max-w-md">
+        <!-- Loading State -->
+        <div id="loading" class="flex flex-col items-center justify-center min-h-screen">
+            <div class="token-logo pulse-glow mb-6">
+                <img src="https://ipfs.io/ipfs/bafybeieqqvq2m2dzaox5enzu3lpwhoqnrx5qpqqdqq3hss2dnvbta5xpfy/farc.png" alt="FARC Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNjAiIHI9IjYwIiBmaWxsPSIjOEI1Q0Y2Ii8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iNDgiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSJ3aGl0ZSI+RjwvdGV4dD4KPC9zdmc+'">
+            </div>
+            <p class="text-xl font-medium">Initializing $FARC...</p>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" class="hidden">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="token-logo float-animation mb-4">
+                    <img 
+                        src="https://bafybeieqqvq2m2dzaox5enzu3lpwhoqnrx5qpqqdqq3hss2dnvbta5xpfy.ipfs.w3s.link/farc.png" 
+                        alt="FARC Logo"
+                        crossorigin="anonymous"
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#8B5CF6,#6366F1);color:white;font-size:48px;font-weight:bold;\'>F</div>'"
+                    >
+                </div>
+                <h1 class="text-5xl font-bold mb-2">$FARC</h1>
+                <p class="text-xl opacity-90">The Official Farcaster Token</p>
+                <p class="text-sm opacity-70 mt-2">Building the future of social tokens</p>
+            </div>
+
+            <!-- Presale Stats -->
+            <div class="glass-effect rounded-3xl p-6 mb-6 pulse-glow">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold">🔥 Presale LIVE</h2>
+                    <span class="bg-green-500 bg-opacity-20 text-green-400 px-3 py-1 rounded-full text-sm animate-pulse">
+                        • Active
+                    </span>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="opacity-70">Progress</span>
+                        <span class="font-medium"><span id="tokens-sold">0</span> / 500M FARC</span>
+                    </div>
+                    <div class="w-full bg-black bg-opacity-30 rounded-full h-6 overflow-hidden">
+                        <div id="progress-bar" class="progress-bar h-full rounded-full flex items-center justify-end pr-2" style="width: 0%">
+                            <span class="text-xs font-medium drop-shadow"><span id="progress-percent">0</span>%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="stat-card rounded-2xl p-4 text-center">
+                        <p class="text-3xl font-bold mb-1">0.01 ETH</p>
+                        <p class="text-sm opacity-70">= 1M FARC</p>
+                    </div>
+                    <div class="stat-card rounded-2xl p-4 text-center">
+                        <p class="text-3xl font-bold mb-1">5M FARC</p>
+                        <p class="text-sm opacity-70">Max per wallet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Wallet Section -->
+            <div class="glass-effect rounded-3xl p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <img id="user-avatar" src="" alt="Avatar" class="w-12 h-12 rounded-full mr-3 border-2 border-white border-opacity-20">
+                        <div>
+                            <p id="user-name" class="font-semibold"></p>
+                            <p id="wallet-address" class="text-sm opacity-70">Not connected</p>
+                        </div>
+                    </div>
+                    <button id="connect-wallet" class="bg-white bg-opacity-10 hover:bg-opacity-20 px-4 py-2 rounded-xl transition backdrop-blur">
+                        Connect
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white border-opacity-10">
+                    <div class="text-center">
+                        <p class="text-sm opacity-70 mb-1">Your FARC</p>
+                        <p class="text-2xl font-bold"><span id="user-balance">0</span></p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm opacity-70 mb-1">Can Buy</p>
+                        <p class="text-2xl font-bold text-green-400"><span id="remaining-limit">5M</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buy Section -->
+            <div class="glass-effect rounded-3xl p-6 mb-6">
+                <h2 class="text-xl font-semibold mb-4">Buy $FARC</h2>
+                
+                <!-- Amount Selector -->
+                <div class="grid grid-cols-4 gap-2 mb-4">
+                    <button class="quick-buy bg-white bg-opacity-10 hover:bg-opacity-20 py-3 px-2 rounded-xl transition text-sm font-medium" data-amount="0.01">
+                        0.01 ETH
+                    </button>
+                    <button class="quick-buy bg-white bg-opacity-10 hover:bg-opacity-20 py-3 px-2 rounded-xl transition text-sm font-medium" data-amount="0.025">
+                        0.025 ETH
+                    </button>
+                    <button class="quick-buy bg-white bg-opacity-10 hover:bg-opacity-20 py-3 px-2 rounded-xl transition text-sm font-medium" data-amount="0.04">
+                        0.04 ETH
+                    </button>
+                    <button class="quick-buy bg-white bg-opacity-10 hover:bg-opacity-20 py-3 px-2 rounded-xl transition text-sm font-medium" data-amount="0.05">
+                        MAX
+                    </button>
+                </div>
+                
+                <div class="relative mb-4">
+                    <input 
+                        type="number" 
+                        id="buy-amount" 
+                        class="w-full bg-black bg-opacity-20 border border-white border-opacity-20 rounded-xl px-4 py-4 pr-16 focus:outline-none focus:border-opacity-40 text-lg"
+                        placeholder="0.00"
+                        step="0.001"
+                        min="0.000001"
+                    >
+                    <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm opacity-70">ETH</span>
+                </div>
+                
+                <div class="bg-black bg-opacity-20 rounded-2xl p-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm opacity-70">You receive</span>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-green-400"><span id="tokens-to-receive">0</span> FARC</p>
+                            <p class="text-xs opacity-50">≈ $<span id="usd-value">0.00</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button 
+                    id="buy-button"
+                    class="w-full buy-button-gradient text-white font-bold py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                    disabled
+                >
+                    Connect Wallet to Buy
+                </button>
+                
+                <p class="text-xs text-center mt-3 opacity-50">
+                    Treasury: <span class="font-mono">0x742d35Cc6634C0532925a3b844Bc9e7595f2bD7e</span>
+                </p>
+            </div>
+
+            <!-- Features -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="glass-effect rounded-2xl p-4 text-center">
+                    <div class="text-2xl mb-2">🔒</div>
+                    <p class="text-xs opacity-70">Secure</p>
+                </div>
+                <div class="glass-effect rounded-2xl p-4 text-center">
+                    <div class="text-2xl mb-2">⚡</div>
+                    <p class="text-xs opacity-70">Fast</p>
+                </div>
+                <div class="glass-effect rounded-2xl p-4 text-center">
+                    <div class="text-2xl mb-2">🌐</div>
+                    <p class="text-xs opacity-70">Decentralized</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-4">
+                <button 
+                    id="share-button"
+                    class="glass-effect py-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition font-medium"
+                >
+                    Share $FARC 📢
+                </button>
+                <button 
+                    id="add-app-btn"
+                    class="glass-effect py-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition font-medium"
+                >
+                    Add to Farcaster ⭐
+                </button>
+            </div>
+            
+            <!-- Footer -->
+            <div class="text-center mt-8 opacity-50 text-sm">
+                <p>Built for the Farcaster community</p>
+                <p class="mt-1">Not affiliated with Farcaster or Warpcast</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Farcaster SDK
+        import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+
+        // Contract configuration - BUNLARI DEĞİŞTİR
+        const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"; // Deploy edilen kontrat adresi
+        const TREASURY_ADDRESS = "0x742d35Cc6634C0532925a3b844Bc9e7595f2bD7e"; // Senin cüzdan adresin
+        const CONTRACT_ABI = [
+            "function buyTokens() external payable",
+            "function purchasedAmount(address) view returns (uint256)",
+            "function getRemainingPurchaseAmount(address) view returns (uint256)",
+            "function getPresaleInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)",
+            "function balanceOf(address) view returns (uint256)",
+            "function decimals() view returns (uint8)"
+        ];
+
+        // Global variables
+        let userContext = null;
+        let provider = null;
+        let signer = null;
+        let contract = null;
+        let userAddress = null;
+        let isConnected = false;
+
+        // Mock price for USD calculation
+        const MOCK_ETH_PRICE = 3500; // $3500 per ETH
+        const FARC_PRICE = 0.00001 * MOCK_ETH_PRICE; // Price per FARC in USD
+
+        // Initialize the app
+        async function init() {
+            try {
+                // Get context from Farcaster
+                userContext = sdk.context;
+                
+                // Update UI with user info
+                if (userContext?.user) {
+                    document.getElementById('user-name').textContent = userContext.user.displayName || userContext.user.username || 'Farcaster User';
+                    
+                    if (userContext.user.pfpUrl) {
+                        document.getElementById('user-avatar').src = userContext.user.pfpUrl;
+                    } else {
+                        document.getElementById('user-avatar').src = `https://api.dicebear.com/7.x/shapes/svg?seed=${userContext.user.fid}`;
+                    }
+                }
+
+                // Initialize Ethereum provider
+                if (window.ethereum) {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    
+                    // Check if already connected
+                    const accounts = await provider.listAccounts();
+                    if (accounts.length > 0) {
+                        await connectWallet();
+                    }
+                    
+                    // Listen for account changes
+                    window.ethereum.on('accountsChanged', (accounts) => {
+                        if (accounts.length > 0) {
+                            connectWallet();
+                        } else {
+                            disconnectWallet();
+                        }
+                    });
+                }
+
+                // Update presale info
+                await updatePresaleInfo();
+                
+                // Hide loading, show content
+                setTimeout(() => {
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+                }, 1500);
+                
+                // Notify SDK that app is ready
+                await sdk.actions.ready();
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+            }
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                const accounts = await provider.send("eth_requestAccounts", []);
+                userAddress = accounts[0];
+                signer = provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                
+                isConnected = true;
+                
+                // Update UI
+                const shortAddress = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
+                document.getElementById('wallet-address').textContent = shortAddress;
+                document.getElementById('connect-wallet').textContent = 'Connected';
+                document.getElementById('connect-wallet').classList.add('bg-green-500', 'bg-opacity-20');
+                document.getElementById('buy-button').textContent = 'Buy FARC 🚀';
+                document.getElementById('buy-button').disabled = false;
+                
+                await updateUserBalance();
+            } catch (error) {
+                console.error('Wallet connection error:', error);
+            }
+        }
+
+        // Disconnect wallet
+        function disconnectWallet() {
+            isConnected = false;
+            userAddress = null;
+            document.getElementById('wallet-address').textContent = 'Not connected';
+            document.getElementById('connect-wallet').textContent = 'Connect';
+            document.getElementById('connect-wallet').classList.remove('bg-green-500', 'bg-opacity-20');
+            document.getElementById('buy-button').textContent = 'Connect Wallet to Buy';
+            document.getElementById('buy-button').disabled = true;
+            document.getElementById('user-balance').textContent = '0';
+            document.getElementById('remaining-limit').textContent = '5M';
+        }
+
+        // Update presale info with mock data for now
+        async function updatePresaleInfo() {
+            try {
+                // Mock data - replace with actual contract calls
+                const soldAmount = 125_000_000; // 125M sold
+                const totalPresale = 500_000_000; // 500M total
+                const progressPercent = (soldAmount / totalPresale) * 100;
+                
+                document.getElementById('tokens-sold').textContent = formatNumber(soldAmount);
+                document.getElementById('progress-percent').textContent = progressPercent.toFixed(1);
+                document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+                
+                /* Actual contract call would be:
+                if (!provider) return;
+                const readContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                const info = await readContract.getPresaleInfo();
+                const soldAmount = parseFloat(ethers.utils.formatUnits(info.sold, 18));
+                */
+                
+            } catch (error) {
+                console.error('Error updating presale info:', error);
+            }
+        }
+
+        // Update user balance
+        async function updateUserBalance() {
+            try {
+                // Mock data for demonstration
+                const mockBalance = Math.floor(Math.random() * 2000000);
+                const mockRemaining = 5000000 - mockBalance;
+                
+                document.getElementById('user-balance').textContent = formatNumber(mockBalance);
+                document.getElementById('remaining-limit').textContent = formatNumber(mockRemaining);
+                
+                /* Actual contract calls would be:
+                if (!contract || !userAddress) return;
+                const balance = await contract.balanceOf(userAddress);
+                const remaining = await contract.getRemainingPurchaseAmount(userAddress);
+                */
+                
+            } catch (error) {
+                console.error('Error updating user balance:', error);
+            }
+        }
+
+        // Format number with appropriate suffix
+        function formatNumber(num) {
+            if (num >= 1_000_000) {
+                return (num / 1_000_000).toFixed(1) + 'M';
+            } else if (num >= 1_000) {
+                return (num / 1_000).toFixed(1) + 'K';
+            }
+            return num.toLocaleString();
+        }
+
+        // Calculate tokens to receive
+        document.getElementById('buy-amount').addEventListener('input', (e) => {
+            const ethAmount = parseFloat(e.target.value) || 0;
+            const tokensToReceive = ethAmount * 100_000_000; // 100M tokens per ETH
+            const usdValue = tokensToReceive * FARC_PRICE;
+            
+            document.getElementById('tokens-to-receive').textContent = formatNumber(tokensToReceive);
+            document.getElementById('usd-value').textContent = usdValue.toFixed(2);
+        });
+
+        // Quick buy buttons
+        document.querySelectorAll('.quick-buy').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const amount = e.currentTarget.dataset.amount;
+                document.getElementById('buy-amount').value = amount;
+                document.getElementById('buy-amount').dispatchEvent(new Event('input'));
+            });
+        });
+
+        // Connect wallet button
+        document.getElementById('connect-wallet').addEventListener('click', () => {
+            if (!isConnected) {
+                connectWallet();
+            }
+        });
+
+        // Buy button handler
+        document.getElementById('buy-button').addEventListener('click', async () => {
+            if (!isConnected) {
+                await connectWallet();
+                return;
+            }
+
+            try {
+                const amount = document.getElementById('buy-amount').value;
+                if (!amount || parseFloat(amount) <= 0) {
+                    alert('Please enter a valid amount');
+                    return;
+                }
+
+                const ethAmount = ethers.utils.parseEther(amount);
+                
+                // Show loading state
+                const button = document.getElementById('buy-button');
+                const originalText = button.textContent;
+                button.disabled = true;
+                button.textContent = 'Processing...';
+
+                // Mock transaction for demonstration
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // In production, this would be:
+                // const tx = await contract.buyTokens({ value: ethAmount });
+                // button.textContent = 'Confirming...';
+                // await tx.wait();
+                
+                // Update UI
+                await updateUserBalance();
+                await updatePresaleInfo();
+                
+                // Reset form
+                document.getElementById('buy-amount').value = '';
+                document.getElementById('tokens-to-receive').textContent = '0';
+                document.getElementById('usd-value').textContent = '0.00';
+                
+                button.disabled = false;
+                button.textContent = originalText;
+                
+                // Success message
+                const purchasedAmount = parseFloat(amount) * 100_000_000;
+                alert(`Success! You bought ${formatNumber(purchasedAmount)} FARC tokens!`);
+
+            } catch (error) {
+                console.error('Buy error:', error);
+                document.getElementById('buy-button').disabled = false;
+                document.getElementById('buy-button').textContent = 'Buy FARC 🚀';
+                
+                if (error.message?.includes('Exceeds max tokens per wallet')) {
+                    alert('You have reached the maximum purchase limit of 5M FARC per wallet.');
+                } else if (error.message?.includes('user rejected')) {
+                    alert('Transaction cancelled.');
+                } else {
+                    alert('Transaction failed. Please try again.');
+                }
+            }
+        });
+
+        // Share button handler
+        document.getElementById('share-button').addEventListener('click', () => {
+            const text = encodeURIComponent(`Just discovered $FARC - The Official Farcaster Token! 🚀
+
+💜 Built for the Farcaster community
+💰 Presale: 0.01 ETH = 1M FARC
+🎯 Max 5M per wallet
+
+Get yours before it's too late!`);
+            
+            sdk.actions.openUrl({
+                url: `https://warpcast.com/~/compose?text=${text}&embeds[]=https://your-domain.com`
+            });
+        });
+
+        // Add app button handler
+        document.getElementById('add-app-btn').addEventListener('click', async () => {
+            try {
+                await sdk.actions.addFrame();
+            } catch (error) {
+                console.error('Add app error:', error);
+            }
+        });
+
+        // Auto-refresh presale info every 30 seconds
+        setInterval(updatePresaleInfo, 30000);
+
+        // Initialize app when DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
