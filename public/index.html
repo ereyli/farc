@@ -161,10 +161,14 @@
         let isConnected = false;
         let userAddress = null;
         let farcasterUser = null;
+        let isInFarcasterApp = false;
         
         // Simple initialization
         async function init() {
             console.log('FARC App Starting...');
+            
+            // Check if we're in Farcaster app
+            isInFarcasterApp = window.parent !== window || window.location !== window.parent.location;
             
             // Hide loading, show app
             setTimeout(() => {
@@ -219,11 +223,26 @@
             }
             
             try {
-                // Check if mobile
-                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                // If in Farcaster app, use Farcaster wallet
+                if (isInFarcasterApp || farcasterUser) {
+                    console.log('Using Farcaster wallet...');
+                    
+                    // Check if Farcaster user has verified addresses
+                    if (farcasterUser?.verifiedAddresses?.ethAddresses?.length > 0) {
+                        const address = farcasterUser.verifiedAddresses.ethAddresses[0];
+                        await handleConnection(address);
+                    } else {
+                        alert(
+                            'No verified wallet found in your Farcaster account.\n\n' +
+                            'Please add a verified address in Warpcast:\n' +
+                            'Settings → Verified Addresses'
+                        );
+                    }
+                    return;
+                }
                 
+                // Desktop or mobile browser (not in Farcaster)
                 if (typeof window.ethereum !== 'undefined') {
-                    // Desktop wallet (MetaMask, etc.)
                     const accounts = await window.ethereum.request({ 
                         method: 'eth_requestAccounts' 
                     });
@@ -231,35 +250,21 @@
                     if (accounts.length > 0) {
                         await handleConnection(accounts[0]);
                     }
-                } else if (isMobile) {
-                    // Mobile - try different approaches
-                    if (window.ethereum?.isMetaMask) {
-                        // MetaMask mobile browser
-                        const accounts = await window.ethereum.request({ 
-                            method: 'eth_requestAccounts' 
-                        });
-                        if (accounts.length > 0) {
-                            await handleConnection(accounts[0]);
-                        }
-                    } else {
-                        // Show mobile wallet options
-                        const choice = confirm(
-                            'To connect on mobile:\n\n' +
-                            '1. Use MetaMask mobile browser\n' +
-                            '2. Or copy this link and open in your wallet browser:\n\n' +
-                            'https://farc.vercel.app\n\n' +
-                            'Copy link now?'
-                        );
-                        
-                        if (choice) {
-                            navigator.clipboard.writeText('https://farc.vercel.app');
-                            alert('Link copied! Open it in your wallet browser.');
-                        }
-                    }
                 } else {
                     // No wallet detected
-                    if (confirm('No wallet detected. Would you like to install MetaMask?')) {
-                        window.open('https://metamask.io/download/', '_blank');
+                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    
+                    if (isMobile) {
+                        alert(
+                            'Please use one of these options:\n\n' +
+                            '1. Open in MetaMask mobile browser\n' +
+                            '2. Open in Warpcast app (recommended)\n' +
+                            '3. Use a desktop browser with MetaMask'
+                        );
+                    } else {
+                        if (confirm('No wallet detected. Would you like to install MetaMask?')) {
+                            window.open('https://metamask.io/download/', '_blank');
+                        }
                     }
                 }
             } catch (error) {
