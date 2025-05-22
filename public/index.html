@@ -107,7 +107,14 @@
       </div>
 
       <div class="card">
-        <input type="number" id="amount-input" placeholder="Amount in ETH (e.g. 0.01)" step="0.001" min="0.001" />
+        <h3>Buy $FARC</h3>
+        <input
+          type="number"
+          id="amount-input"
+          placeholder="Amount in ETH (e.g. 0.01)"
+          step="0.001"
+          min="0.001"
+        />
         <div id="wallet-info" style="margin: 10px 0; font-size: 14px; opacity: 0.8;"></div>
         <button id="buy-button" class="button primary">Connect Farcaster Wallet</button>
         <button onclick="share()" class="button secondary">Share $FARC 📢</button>
@@ -122,15 +129,13 @@
   <script type="module">
     import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
 
-    // Disable external wallets
-    window.ethereum = null;
+    window.ethereum = null; // Disable MetaMask completely
 
-    const app = document.getElementById('app');
     const loading = document.getElementById('loading');
+    const app = document.getElementById('app');
     const errorBox = document.getElementById('error');
     const buyButton = document.getElementById('buy-button');
     const walletInfo = document.getElementById('wallet-info');
-
     let userAddress = null;
 
     function showApp() {
@@ -159,7 +164,7 @@
         return;
       }
       const tokens = amount * 100;
-      alert(`✅ Purchase Ready!\n\nYou will receive ${tokens}M FARC.\n\nSmart contract coming soon.`);
+      alert(`✅ You will receive ${tokens}M FARC.\n\nSmart contract coming soon.`);
     }
 
     window.share = function () {
@@ -177,14 +182,23 @@
         await sdk.actions.ready();
         const context = await sdk.context;
 
-        if (!context || !context.user) {
+        if (!context?.user) {
           showError();
           return;
+        }
+
+        window.farcasterUser = context.user;
+
+        const header = document.querySelector('.header p');
+        if (header && context.user.username) {
+          header.innerHTML = `The Official Farcaster Token<br><small>👤 @${context.user.username}</small>`;
         }
 
         const address = context.user.verifiedAddresses?.ethAddresses?.[0];
         if (!address) {
           walletInfo.innerHTML = '⚠️ No verified wallet. Add one in Warpcast settings.';
+          buyButton.disabled = true;
+          buyButton.textContent = 'No Verified Address';
         } else {
           handleConnection(address);
         }
