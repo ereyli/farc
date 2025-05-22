@@ -1,0 +1,23 @@
+{
+  "version": "1",
+  "metadata": {
+    "name": "FARC Token Presale",
+    "description": "The official $FARC token presale - Get yours before it's too late!",
+    "icon": "https://farc.vercel.app/farc.png",
+    "splashImage": "https://farc.vercel.app/farc.png",
+    "splashBackgroundColor": "#8B5CF6"
+  },
+  "frame": {
+    "version": "0.1.0",
+    "name": "FARC Token",
+    "homeUrl": "https://farc.vercel.app",
+    "iconUrl": "https://farc.vercel.app/farc.png",
+    "splashUrl": "https://farc.vercel.app/splash.png",
+    "webhookUrl": "https://farc.vercel.app/api/webhook"
+  },
+  "accountAssociation": {
+    "header": "BURAYA_WARPCAST_HEADER",
+    "payload": "BURAYA_WARPCAST_PAYLOAD",
+    "signature": "BURAYA_WARPCAST_SIGNATURE"
+  }
+}
