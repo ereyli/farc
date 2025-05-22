@@ -1,1412 +1,590 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wheel of Fortune</title>
-  
-  <!-- Farcaster Frame Embed Meta Tag -->
-  <meta name="fc:frame" content='{"version":"next","imageUrl":"https://farc.vercel.app/preview.png","button":{"title":"Spin the Wheel","action":{"type":"launch_frame","name":"Wheel of Fortune","url":"https://farc.vercel.app","splashImageUrl":"https://farc.vercel.app/splash.png","splashBackgroundColor":"#6200EA"}}}'>
-  
-  <style>
-    :root {
-      --primary-color: #6200EA;
-      --secondary-color: #B388FF;
-      --accent-color: #FF9100;
-      --bg-color: #0F172A;
-      --text-color: #E2E8F0;
-      --card-bg: #1E293B;
-      --border-color: #334155;
-      --success-color: #10B981;
-      --error-color: #EF4444;
-    }
-    
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    
-    .header {
-      background-color: var(--primary-color);
-      color: white;
-      padding: 16px;
-      text-align: center;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-      position: relative;
-      z-index: 10;
-    }
-    
-    .header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
-    
-    .header p {
-      margin: 4px 0 0;
-      font-size: 14px;
-      opacity: 0.8;
-    }
-    
-    .wallet-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: var(--card-bg);
-      margin: 16px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .balance-container {
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .balance-label {
-      font-size: 12px;
-      opacity: 0.7;
-    }
-    
-    .balance {
-      font-weight: bold;
-      font-size: 18px;
-    }
-    
-    .wallet-address {
-      font-size: 14px;
-      color: var(--accent-color);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 150px;
-    }
-    
-    .connect-button {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    
-    .connect-button:hover {
-      background-color: #5000D6;
-    }
-    
-    .fortune-wheel-container {
-      position: relative;
-      width: 300px;
-      height: 300px;
-      margin: 32px auto;
-    }
-    
-    .fortune-wheel {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: conic-gradient(
-        var(--primary-color) 0% 10%,
-        var(--secondary-color) 10% 20%,
-        var(--accent-color) 20% 30%,
-        var(--primary-color) 30% 40%,
-        var(--secondary-color) 40% 50%,
-        var(--accent-color) 50% 60%,
-        var(--primary-color) 60% 70%,
-        var(--secondary-color) 70% 80%,
-        var(--accent-color) 80% 90%,
-        var(--primary-color) 90% 100%
-      );
-      transition: transform 3s cubic-bezier(0.17, 0.67, 0.83, 0.67);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-      position: relative;
-    }
-    
-    .wheel-center {
-      position: absolute;
-      width: 50px;
-      height: 50px;
-      background-color: var(--bg-color);
-      border: 2px solid var(--accent-color);
-      border-radius: 50%;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    
-    .wheel-marker {
-      position: absolute;
-      top: -15px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 10px solid transparent;
-      border-right: 10px solid transparent;
-      border-top: 20px solid var(--accent-color);
-      z-index: 5;
-    }
-    
-    .wheel-numbers {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      border-radius: 50%;
-      z-index: 3;
-      pointer-events: none;
-    }
-    
-    .wheel-number {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      text-align: center;
-      line-height: 30px;
-      font-weight: bold;
-      font-size: 20px;
-      color: white;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.9);
-      transform-origin: center center;
-      left: calc(50% - 15px);
-      top: 50%;
-      margin-top: -15px;
-    }
-    
-    .bet-card {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      padding: 16px;
-      margin: 0 16px 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .bet-card h3 {
-      margin-top: 0;
-      color: var(--accent-color);
-      font-size: 18px;
-      text-align: center;
-    }
-    
-    .bet-card p {
-      text-align: center;
-      margin-bottom: 16px;
-    }
-    
-    .bet-options {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      margin: 16px 0;
-    }
-    
-    .bet-options .option {
-      padding: 12px 0;
-      text-align: center;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: bold;
-    }
-    
-    .bet-options .option.selected {
-      background-color: var(--primary-color);
-      border-color: var(--accent-color);
-    }
-    
-    .bet-options .option:hover {
-      border-color: var(--accent-color);
-    }
-    
-    .bet-info {
-      background-color: rgba(98, 0, 234, 0.1);
-      border: 1px solid var(--primary-color);
-      border-radius: 8px;
-      padding: 12px;
-      margin: 16px 0;
-      font-size: 14px;
-    }
-    
-    .bet-info p {
-      margin: 8px 0;
-      text-align: left;
-    }
-    
-    .payout-info {
-      font-weight: bold;
-      color: var(--accent-color);
-    }
-    
-    .action-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    
-    .action-button {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 14px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    
-    .action-button:hover {
-      background-color: #5000D6;
-    }
-    
-    .action-button.deposit {
-      background-color: var(--success-color);
-    }
-    
-    .action-button.deposit:hover {
-      background-color: #0B9668;
-    }
-    
-    .action-button.withdraw {
-      background-color: var(--accent-color);
-    }
-    
-    .action-button.withdraw:hover {
-      background-color: #DD7D00;
-    }
-    
-    .disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    
-    .disabled:hover {
-      background-color: var(--primary-color);
-    }
-    
-    .result-container {
-      text-align: center;
-      margin: 16px;
-      padding: 16px;
-      border-radius: 8px;
-      display: none;
-    }
-    
-    .result-win {
-      background-color: rgba(16, 185, 129, 0.2);
-      border: 1px solid #10B981;
-    }
-    
-    .result-loss {
-      background-color: rgba(239, 68, 68, 0.2);
-      border: 1px solid #EF4444;
-    }
-    
-    .result-container h3 {
-      margin-top: 0;
-    }
-    
-    .pool-info {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      padding: 16px;
-      margin: 0 16px 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .pool-info h3 {
-      margin-top: 0;
-      color: var(--accent-color);
-      font-size: 18px;
-      text-align: center;
-    }
-    
-    .pool-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-      margin-top: 16px;
-    }
-    
-    .pool-stat {
-      background-color: rgba(98, 0, 234, 0.1);
-      border-radius: 8px;
-      padding: 12px;
-      text-align: center;
-    }
-    
-    .pool-stat-label {
-      font-size: 12px;
-      opacity: 0.7;
-      margin-bottom: 8px;
-    }
-    
-    .pool-stat-value {
-      font-weight: bold;
-      font-size: 18px;
-    }
-    
-    .recent-plays {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      padding: 16px;
-      margin: 0 16px 32px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .recent-plays h3 {
-      margin-top: 0;
-      color: var(--accent-color);
-      font-size: 18px;
-      text-align: center;
-      margin-bottom: 16px;
-    }
-    
-    .play-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    
-    .play-item {
-      background-color: rgba(98, 0, 234, 0.05);
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      padding: 12px;
-      margin-bottom: 8px;
-      font-size: 14px;
-      display: flex;
-      justify-content: space-between;
-    }
-    
-    .play-result {
-      font-weight: bold;
-    }
-    
-    .play-result.win {
-      color: var(--success-color);
-    }
-    
-    .play-result.lose {
-      color: var(--error-color);
-    }
-    
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(15, 23, 42, 0.8);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      display: none;
-    }
-    
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 4px solid rgba(96, 165, 250, 0.1);
-      border-top-color: var(--accent-color);
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    .loading-text {
-      margin-top: 16px;
-      font-weight: bold;
-    }
-    
-    .wrong-network {
-      text-align: center;
-      padding: 32px 16px;
-      color: var(--error-color);
-      display: none;
-    }
-    
-    .wrong-network p {
-      margin-bottom: 16px;
-    }
-    
-    .switch-network-button {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 24px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(15, 23, 42, 0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      display: none;
-    }
-    
-    .modal-content {
-      background-color: var(--card-bg);
-      border-radius: 12px;
-      padding: 24px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    }
-    
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    
-    .modal-title {
-      margin: 0;
-      font-size: 18px;
-      color: var(--accent-color);
-    }
-    
-    .modal-close {
-      background: none;
-      border: none;
-      color: var(--text-color);
-      font-size: 24px;
-      cursor: pointer;
-    }
-    
-    .modal-body {
-      margin-bottom: 16px;
-    }
-    
-    .amount-input {
-      display: flex;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-    
-    .amount-input input {
-      flex: 1;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 16px;
-      outline: none;
-    }
-    
-    .amount-input input:focus {
-      border-color: var(--accent-color);
-    }
-    
-    .eth-suffix {
-      margin-left: 8px;
-      font-weight: bold;
-    }
-    
-    .amount-presets {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    
-    .amount-preset {
-      background-color: var(--bg-color);
-      border: 1px solid var(--border-color);
-      padding: 8px;
-      border-radius: 8px;
-      font-size: 12px;
-      text-align: center;
-      cursor: pointer;
-    }
-    
-    .amount-preset:hover {
-      border-color: var(--accent-color);
-    }
-    
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-    }
-    
-    .modal-button {
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-    }
-    
-    .modal-button.cancel {
-      background-color: rgba(0,0,0,0.2);
-      color: var(--text-color);
-    }
-    
-    .modal-button.confirm {
-      background-color: var(--primary-color);
-      color: white;
-    }
-    
-    @media (max-width: 480px) {
-      .bet-options {
-        grid-template-columns: repeat(5, 1fr);
-      }
-      
-      .pool-stats {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Wheel of Fortune</h1>
-    <p>Spin the wheel & test your luck on Base</p>
-  </div>
-  
-  <div class="wallet-info" id="wallet-info">
-    <div class="balance-container">
-      <div class="balance-label">Your Balance</div>
-      <div class="balance" id="player-balance">0.00 ETH</div>
-    </div>
-    <button class="connect-button" id="connect-wallet">Connect Wallet</button>
-  </div>
-  
-  <div class="wrong-network" id="wrong-network">
-    <p>This app runs on the Base network. Please switch your wallet to Base.</p>
-    <button class="switch-network-button" id="switch-network">Switch to Base</button>
-  </div>
-  
-  <div class="fortune-wheel-container">
-    <div class="fortune-wheel" id="wheel"></div>
-    <div class="wheel-center">Spin</div>
-    <div class="wheel-marker"></div>
-    
-    <div class="wheel-numbers">
-      <div class="wheel-number" style="transform: translateY(-120px)">0</div>
-      <div class="wheel-number" style="transform: rotate(36deg) translateY(-120px)">1</div>
-      <div class="wheel-number" style="transform: rotate(72deg) translateY(-120px)">2</div>
-      <div class="wheel-number" style="transform: rotate(108deg) translateY(-120px)">3</div>
-      <div class="wheel-number" style="transform: rotate(144deg) translateY(-120px)">4</div>
-      <div class="wheel-number" style="transform: rotate(180deg) translateY(-120px)">5</div>
-      <div class="wheel-number" style="transform: rotate(216deg) translateY(-120px)">6</div>
-      <div class="wheel-number" style="transform: rotate(252deg) translateY(-120px)">7</div>
-      <div class="wheel-number" style="transform: rotate(288deg) translateY(-120px)">8</div>
-      <div class="wheel-number" style="transform: rotate(324deg) translateY(-120px)">9</div>
-    </div>
-  </div>
-  
-  <div class="bet-card">
-    <h3>Select Your Number</h3>
-    <p>Guess where the wheel will stop (0-9)</p>
-    
-    <div class="bet-options" id="wheel-options">
-      <div class="option" data-value="0">0</div>
-      <div class="option" data-value="1">1</div>
-      <div class="option" data-value="2">2</div>
-      <div class="option" data-value="3">3</div>
-      <div class="option" data-value="4">4</div>
-      <div class="option" data-value="5">5</div>
-      <div class="option" data-value="6">6</div>
-      <div class="option" data-value="7">7</div>
-      <div class="option" data-value="8">8</div>
-      <div class="option" data-value="9">9</div>
-    </div>
-    
-    <div class="bet-info">
-      <p>Fixed bet amount: <strong>0.001 ETH</strong></p>
-      <p class="payout-info">Potential win: <span id="wheel-payout">0.00 ETH</span></p>
-    </div>
-    
-    <div class="action-buttons">
-      <button class="action-button deposit" id="deposit-button">Deposit</button>
-      <button class="action-button withdraw" id="withdraw-button">Withdraw</button>
-      <button class="action-button spin disabled" id="spin-button" style="grid-column: span 2;">Spin the Wheel</button>
-    </div>
-  </div>
-  
-  <div class="result-container" id="wheel-result">
-    <h3>Result</h3>
-    <p id="wheel-result-text"></p>
-  </div>
-  
-  <div class="pool-info">
-    <h3>Pool Information</h3>
-    <div class="pool-stats">
-      <div class="pool-stat">
-        <div class="pool-stat-label">Total Pool Balance</div>
-        <div class="pool-stat-value" id="pool-balance">0.00 ETH</div>
-      </div>
-      <div class="pool-stat">
-        <div class="pool-stat-label">Total Bets Placed</div>
-        <div class="pool-stat-value" id="total-bets">0</div>
-      </div>
-      <div class="pool-stat">
-        <div class="pool-stat-label">Total Winnings Paid</div>
-        <div class="pool-stat-value" id="total-winnings">0.00 ETH</div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="recent-plays">
-    <h3>Your Recent Plays</h3>
-    <ul class="play-list" id="recent-plays-list">
-      <li class="play-item">
-        <span>No game history yet.</span>
-      </li>
-    </ul>
-  </div>
-  
-  <div class="loading-overlay" id="loading-overlay">
-    <div class="spinner"></div>
-    <div class="loading-text" id="loading-text">Processing your transaction...</div>
-  </div>
-  
-  <div class="modal" id="deposit-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Deposit ETH</h3>
-        <button class="modal-close" id="deposit-close">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p>How much ETH would you like to deposit to the pool?</p>
-        <div class="amount-input">
-          <input type="number" id="deposit-amount" placeholder="0.01" step="0.001" min="0.001">
-          <span class="eth-suffix">ETH</span>
-        </div>
-        <div class="amount-presets">
-          <div class="amount-preset" data-amount="0.001">0.001</div>
-          <div class="amount-preset" data-amount="0.01">0.01</div>
-          <div class="amount-preset" data-amount="0.05">0.05</div>
-          <div class="amount-preset" data-amount="0.1">0.1</div>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="modal-button cancel" id="deposit-cancel">Cancel</button>
-        <button class="modal-button confirm" id="deposit-confirm">Deposit</button>
-      </div>
-    </div>
-  </div>
-  
-  <div class="modal" id="withdraw-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title">Withdraw ETH</h3>
-        <button class="modal-close" id="withdraw-close">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p>How much ETH would you like to withdraw from the pool?</p>
-        <div class="amount-input">
-          <input type="number" id="withdraw-amount" placeholder="0.01" step="0.001" min="0.001">
-          <span class="eth-suffix">ETH</span>
-        </div>
-        <div class="amount-presets">
-          <div class="amount-preset" data-amount="0.001">0.001</div>
-          <div class="amount-preset" data-amount="0.01">0.01</div>
-          <div class="amount-preset" data-amount="0.05">0.05</div>
-          <div class="amount-preset" data-amount="0.1">0.1</div>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="modal-button cancel" id="withdraw-cancel">Cancel</button>
-        <button class="modal-button confirm" id="withdraw-confirm">Withdraw</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Farcaster SDK and Ethereum JS libraries -->
-  <script type="module">
-    import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
-    import { ethers } from 'https://esm.sh/ethers@6.10.0';
-    
-    // WheelPool contract ABI
-    const contractABI = [
-      "function deposit() external payable",
-      "function withdraw(uint256 _amount) external",
-      "function placeBet(uint8 _choice) external returns (uint256)",
-      "function getPlayerBalance(address _player) external view returns (uint256)",
-      "function getPlayerBets(address _player) external view returns (uint256[])",
-      "function getBetInfo(uint256 _betId) external view returns (address player, uint256 amount, uint8 choice, bool settled, bool won, uint256 payout)",
-      "function getPoolInfo() external view returns (uint256 totalBalance, uint256 totalBets, uint256 totalWinnings)",
-      "event BetPlaced(uint256 indexed betId, address indexed player, uint256 amount, uint8 choice)",
-      "event BetSettled(uint256 indexed betId, address indexed player, bool won, uint256 payout, uint8 result)",
-      "event FundsDeposited(address indexed player, uint256 amount)",
-      "event FundsWithdrawn(address indexed player, uint256 amount)",
-      "event WheelResult(uint256 indexed betId, uint8 result)"
-    ];
-    
-    // Base network settings
-    const baseChainId = 8453; // Base Mainnet
-    const expectedNetwork = {
-      chainId: ethers.toQuantity(baseChainId),
-      chainName: "Base",
-      nativeCurrency: {
-        name: "Ethereum",
-        symbol: "ETH",
-        decimals: 18
-      },
-      rpcUrls: ["https://mainnet.base.org"],
-      blockExplorerUrls: ["https://basescan.org"]
-    };
-    
-    // Contract address - update after deploying the contract
-    const contractAddress = "0xYourContractAddressHere";
-    
-    // App state
-    let provider;
-    let signer;
-    let contract;
-    let userAddress;
-    let wheelChoice = null;
-    let isSpinning = false;
-    let isCorrectNetwork = false;
-    let playerBalance = 0;
-    let recentPlays = [];
-    let poolInfo = {
-      totalBalance: 0,
-      totalBets: 0,
-      totalWinnings: 0
-    };
-    
-    // DOM Elements
-    const wheelOptions = document.querySelectorAll('#wheel-options .option');
-    const wheelPayoutElement = document.getElementById('wheel-payout');
-    const spinButton = document.getElementById('spin-button');
-    const wheelResult = document.getElementById('wheel-result');
-    const wheelResultText = document.getElementById('wheel-result-text');
-    const recentPlaysList = document.getElementById('recent-plays-list');
-    const connectWalletButton = document.getElementById('connect-wallet');
-    const playerBalanceElement = document.getElementById('player-balance');
-    const loadingOverlay = document.getElementById('loading-overlay');
-    const loadingText = document.getElementById('loading-text');
-    const wrongNetworkElement = document.getElementById('wrong-network');
-    const switchNetworkButton = document.getElementById('switch-network');
-    const wheel = document.getElementById('wheel');
-    
-    // Pool info elements
-    const poolBalanceElement = document.getElementById('pool-balance');
-    const totalBetsElement = document.getElementById('total-bets');
-    const totalWinningsElement = document.getElementById('total-winnings');
-    
-    // Modal elements
-    const depositButton = document.getElementById('deposit-button');
-    const withdrawButton = document.getElementById('withdraw-button');
-    const depositModal = document.getElementById('deposit-modal');
-    const withdrawModal = document.getElementById('withdraw-modal');
-    const depositClose = document.getElementById('deposit-close');
-    const withdrawClose = document.getElementById('withdraw-close');
-    const depositCancel = document.getElementById('deposit-cancel');
-    const withdrawCancel = document.getElementById('withdraw-cancel');
-    const depositConfirm = document.getElementById('deposit-confirm');
-    const withdrawConfirm = document.getElementById('withdraw-confirm');
-    const depositAmount = document.getElementById('deposit-amount');
-    const withdrawAmount = document.getElementById('withdraw-amount');
-    const depositPresets = depositModal.querySelectorAll('.amount-preset');
-    const withdrawPresets = withdrawModal.querySelectorAll('.amount-preset');
-    
-   // Initialize when Mini App is ready
-    document.addEventListener('DOMContentLoaded', async () => {
-      // Check for window.ethereum (MetaMask or other injected wallets)
-      if (window.ethereum) {
-        provider = new ethers.BrowserProvider(window.ethereum);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$FARC - The Farcaster Token</title>
+    <link rel="icon" href="https://ipfs.io/ipfs/bafybeieqqvq2m2dzaox5enzu3lpwhoqnrx5qpqqdqq3hss2dnvbta5xpfy/farc.png" type="image/png">
+    <meta property="og:title" content="$FARC - The Farcaster Token">
+    <meta property="og:description" content="Join the $FARC presale! 0.01 ETH = 1M tokens. Max 5M per wallet.">
+    <meta property="og:image" content="https://ipfs.io/ipfs/bafybeieqqvq2m2dzaox5enzu3lpwhoqnrx5qpqqdqq3hss2dnvbta5xpfy/farc.png">
+    <meta property="og:type" content="website">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
         
-        // Subscribe to chain changes
-        window.ethereum.on('chainChanged', handleChainChanged);
-        
-        // Subscribe to account changes
-        window.ethereum.on('accountsChanged', handleAccountsChanged);
-        
-        // Check if wallet is already connected
-        try {
-          const accounts = await provider.listAccounts();
-          if (accounts.length > 0) {
-            await connectWallet();
-          }
-        } catch (error) {
-          console.error("Error checking accounts", error);
-        }
-      } else {
-        connectWalletButton.textContent = "Install MetaMask";
-        connectWalletButton.onclick = () => {
-          window.open("https://metamask.io/download.html", "_blank");
-        };
-      }
-      
-      // Setup event listeners
-      setupEventListeners();
-    });
-    
-    async function connectWallet() {
-      try {
-        loadingOverlay.style.display = "flex";
-        loadingText.textContent = "Connecting wallet...";
-        
-        // Request account access
-        const accounts = await provider.send("eth_requestAccounts", []);
-        userAddress = accounts[0];
-        
-        // Get chain ID
-        const { chainId } = await provider.getNetwork();
-        isCorrectNetwork = Number(chainId) === baseChainId;
-        
-        if (isCorrectNetwork) {
-          signer = await provider.getSigner();
-          contract = new ethers.Contract(contractAddress, contractABI, signer);
-          
-          // Update UI for connected state
-          connectWalletButton.textContent = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
-          connectWalletButton.disabled = true;
-          spinButton.classList.remove('disabled');
-          wrongNetworkElement.style.display = "none";
-          
-          // Update player balance
-          await updatePlayerBalance();
-          
-          // Update pool info
-          await updatePoolInfo();
-          
-          // Get player's recent bets
-          await loadPlayerBets();
-        } else {
-          // Show wrong network warning
-          wrongNetworkElement.style.display = "block";
-        }
-      } catch (error) {
-        console.error("Error connecting wallet:", error);
-      } finally {
-        loadingOverlay.style.display = "none";
-      }
-    }
-    
-    async function switchToBase() {
-      try {
-        loadingOverlay.style.display = "flex";
-        loadingText.textContent = "Switching network...";
-        
-        await window.ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [expectedNetwork]
-        });
-        
-        isCorrectNetwork = true;
-        wrongNetworkElement.style.display = "none";
-      } catch (error) {
-        console.error("Error switching network:", error);
-      } finally {
-        loadingOverlay.style.display = "none";
-      }
-    }
-    
-    function handleChainChanged() {
-      // Reload the page
-      window.location.reload();
-    }
-    
-    async function handleAccountsChanged(accounts) {
-      if (accounts.length === 0) {
-        // User disconnected wallet
-        window.location.reload();
-      } else {
-        // User switched accounts
-        userAddress = accounts[0];
-        
-        if (signer) {
-          signer = await provider.getSigner();
-          contract = new ethers.Contract(contractAddress, contractABI, signer);
-          
-          // Update balance
-          await updatePlayerBalance();
-          
-          // Update UI
-          connectWalletButton.textContent = `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`;
-          
-          // Load player bets
-          await loadPlayerBets();
-        }
-      }
-    }
-    
-    async function updatePlayerBalance() {
-      try {
-        // Get player balance from contract
-        const balance = await contract.getPlayerBalance(userAddress);
-        playerBalance = Number(ethers.formatEther(balance));
-        
-        // Update UI
-        playerBalanceElement.textContent = `${playerBalance.toFixed(4)} ETH`;
-        
-        // Enable/disable withdraw button based on balance
-        if (playerBalance <= 0) {
-          withdrawButton.classList.add('disabled');
-        } else {
-          withdrawButton.classList.remove('disabled');
-        }
-      } catch (error) {
-        console.error("Error getting player balance:", error);
-      }
-    }
-    
-    async function updatePoolInfo() {
-      try {
-        // Get pool info from contract
-        const info = await contract.getPoolInfo();
-        
-        poolInfo = {
-          totalBalance: Number(ethers.formatEther(info[0])),
-          totalBets: Number(info[1]),
-          totalWinnings: Number(ethers.formatEther(info[2]))
-        };
-        
-        // Update UI
-        poolBalanceElement.textContent = `${poolInfo.totalBalance.toFixed(4)} ETH`;
-        totalBetsElement.textContent = poolInfo.totalBets;
-        totalWinningsElement.textContent = `${poolInfo.totalWinnings.toFixed(4)} ETH`;
-      } catch (error) {
-        console.error("Error getting pool info:", error);
-      }
-    }
-    
-    async function loadPlayerBets() {
-      try {
-        // Get player's bet IDs
-        const betIds = await contract.getPlayerBets(userAddress);
-        
-        // Reset recent plays
-        recentPlays = [];
-        
-        // Get details for each bet (limit to last 5)
-        const recentBetIds = betIds.slice(-5).reverse();
-        
-        for (const betId of recentBetIds) {
-          const betInfo = await contract.getBetInfo(betId);
-          
-          if (betInfo.settled) {
-            recentPlays.push({
-              id: Number(betId),
-              amount: Number(ethers.formatEther(betInfo.amount)),
-              choice: betInfo.choice,
-              won: betInfo.won,
-              payout: Number(ethers.formatEther(betInfo.payout)),
-              result: null // We need to get this from events
-            });
-          }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
         }
         
-        // Get result for each bet from events
-        for (const play of recentPlays) {
-          const filter = contract.filters.WheelResult(play.id);
-          const events = await contract.queryFilter(filter);
-          
-          if (events.length > 0) {
-            play.result = events[0].args.result;
-          }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
         }
         
-        // Update UI
-        updateRecentPlaysUI();
-      } catch (error) {
-        console.error("Error loading player bets:", error);
-      }
-    }
-    
-    function updateRecentPlaysUI() {
-      // Clear list
-      recentPlaysList.innerHTML = "";
-      
-      if (recentPlays.length === 0) {
-        const emptyItem = document.createElement('li');
-        emptyItem.classList.add('play-item');
-        emptyItem.innerHTML = `<span>No game history yet.</span>`;
-        recentPlaysList.appendChild(emptyItem);
-        return;
-      }
-      
-      // Add items
-      for (const play of recentPlays) {
-        const item = document.createElement('li');
-        item.classList.add('play-item');
-        
-        const resultClass = play.won ? 'win' : 'lose';
-        const resultText = play.won ? 'Won' : 'Lost';
-        
-        item.innerHTML = `
-          <span>Bet ${play.amount.toFixed(4)} ETH on ${play.choice}</span>
-          <span class="play-result ${resultClass}">
-            ${resultText} ${play.won ? `(+${play.payout.toFixed(4)} ETH)` : ''}
-            [Result: ${play.result}]
-          </span>
-        `;
-        
-        recentPlaysList.appendChild(item);
-      }
-    }
-    
-    async function placeBet() {
-      if (!wheelChoice) {
-        alert("Please select a number first!");
-        return;
-      }
-      
-      if (isSpinning) return;
-      
-      try {
-        isSpinning = true;
-        loadingOverlay.style.display = "flex";
-        loadingText.textContent = "Placing your bet...";
-        
-        // Disable spin button
-        spinButton.classList.add('disabled');
-        
-        // Place bet
-        const tx = await contract.placeBet(wheelChoice);
-        
-        // Wait for transaction to be mined
-        loadingText.textContent = "Waiting for confirmation...";
-        await tx.wait();
-        
-        // Get bet ID from events
-        const filter = contract.filters.BetPlaced(null, userAddress);
-        const events = await contract.queryFilter(filter, tx.blockNumber, tx.blockNumber);
-        
-        if (events.length > 0) {
-          const betId = events[0].args.betId;
-          
-          // Start the wheel animation
-          spinWheel(betId);
-        } else {
-          console.error("No BetPlaced event found");
-          isSpinning = false;
-          loadingOverlay.style.display = "none";
-        }
-        
-        // Update player balance
-        await updatePlayerBalance();
-        
-        // Update pool info
-        await updatePoolInfo();
-      } catch (error) {
-        console.error("Error placing bet:", error);
-        alert("Failed to place bet. Please check your balance and try again.");
-        isSpinning = false;
-        spinButton.classList.remove('disabled');
-        loadingOverlay.style.display = "none";
-      }
-    }
-    
-    async function spinWheel(betId) {
-      try {
-        loadingText.textContent = "Spinning the wheel...";
-        
-        // Listen for result event
-        const filter = contract.filters.WheelResult(betId);
-        const events = await contract.queryFilter(filter);
-        
-        if (events.length > 0) {
-          const result = events[0].args.result;
-          
-          // Set random rotation (between 2 and 5 full rotations) plus the specific position
-          const fullRotations = 2 + Math.random() * 3;
-          const resultPosition = result * 36;
-          const rotation = 360 * fullRotations + resultPosition;
-          
-          // Animate wheel
-          wheel.style.transform = `rotate(${rotation}deg)`;
-          
-          // Wait for animation to complete
-          setTimeout(async () => {
-            // Check if bet was won
-            const betSettledFilter = contract.filters.BetSettled(betId);
-            const betSettledEvents = await contract.queryFilter(betSettledFilter);
-            
-            if (betSettledEvents.length > 0) {
-              const event = betSettledEvents[0];
-              const won = event.args.won;
-              const payout = Number(ethers.formatEther(event.args.payout));
-              
-              // Show result
-              wheelResult.className = 'result-container';
-              wheelResult.classList.add(won ? 'result-win' : 'result-loss');
-              
-              if (won) {
-                wheelResultText.textContent = `🎉 Congratulations! You won ${payout.toFixed(4)} ETH!`;
-              } else {
-                wheelResultText.textContent = `Better luck next time! The result was ${result}.`;
-              }
-              
-              wheelResult.style.display = 'block';
-              
-              // Update player balance
-              await updatePlayerBalance();
-              
-              // Update pool info
-              await updatePoolInfo();
-              
-              // Reload player bets
-              await loadPlayerBets();
+        @keyframes pulse-glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(139, 92, 246, 0.5),
+                           0 0 40px rgba(139, 92, 246, 0.3);
             }
+            50% { 
+                box-shadow: 0 0 30px rgba(139, 92, 246, 0.8),
+                           0 0 60px rgba(139, 92, 246, 0.5);
+            }
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #8B5CF6 100%);
+            background-size: 200% 200%;
+            animation: gradient-shift 10s ease infinite;
+        }
+        
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #6ee7b7 100%);
+            background-size: 200% 100%;
+            animation: shimmer 2s linear infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .token-logo {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(139, 92, 246, 0.4);
+            background: rgba(139, 92, 246, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .token-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .buy-button-gradient {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .buy-button-gradient:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <div id="app" class="container mx-auto p-4 max-w-md">
+        <!-- Loading State -->
+        <div id="loading" class="flex flex-col items-center justify-center min-h-screen">
+            <div class="token-logo pulse-glow mb-6">
+                <img src="https://ipfs.io/ipfs/bafybeieqqvq2m2dzaox5enzu3lpwhoqnrx5qpqqdqq3hss2dnvbta5xpfy/farc.png" alt="FARC Logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjYwIiBjeT0iNjAiIHI9IjYwIiBmaWxsPSIjOEI1Q0Y2Ii8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iNDgiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSJ3aGl0ZSI+RjwvdGV4dD4KPC9zdmc+'">
+            </div>
+            <p class="text-xl font-medium">Initializing $FARC...</p>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" class="hidden">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="token-logo float-animation mb-4">
+                    <img 
+                        src="https://bafybeieqqvq2m2dzaox5enzu3lpwhoqnrx5qpqqdqq3hss2dnvbta5xpfy.ipfs.w3s.link/farc.png" 
+                        alt="FARC Logo"
+                        crossorigin="anonymous"
+                        onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#8B5CF6,#6366F1);color:white;font-size:48px;font-weight:bold;\'>F</div>'"
+                    >
+                </div>
+                <h1 class="text-5xl font-bold mb-2">$FARC</h1>
+                <p class="text-xl opacity-90">The Official Farcaster Token</p>
+                <p class="text-sm opacity-70 mt-2">Building the future of social tokens</p>
+            </div>
+
+            <!-- Presale Stats -->
+            <div class="glass-effect rounded-3xl p-6 mb-6 pulse-glow">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold">🔥 Presale LIVE</h2>
+                    <span class="bg-green-500 bg-opacity-20 text-green-400 px-3 py-1 rounded-full text-sm animate-pulse">
+                        • Active
+                    </span>
+                </div>
+                
+                <div class="mb-6">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="opacity-70">Progress</span>
+                        <span class="font-medium"><span id="tokens-sold">0</span> / 500M FARC</span>
+                    </div>
+                    <div class="w-full bg-black bg-opacity-30 rounded-full h-6 overflow-hidden">
+                        <div id="progress-bar" class="progress-bar h-full rounded-full flex items-center justify-end pr-2" style="width: 0%">
+                            <span class="text-xs font-medium drop-shadow"><span id="progress-percent">0</span>%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="stat-card rounded-2xl p-4 text-center">
+                        <p class="text-3xl font-bold mb-1">0.01 ETH</p>
+                        <p class="text-sm opacity-70">= 1M FARC</p>
+                    </div>
+                    <div class="stat-card rounded-2xl p-4 text-center">
+                        <p class="text-3xl font-bold mb-1">5M FARC</p>
+                        <p class="text-sm opacity-70">Max per wallet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Wallet Section -->
+            <div class="glass-effect rounded-3xl p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <img id="user-avatar" src="" alt="Avatar" class="w-12 h-12 rounded-full mr-3 border-2 border-white border-opacity-20">
+                        <div>
+                            <p id="user-name" class="font-semibold"></p>
+                            <p id="wallet-address" class="text-sm opacity-70">Not connected</p>
+                        </div>
+                    </div>
+                    <button id="connect-wallet" class="bg-white bg-opacity-10 hover:bg-opacity-20 px-4 py-2 rounded-xl transition backdrop-blur">
+                        Connect
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 pt-4 border-t border-white border-opacity-10">
+                    <div class="text-center">
+                        <p class="text-sm opacity-70 mb-1">Your FARC</p>
+                        <p class="text-2xl font-bold"><span id="user-balance">0</span></p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm opacity-70 mb-1">Can Buy</p>
+                        <p class="text-2xl font-bold text-green-400"><span id="remaining-limit">5M</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buy Section -->
+            <div class="glass-effect rounded-3xl p-6 mb-6">
+                <h2 class="text-xl font-semibold mb-4">Buy $FARC</h2>
+                
+                <!-- Amount Selector -->
+                <div class="grid grid-cols-4 gap-2 mb-4">
+                    <button class="quick-buy bg-white bg-opacity-10 hover:bg-opacity-20 py-3 px-2 rounded-xl transition text-sm font-medium" data-amount="0.01">
+                        0.01 ETH
+                    </button>
+                    <button class="quick-buy bg-white bg-opacity-10 hover:bg-opacity-20 py-3 px-2 rounded-xl transition text-sm font-medium" data-amount="0.025">
+                        0.025 ETH
+                    </button>
+                    <button class="quick-buy bg-white bg-opacity-10 hover:bg-opacity-20 py-3 px-2 rounded-xl transition text-sm font-medium" data-amount="0.04">
+                        0.04 ETH
+                    </button>
+                    <button class="quick-buy bg-white bg-opacity-10 hover:bg-opacity-20 py-3 px-2 rounded-xl transition text-sm font-medium" data-amount="0.05">
+                        MAX
+                    </button>
+                </div>
+                
+                <div class="relative mb-4">
+                    <input 
+                        type="number" 
+                        id="buy-amount" 
+                        class="w-full bg-black bg-opacity-20 border border-white border-opacity-20 rounded-xl px-4 py-4 pr-16 focus:outline-none focus:border-opacity-40 text-lg"
+                        placeholder="0.00"
+                        step="0.001"
+                        min="0.000001"
+                    >
+                    <span class="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm opacity-70">ETH</span>
+                </div>
+                
+                <div class="bg-black bg-opacity-20 rounded-2xl p-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm opacity-70">You receive</span>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-green-400"><span id="tokens-to-receive">0</span> FARC</p>
+                            <p class="text-xs opacity-50">≈ $<span id="usd-value">0.00</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button 
+                    id="buy-button"
+                    class="w-full buy-button-gradient text-white font-bold py-4 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+                    disabled
+                >
+                    Connect Wallet to Buy
+                </button>
+                
+                <p class="text-xs text-center mt-3 opacity-50">
+                    Treasury: <span class="font-mono">0x742d35Cc6634C0532925a3b844Bc9e7595f2bD7e</span>
+                </p>
+            </div>
+
+            <!-- Features -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="glass-effect rounded-2xl p-4 text-center">
+                    <div class="text-2xl mb-2">🔒</div>
+                    <p class="text-xs opacity-70">Secure</p>
+                </div>
+                <div class="glass-effect rounded-2xl p-4 text-center">
+                    <div class="text-2xl mb-2">⚡</div>
+                    <p class="text-xs opacity-70">Fast</p>
+                </div>
+                <div class="glass-effect rounded-2xl p-4 text-center">
+                    <div class="text-2xl mb-2">🌐</div>
+                    <p class="text-xs opacity-70">Decentralized</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="grid grid-cols-2 gap-4">
+                <button 
+                    id="share-button"
+                    class="glass-effect py-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition font-medium"
+                >
+                    Share $FARC 📢
+                </button>
+                <button 
+                    id="add-app-btn"
+                    class="glass-effect py-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition font-medium"
+                >
+                    Add to Farcaster ⭐
+                </button>
+            </div>
             
-            // Reset state
-            isSpinning = false;
-            spinButton.classList.remove('disabled');
-            loadingOverlay.style.display = "none";
-          }, 3000);
+            <!-- Footer -->
+            <div class="text-center mt-8 opacity-50 text-sm">
+                <p>Built for the Farcaster community</p>
+                <p class="mt-1">Not affiliated with Farcaster or Warpcast</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import Farcaster SDK
+        import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+
+        // Contract configuration - BUNLARI DEĞİŞTİR
+        const CONTRACT_ADDRESS = "0x0000000000000000000000000000000000000000"; // Deploy edilen kontrat adresi
+        const TREASURY_ADDRESS = "0x742d35Cc6634C0532925a3b844Bc9e7595f2bD7e"; // Senin cüzdan adresin
+        const CONTRACT_ABI = [
+            "function buyTokens() external payable",
+            "function purchasedAmount(address) view returns (uint256)",
+            "function getRemainingPurchaseAmount(address) view returns (uint256)",
+            "function getPresaleInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)",
+            "function balanceOf(address) view returns (uint256)",
+            "function decimals() view returns (uint8)"
+        ];
+
+        // Global variables
+        let userContext = null;
+        let provider = null;
+        let signer = null;
+        let contract = null;
+        let userAddress = null;
+        let isConnected = false;
+
+        // Mock price for USD calculation
+        const MOCK_ETH_PRICE = 3500; // $3500 per ETH
+        const FARC_PRICE = 0.00001 * MOCK_ETH_PRICE; // Price per FARC in USD
+
+        // Initialize the app
+        async function init() {
+            try {
+                // Get context from Farcaster
+                userContext = sdk.context;
+                
+                // Update UI with user info
+                if (userContext?.user) {
+                    document.getElementById('user-name').textContent = userContext.user.displayName || userContext.user.username || 'Farcaster User';
+                    
+                    if (userContext.user.pfpUrl) {
+                        document.getElementById('user-avatar').src = userContext.user.pfpUrl;
+                    } else {
+                        document.getElementById('user-avatar').src = `https://api.dicebear.com/7.x/shapes/svg?seed=${userContext.user.fid}`;
+                    }
+                }
+
+                // Initialize Ethereum provider
+                if (window.ethereum) {
+                    provider = new ethers.providers.Web3Provider(window.ethereum);
+                    
+                    // Check if already connected
+                    const accounts = await provider.listAccounts();
+                    if (accounts.length > 0) {
+                        await connectWallet();
+                    }
+                    
+                    // Listen for account changes
+                    window.ethereum.on('accountsChanged', (accounts) => {
+                        if (accounts.length > 0) {
+                            connectWallet();
+                        } else {
+                            disconnectWallet();
+                        }
+                    });
+                }
+
+                // Update presale info
+                await updatePresaleInfo();
+                
+                // Hide loading, show content
+                setTimeout(() => {
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+                }, 1500);
+                
+                // Notify SDK that app is ready
+                await sdk.actions.ready();
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+            }
+        }
+
+        // Connect wallet
+        async function connectWallet() {
+            try {
+                const accounts = await provider.send("eth_requestAccounts", []);
+                userAddress = accounts[0];
+                signer = provider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                
+                isConnected = true;
+                
+                // Update UI
+                const shortAddress = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
+                document.getElementById('wallet-address').textContent = shortAddress;
+                document.getElementById('connect-wallet').textContent = 'Connected';
+                document.getElementById('connect-wallet').classList.add('bg-green-500', 'bg-opacity-20');
+                document.getElementById('buy-button').textContent = 'Buy FARC 🚀';
+                document.getElementById('buy-button').disabled = false;
+                
+                await updateUserBalance();
+            } catch (error) {
+                console.error('Wallet connection error:', error);
+            }
+        }
+
+        // Disconnect wallet
+        function disconnectWallet() {
+            isConnected = false;
+            userAddress = null;
+            document.getElementById('wallet-address').textContent = 'Not connected';
+            document.getElementById('connect-wallet').textContent = 'Connect';
+            document.getElementById('connect-wallet').classList.remove('bg-green-500', 'bg-opacity-20');
+            document.getElementById('buy-button').textContent = 'Connect Wallet to Buy';
+            document.getElementById('buy-button').disabled = true;
+            document.getElementById('user-balance').textContent = '0';
+            document.getElementById('remaining-limit').textContent = '5M';
+        }
+
+        // Update presale info with mock data for now
+        async function updatePresaleInfo() {
+            try {
+                // Mock data - replace with actual contract calls
+                const soldAmount = 125_000_000; // 125M sold
+                const totalPresale = 500_000_000; // 500M total
+                const progressPercent = (soldAmount / totalPresale) * 100;
+                
+                document.getElementById('tokens-sold').textContent = formatNumber(soldAmount);
+                document.getElementById('progress-percent').textContent = progressPercent.toFixed(1);
+                document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+                
+                /* Actual contract call would be:
+                if (!provider) return;
+                const readContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+                const info = await readContract.getPresaleInfo();
+                const soldAmount = parseFloat(ethers.utils.formatUnits(info.sold, 18));
+                */
+                
+            } catch (error) {
+                console.error('Error updating presale info:', error);
+            }
+        }
+
+        // Update user balance
+        async function updateUserBalance() {
+            try {
+                // Mock data for demonstration
+                const mockBalance = Math.floor(Math.random() * 2000000);
+                const mockRemaining = 5000000 - mockBalance;
+                
+                document.getElementById('user-balance').textContent = formatNumber(mockBalance);
+                document.getElementById('remaining-limit').textContent = formatNumber(mockRemaining);
+                
+                /* Actual contract calls would be:
+                if (!contract || !userAddress) return;
+                const balance = await contract.balanceOf(userAddress);
+                const remaining = await contract.getRemainingPurchaseAmount(userAddress);
+                */
+                
+            } catch (error) {
+                console.error('Error updating user balance:', error);
+            }
+        }
+
+        // Format number with appropriate suffix
+        function formatNumber(num) {
+            if (num >= 1_000_000) {
+                return (num / 1_000_000).toFixed(1) + 'M';
+            } else if (num >= 1_000) {
+                return (num / 1_000).toFixed(1) + 'K';
+            }
+            return num.toLocaleString();
+        }
+
+        // Calculate tokens to receive
+        document.getElementById('buy-amount').addEventListener('input', (e) => {
+            const ethAmount = parseFloat(e.target.value) || 0;
+            const tokensToReceive = ethAmount * 100_000_000; // 100M tokens per ETH
+            const usdValue = tokensToReceive * FARC_PRICE;
+            
+            document.getElementById('tokens-to-receive').textContent = formatNumber(tokensToReceive);
+            document.getElementById('usd-value').textContent = usdValue.toFixed(2);
+        });
+
+        // Quick buy buttons
+        document.querySelectorAll('.quick-buy').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const amount = e.currentTarget.dataset.amount;
+                document.getElementById('buy-amount').value = amount;
+                document.getElementById('buy-amount').dispatchEvent(new Event('input'));
+            });
+        });
+
+        // Connect wallet button
+        document.getElementById('connect-wallet').addEventListener('click', () => {
+            if (!isConnected) {
+                connectWallet();
+            }
+        });
+
+        // Buy button handler
+        document.getElementById('buy-button').addEventListener('click', async () => {
+            if (!isConnected) {
+                await connectWallet();
+                return;
+            }
+
+            try {
+                const amount = document.getElementById('buy-amount').value;
+                if (!amount || parseFloat(amount) <= 0) {
+                    alert('Please enter a valid amount');
+                    return;
+                }
+
+                const ethAmount = ethers.utils.parseEther(amount);
+                
+                // Show loading state
+                const button = document.getElementById('buy-button');
+                const originalText = button.textContent;
+                button.disabled = true;
+                button.textContent = 'Processing...';
+
+                // Mock transaction for demonstration
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // In production, this would be:
+                // const tx = await contract.buyTokens({ value: ethAmount });
+                // button.textContent = 'Confirming...';
+                // await tx.wait();
+                
+                // Update UI
+                await updateUserBalance();
+                await updatePresaleInfo();
+                
+                // Reset form
+                document.getElementById('buy-amount').value = '';
+                document.getElementById('tokens-to-receive').textContent = '0';
+                document.getElementById('usd-value').textContent = '0.00';
+                
+                button.disabled = false;
+                button.textContent = originalText;
+                
+                // Success message
+                const purchasedAmount = parseFloat(amount) * 100_000_000;
+                alert(`Success! You bought ${formatNumber(purchasedAmount)} FARC tokens!`);
+
+            } catch (error) {
+                console.error('Buy error:', error);
+                document.getElementById('buy-button').disabled = false;
+                document.getElementById('buy-button').textContent = 'Buy FARC 🚀';
+                
+                if (error.message?.includes('Exceeds max tokens per wallet')) {
+                    alert('You have reached the maximum purchase limit of 5M FARC per wallet.');
+                } else if (error.message?.includes('user rejected')) {
+                    alert('Transaction cancelled.');
+                } else {
+                    alert('Transaction failed. Please try again.');
+                }
+            }
+        });
+
+        // Share button handler
+        document.getElementById('share-button').addEventListener('click', () => {
+            const text = encodeURIComponent(`Just discovered $FARC - The Official Farcaster Token! 🚀
+
+💜 Built for the Farcaster community
+💰 Presale: 0.01 ETH = 1M FARC
+🎯 Max 5M per wallet
+
+Get yours before it's too late!`);
+            
+            sdk.actions.openUrl({
+                url: `https://warpcast.com/~/compose?text=${text}&embeds[]=https://your-domain.com`
+            });
+        });
+
+        // Add app button handler
+        document.getElementById('add-app-btn').addEventListener('click', async () => {
+            try {
+                await sdk.actions.addFrame();
+            } catch (error) {
+                console.error('Add app error:', error);
+            }
+        });
+
+        // Auto-refresh presale info every 30 seconds
+        setInterval(updatePresaleInfo, 30000);
+
+        // Initialize app when DOM is loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
         } else {
-          console.error("No WheelResult event found");
-          isSpinning = false;
-          spinButton.classList.remove('disabled');
-          loadingOverlay.style.display = "none";
+            init();
         }
-      } catch (error) {
-        console.error("Error spinning wheel:", error);
-        isSpinning = false;
-        spinButton.classList.remove('disabled');
-        loadingOverlay.style.display = "none";
-      }
-    }
-    
-    async function depositFunds(amount) {
-      try {
-        loadingOverlay.style.display = "flex";
-        loadingText.textContent = "Processing deposit...";
-        
-        // Convert amount to wei
-        const weiAmount = ethers.parseEther(amount.toString());
-        
-        // Deposit funds
-        const tx = await contract.deposit({ value: weiAmount });
-        
-        // Wait for transaction to be mined
-        loadingText.textContent = "Waiting for confirmation...";
-        await tx.wait();
-        
-        // Update player balance
-        await updatePlayerBalance();
-        
-        // Update pool info
-        await updatePoolInfo();
-        
-        // Hide modal
-        depositModal.style.display = "none";
-        
-        // Reset input
-        depositAmount.value = "";
-        
-        alert("Deposit successful!");
-      } catch (error) {
-        console.error("Error depositing funds:", error);
-        alert("Failed to deposit funds. Please try again.");
-      } finally {
-        loadingOverlay.style.display = "none";
-      }
-    }
-    
-    async function withdrawFunds(amount) {
-      try {
-        loadingOverlay.style.display = "flex";
-        loadingText.textContent = "Processing withdrawal...";
-        
-        // Convert amount to wei
-        const weiAmount = ethers.parseEther(amount.toString());
-        
-        // Withdraw funds
-        const tx = await contract.withdraw(weiAmount);
-        
-        // Wait for transaction to be mined
-        loadingText.textContent = "Waiting for confirmation...";
-        await tx.wait();
-        
-        // Update player balance
-        await updatePlayerBalance();
-        
-        // Update pool info
-        await updatePoolInfo();
-        
-        // Hide modal
-        withdrawModal.style.display = "none";
-        
-        // Reset input
-        withdrawAmount.value = "";
-        
-        alert("Withdrawal successful!");
-      } catch (error) {
-        console.error("Error withdrawing funds:", error);
-        alert("Failed to withdraw funds. Please try again.");
-      } finally {
-        loadingOverlay.style.display = "none";
-      }
-    }
-    
-    function updatePayout() {
-      if (wheelChoice !== null) {
-        // Fixed payout ratio (9x)
-        const potentialWin = 0.001 * 9;
-        wheelPayoutElement.textContent = `${potentialWin.toFixed(4)} ETH`;
-      } else {
-        wheelPayoutElement.textContent = "0.00 ETH";
-      }
-    }
-    
-    function setupEventListeners() {
-      // Connect wallet button
-      connectWalletButton.addEventListener('click', connectWallet);
-      
-      // Switch network button
-      switchNetworkButton.addEventListener('click', switchToBase);
-      
-      // Wheel options
-      wheelOptions.forEach(option => {
-        option.addEventListener('click', () => {
-          // Remove selected class from all options
-          wheelOptions.forEach(opt => opt.classList.remove('selected'));
-          
-          // Add selected class to clicked option
-          option.classList.add('selected');
-          
-          // Update choice
-          wheelChoice = Number(option.getAttribute('data-value'));
-          
-          // Update potential payout
-          updatePayout();
-          
-          // Enable spin button if not already spinning
-          if (!isSpinning) {
-            spinButton.classList.remove('disabled');
-          }
-        });
-      });
-      
-      // Spin button
-      spinButton.addEventListener('click', () => {
-        if (!spinButton.classList.contains('disabled') && !isSpinning) {
-          placeBet();
-        }
-      });
-      
-      // Wheel center also triggers spin
-      document.querySelector('.wheel-center').addEventListener('click', () => {
-        if (!spinButton.classList.contains('disabled') && !isSpinning) {
-          placeBet();
-        }
-      });
-      
-      // Deposit button
-      depositButton.addEventListener('click', () => {
-        depositModal.style.display = "flex";
-      });
-      
-      // Withdraw button
-      withdrawButton.addEventListener('click', () => {
-        if (!withdrawButton.classList.contains('disabled')) {
-          withdrawModal.style.display = "flex";
-        }
-      });
-      
-      // Close and cancel buttons for modals
-      depositClose.addEventListener('click', () => {
-        depositModal.style.display = "none";
-      });
-      
-      withdrawClose.addEventListener('click', () => {
-        withdrawModal.style.display = "none";
-      });
-      
-      depositCancel.addEventListener('click', () => {
-        depositModal.style.display = "none";
-      });
-      
-      withdrawCancel.addEventListener('click', () => {
-        withdrawModal.style.display = "none";
-      });
-      
-      // Confirm buttons for modals
-      depositConfirm.addEventListener('click', () => {
-        const amount = parseFloat(depositAmount.value);
-        if (isNaN(amount) || amount <= 0) {
-          alert("Please enter a valid amount.");
-          return;
-        }
-        
-        depositFunds(amount);
-      });
-      
-      withdrawConfirm.addEventListener('click', () => {
-        const amount = parseFloat(withdrawAmount.value);
-        if (isNaN(amount) || amount <= 0) {
-          alert("Please enter a valid amount.");
-          return;
-        }
-        
-        if (amount > playerBalance) {
-          alert("You don't have enough balance to withdraw this amount.");
-          return;
-        }
-        
-        withdrawFunds(amount);
-      });
-      
-      // Amount presets
-      depositPresets.forEach(preset => {
-        preset.addEventListener('click', () => {
-          depositAmount.value = preset.getAttribute('data-amount');
-        });
-      });
-      
-      withdrawPresets.forEach(preset => {
-        preset.addEventListener('click', () => {
-          withdrawAmount.value = preset.getAttribute('data-amount');
-        });
-      });
-      
-      // Close modals when clicking outside
-      window.addEventListener('click', (event) => {
-        if (event.target === depositModal) {
-          depositModal.style.display = "none";
-        }
-        if (event.target === withdrawModal) {
-          withdrawModal.style.display = "none";
-        }
-      });
-    }
-  </script>
+    </script>
 </body>
 </html>
