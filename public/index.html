@@ -1,135 +1,480 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>$FARC - Farcaster Mini App</title>
-  <link rel="icon" href="/farc.png" type="image/png" />
-
-  <!-- Farcaster Meta -->
-  <meta name="fc:frame" content="vNext" />
-  <meta name="fc:frame:image" content="https://farc.vercel.app/farc.png" />
-  <meta name="fc:frame:button:1" content="Buy" />
-  <meta name="fc:frame:button:1:action" content="link" />
-  <meta name="fc:frame:button:1:target" content="https://farc.vercel.app" />
-
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      min-height: 100vh;
-      text-align: center;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 20px;
-      max-width: 400px;
-      width: 100%;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-      margin-top: 40px;
-    }
-
-    .logo {
-      width: 100px;
-      height: 100px;
-      border-radius: 16px;
-      margin-bottom: 20px;
-    }
-
-    .button {
-      margin-top: 20px;
-      padding: 14px 20px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      color: white;
-      background-color: #10b981;
-      cursor: pointer;
-    }
-
-    .address {
-      margin-top: 10px;
-      font-size: 14px;
-      opacity: 0.9;
-    }
-
-    .error {
-      color: #fecaca;
-      font-size: 16px;
-      margin-top: 40px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$FARC - The Farcaster Token</title>
+    <link rel="icon" type="image/png" href="/farc.png">
+    <link rel="manifest" href="/farcaster.json">
+    
+    <!-- Farcaster Mini App Meta -->
+    <meta name="fc:frame" content="vNext">
+    <meta name="fc:frame:image" content="https://farc.vercel.app/farc.png">
+    <meta name="fc:frame:button:1" content="Launch App">
+    <meta name="fc:frame:button:1:action" content="launch_frame">
+    <meta name="fc:frame:button:1:target" content="https://farc.vercel.app">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .button-primary {
+            background: #10b981;
+            color: white;
+        }
+        
+        .button-primary:hover {
+            background: #059669;
+        }
+        
+        .button-primary:disabled {
+            background: #6b7280;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            margin-top: 10px;
+        }
+        
+        .button-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .wallet-info {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .wallet-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+        
+        input[type="number"]::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-  <div class="card" id="app" style="display: none;">
-    <img src="/farc.png" class="logo" alt="$FARC Logo" />
-    <h1>$FARC Token</h1>
-    <p>The official Farcaster token</p>
-    <div id="wallet-info"></div>
-    <input id="amount" type="number" min="0.001" step="0.001" placeholder="ETH amount" style="margin-top:20px;width:100%;padding:10px;border-radius:8px;border:none;" />
-    <button class="button" id="buy-button">Buy FARC</button>
-  </div>
+    <div class="container">
+        <div id="loading" class="loading">
+            <h2>Loading $FARC...</h2>
+        </div>
+        
+        <div id="app" class="hidden">
+            <div class="header">
+                <img src="/farc.png" alt="FARC Logo" class="logo">
+                <h1>$FARC</h1>
+                <p id="header-text">The Official Farcaster Token</p>
+                <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
+            </div>
+            
+            <div class="card">
+                <h2>🔥 Presale LIVE</h2>
+                <div class="info-row">
+                    <span>Price:</span>
+                    <strong>0.01 ETH = 1M FARC</strong>
+                </div>
+                <div class="info-row">
+                    <span>Max per wallet:</span>
+                    <strong>5M FARC</strong>
+                </div>
+                <div class="info-row">
+                    <span>Sold:</span>
+                    <strong id="tokens-sold">125M / 500M</strong>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>Buy $FARC</h3>
+                
+                <div id="error-message" class="error hidden"></div>
+                
+                <input 
+                    type="number" 
+                    id="amount-input" 
+                    placeholder="Amount in ETH (e.g. 0.01)"
+                    step="0.001"
+                    min="0.001"
+                    max="0.05"
+                >
+                
+                <div id="wallet-info" class="wallet-info"></div>
+                
+                <button id="action-button" class="button button-primary">
+                    Loading...
+                </button>
+                
+                <button class="button button-secondary" onclick="window.shareToken()">
+                    Share $FARC 📢
+                </button>
+            </div>
+        </div>
+    </div>
 
-  <div class="error" id="error" style="display: none;">
-    ⚠️ Please open this app inside <strong>Farcaster</strong> (Warpcast).
-  </div>
-
-  <script type="module">
-    import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
-
-    const isInFarcaster = window.parent !== window || window.location !== window.parent.location;
-
-    const app = document.getElementById('app');
-    const errorBox = document.getElementById('error');
-    const walletInfo = document.getElementById('wallet-info');
-    const buyButton = document.getElementById('buy-button');
-
-    if (!isInFarcaster) {
-      errorBox.style.display = 'block';
-      throw new Error('Not in Farcaster');
-    }
-
-    try {
-      await sdk.actions.ready();
-      const context = await sdk.context;
-
-      if (!context || !context.user) {
-        errorBox.innerText = '⚠️ Failed to load Farcaster context.';
-        errorBox.style.display = 'block';
-        throw new Error('No Farcaster user');
-      }
-
-      const ethAddress = context.user.verifiedAddresses?.ethAddresses?.[0];
-      if (!ethAddress) {
-        walletInfo.innerHTML = `<p style="color:#f87171;">No verified wallet address found.<br>Please verify in Warpcast settings.</p>`;
-        buyButton.disabled = true;
-      } else {
-        walletInfo.innerHTML = `<div class="address">🟣 ${ethAddress.slice(0, 6)}...${ethAddress.slice(-4)}</div>`;
-        buyButton.onclick = () => {
-          const amount = parseFloat(document.getElementById('amount').value);
-          if (!amount || amount <= 0) {
-            alert('Enter a valid ETH amount');
-            return;
-          }
-          alert(`✅ You will receive ${amount * 100}M $FARC tokens.\n\nSmart contract coming soon.`);
-        };
-      }
-
-      app.style.display = 'block';
-    } catch (err) {
-      console.error(err);
-      errorBox.style.display = 'block';
-    }
-  </script>
+    <script type="module">
+        import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+        
+        // Global state
+        let provider = null;
+        let userAddress = null;
+        let isConnected = false;
+        let farcasterContext = null;
+        
+        // Initialize app
+        async function init() {
+            console.log('Initializing FARC app...');
+            
+            try {
+                // Initialize Farcaster SDK
+                await sdk.actions.ready();
+                console.log('Farcaster SDK ready');
+                
+                // Get Farcaster context
+                try {
+                    farcasterContext = await sdk.context;
+                    console.log('Farcaster context:', farcasterContext);
+                    
+                    // Update UI with user info
+                    if (farcasterContext?.user?.username) {
+                        document.getElementById('header-text').innerHTML = 
+                            `The Official Farcaster Token<br><small>👤 @${farcasterContext.user.username}</small>`;
+                    }
+                } catch (error) {
+                    console.log('Could not get Farcaster context');
+                }
+                
+                // Get wallet provider from Farcaster SDK
+                provider = sdk.wallet?.ethProvider;
+                
+                if (!provider) {
+                    console.log('No wallet provider in SDK');
+                    showError('Please open this app in Warpcast');
+                    disableActions();
+                    return;
+                }
+                
+                console.log('Wallet provider found');
+                
+                // Check if already connected
+                try {
+                    const accounts = await provider.request({ method: 'eth_accounts' });
+                    console.log('Existing accounts:', accounts);
+                    
+                    if (accounts && accounts.length > 0) {
+                        await handleConnection(accounts[0]);
+                    } else {
+                        updateUIForDisconnected();
+                    }
+                } catch (error) {
+                    console.log('No existing connection');
+                    updateUIForDisconnected();
+                }
+                
+                // Listen for account changes
+                if (provider.on) {
+                    provider.on('accountsChanged', handleAccountsChanged);
+                }
+                
+            } catch (error) {
+                console.error('Init error:', error);
+                showError('Failed to initialize. Please refresh.');
+                disableActions();
+            } finally {
+                // Hide loading, show app
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+            }
+        }
+        
+        // Handle account changes
+        function handleAccountsChanged(accounts) {
+            console.log('Accounts changed:', accounts);
+            if (accounts.length === 0) {
+                isConnected = false;
+                userAddress = null;
+                updateUIForDisconnected();
+            } else if (accounts[0] !== userAddress) {
+                handleConnection(accounts[0]);
+            }
+        }
+        
+        // Handle connection
+        async function handleConnection(address) {
+            console.log('Connected with address:', address);
+            userAddress = address;
+            isConnected = true;
+            updateUIForConnected();
+            hideError();
+        }
+        
+        // Update UI for connected state
+        function updateUIForConnected() {
+            const walletInfo = document.getElementById('wallet-info');
+            walletInfo.innerHTML = `
+                <div class="wallet-badge">
+                    <span>🟣</span>
+                    <span>${userAddress.slice(0, 6)}...${userAddress.slice(-4)}</span>
+                </div>
+            `;
+            
+            const button = document.getElementById('action-button');
+            button.textContent = 'Buy FARC 🚀';
+            button.onclick = buyTokens;
+            button.disabled = false;
+        }
+        
+        // Update UI for disconnected state
+        function updateUIForDisconnected() {
+            const walletInfo = document.getElementById('wallet-info');
+            walletInfo.innerHTML = '';
+            
+            const button = document.getElementById('action-button');
+            button.textContent = 'Connect Wallet';
+            button.onclick = connectWallet;
+            button.disabled = false;
+        }
+        
+        // Disable actions
+        function disableActions() {
+            const button = document.getElementById('action-button');
+            button.disabled = true;
+            button.textContent = 'Wallet Not Available';
+        }
+        
+        // Connect wallet
+        async function connectWallet() {
+            console.log('Connect wallet clicked');
+            
+            if (!provider) {
+                showError('Please open this app in Warpcast');
+                return;
+            }
+            
+            try {
+                hideError();
+                const button = document.getElementById('action-button');
+                button.textContent = 'Connecting...';
+                button.disabled = true;
+                
+                console.log('Requesting accounts...');
+                const accounts = await provider.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                console.log('Accounts received:', accounts);
+                
+                if (accounts && accounts.length > 0) {
+                    await handleConnection(accounts[0]);
+                } else {
+                    showError('No accounts found');
+                    updateUIForDisconnected();
+                }
+                
+            } catch (error) {
+                console.error('Connect error:', error);
+                if (error.code === 4001) {
+                    showError('Connection cancelled');
+                } else {
+                    showError('Failed to connect wallet');
+                }
+                updateUIForDisconnected();
+            }
+        }
+        
+        // Buy tokens
+        async function buyTokens() {
+            const amountInput = document.getElementById('amount-input');
+            const amount = amountInput.value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                showError('Please enter a valid amount');
+                return;
+            }
+            
+            if (parseFloat(amount) > 0.05) {
+                showError('Maximum 0.05 ETH (5M FARC)');
+                return;
+            }
+            
+            try {
+                hideError();
+                const button = document.getElementById('action-button');
+                button.textContent = 'Processing...';
+                button.disabled = true;
+                
+                // Calculate tokens
+                const ethAmount = parseFloat(amount);
+                const tokensToReceive = ethAmount * 100; // 100M tokens per ETH
+                
+                // Show confirmation
+                const confirmed = confirm(
+                    `Purchase Summary:\n\n` +
+                    `You pay: ${ethAmount} ETH\n` +
+                    `You receive: ${tokensToReceive}M FARC\n` +
+                    `Wallet: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}\n\n` +
+                    `Proceed?`
+                );
+                
+                if (confirmed) {
+                    // In production, this would send a transaction
+                    alert(
+                        `✅ Transaction Ready!\n\n` +
+                        `Smart contract deployment coming soon...\n\n` +
+                        `Treasury: 0xf7AD40...9C32D`
+                    );
+                    
+                    // Clear input
+                    amountInput.value = '';
+                }
+                
+            } catch (error) {
+                console.error('Buy error:', error);
+                showError('Transaction failed');
+            } finally {
+                updateUIForConnected();
+            }
+        }
+        
+        // Show error
+        function showError(message) {
+            const errorEl = document.getElementById('error-message');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+        }
+        
+        // Hide error
+        function hideError() {
+            const errorEl = document.getElementById('error-message');
+            errorEl.classList.add('hidden');
+        }
+        
+        // Share function
+        window.shareToken = function() {
+            const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '$FARC Token',
+                    text: text
+                }).catch(() => {
+                    copyToClipboard(text);
+                });
+            } else {
+                copyToClipboard(text);
+            }
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Share text copied!');
+            }).catch(() => {
+                alert('Failed to copy');
+            });
+        }
+        
+        // Start app when DOM is loaded
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 </html>
