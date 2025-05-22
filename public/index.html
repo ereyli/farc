@@ -145,10 +145,8 @@
                     min="0.001"
                     style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; border: none;"
                 >
-                <button id="buy-button" class="button button-primary" disabled style="opacity: 0.6; margin-bottom: 10px;">
-                    Connect Wallet First
-                </button>
-                <button id="connect-button" class="button button-secondary">
+                <div id="wallet-info" style="text-align: center; margin: 10px 0; font-size: 14px; opacity: 0.8;"></div>
+                <button id="connect-button" class="button button-primary">
                     Connect Wallet
                 </button>
                 <button class="button button-secondary" onclick="share()">
@@ -215,16 +213,17 @@
         
         async function connectWallet() {
             if (isConnected) {
-                // Disconnect
-                isConnected = false;
-                userAddress = null;
-                updateConnectButton();
+                // If already connected, this becomes the buy button
+                await buyTokens();
                 return;
             }
             
             try {
+                // Check if mobile
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                
                 if (typeof window.ethereum !== 'undefined') {
-                    // Request account access
+                    // Desktop wallet (MetaMask, etc.)
                     const accounts = await window.ethereum.request({ 
                         method: 'eth_requestAccounts' 
                     });
@@ -232,13 +231,36 @@
                     if (accounts.length > 0) {
                         await handleConnection(accounts[0]);
                     }
+                } else if (isMobile) {
+                    // Mobile - try different approaches
+                    if (window.ethereum?.isMetaMask) {
+                        // MetaMask mobile browser
+                        const accounts = await window.ethereum.request({ 
+                            method: 'eth_requestAccounts' 
+                        });
+                        if (accounts.length > 0) {
+                            await handleConnection(accounts[0]);
+                        }
+                    } else {
+                        // Show mobile wallet options
+                        const choice = confirm(
+                            'To connect on mobile:\n\n' +
+                            '1. Use MetaMask mobile browser\n' +
+                            '2. Or copy this link and open in your wallet browser:\n\n' +
+                            'https://farc.vercel.app\n\n' +
+                            'Copy link now?'
+                        );
+                        
+                        if (choice) {
+                            navigator.clipboard.writeText('https://farc.vercel.app');
+                            alert('Link copied! Open it in your wallet browser.');
+                        }
+                    }
                 } else {
-                    // Try Farcaster embedded wallet
-                    alert('Connecting to Farcaster Wallet...\n\nIf this doesn\'t work, please make sure you have a wallet connected to your Farcaster account.');
-                    
-                    // In a real implementation, this would use Farcaster's wallet API
-                    // For now, we'll show instructions
-                    window.open('https://warpcast.com/settings/verified-addresses', '_blank');
+                    // No wallet detected
+                    if (confirm('No wallet detected. Would you like to install MetaMask?')) {
+                        window.open('https://metamask.io/download/', '_blank');
+                    }
                 }
             } catch (error) {
                 console.error('Connection error:', error);
@@ -251,31 +273,19 @@
             userAddress = address;
             updateConnectButton();
             
-            // Enable buy button
-            const buyButton = document.getElementById('buy-button');
-            if (buyButton) {
-                buyButton.disabled = false;
-                buyButton.textContent = 'Buy FARC 🚀';
-                buyButton.onclick = buyTokens;
-            }
+            // Show wallet info
+            document.getElementById('wallet-info').textContent = 
+                `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`;
         }
         
         function updateConnectButton() {
             const button = document.getElementById('connect-button');
             if (isConnected && userAddress) {
-                button.textContent = userAddress.slice(0, 6) + '...' + userAddress.slice(-4);
-                button.style.background = 'rgba(16, 185, 129, 0.2)';
+                button.textContent = 'Buy FARC 🚀';
+                button.style.background = '#10b981';
             } else {
                 button.textContent = 'Connect Wallet';
                 button.style.background = '#10b981';
-            }
-        }
-        
-        function updateUIForFarcaster(fid) {
-            // Update UI to show Farcaster connection
-            const header = document.querySelector('.header p');
-            if (header) {
-                header.innerHTML = `The Official Farcaster Token<br><small>Connected as Farcaster user #${fid}</small>`;
             }
         }
         
@@ -287,12 +297,28 @@
             }
             
             if (!isConnected) {
-                alert('Please connect your wallet first');
+                await connectWallet();
                 return;
             }
             
-            // For now, just show a message
-            alert(`Ready to buy ${parseFloat(amount) * 100} Million FARC tokens!\n\nContract deployment coming soon...`);
+            // Calculate tokens
+            const ethAmount = parseFloat(amount);
+            const tokensToReceive = ethAmount * 100; // 100M tokens per ETH
+            
+            const confirmed = confirm(
+                `Purchase Summary:\n\n` +
+                `You pay: ${ethAmount} ETH\n` +
+                `You receive: ${tokensToReceive}M FARC tokens\n\n` +
+                `Proceed with purchase?`
+            );
+            
+            if (confirmed) {
+                alert(
+                    `✅ Ready to purchase!\n\n` +
+                    `Waiting for smart contract deployment...\n\n` +
+                    `Treasury: 0xf7AD40...9C32D`
+                );
+            }
         }
         
         function share() {
