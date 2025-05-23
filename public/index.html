@@ -192,6 +192,10 @@
             <div class="card">
                 <h3>Buy $FARC</h3>
                 
+                <div id="presale-status" style="text-align: center; margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; display: none;">
+                    <span id="presale-status-text"></span>
+                </div>
+                
                 <div id="error-message" class="error hidden"></div>
                 
                 <input 
@@ -329,33 +333,51 @@
                     return;
                 }
                 
-                // For now, just use static data until we can test the connection
-                // Once wallet works, we'll enable contract calls
-                console.log('loadPresaleInfo: Using static data for now');
+                // Enable contract calls
+                console.log('loadPresaleInfo: Checking presale status...');
                 
-                /*
                 // Create a simple contract interface for reading
                 const request = {
                     to: CONTRACT_ADDRESS,
                     data: '0x5a3b74a0' // getPresaleInfo() function selector
                 };
                 
-                const result = await provider.request({
-                    method: 'eth_call',
-                    params: [request, 'latest']
-                });
-                
-                // Decode result (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)
-                if (result && result !== '0x') {
-                    // Simple decoding - in production use ethers.js
-                    const sold = parseInt(result.slice(66, 130), 16) / 1e18; // Convert from wei
-                    const remaining = parseInt(result.slice(130, 194), 16) / 1e18;
-                    const total = sold + remaining;
+                try {
+                    const result = await provider.request({
+                        method: 'eth_call',
+                        params: [request, 'latest']
+                    });
                     
-                    document.getElementById('tokens-sold').textContent = 
-                        `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
+                    console.log('Presale info raw result:', result);
+                    
+                    // Decode result (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)
+                    if (result && result !== '0x') {
+                        // Extract isActive (first 32 bytes after '0x')
+                        const isActive = result.slice(2, 66) === '0'.repeat(63) + '1';
+                        console.log('Presale active:', isActive);
+                        
+                        if (!isActive) {
+                            showError('⚠️ Presale is not active yet. Please wait for the owner to start it.');
+                            document.getElementById('action-button').disabled = true;
+                        }
+                        
+                        // Extract sold amount (second 32 bytes)
+                        const soldHex = '0x' + result.slice(66, 130);
+                        const sold = parseInt(soldHex, 16) / 1e18;
+                        
+                        // Extract remaining amount (third 32 bytes)
+                        const remainingHex = '0x' + result.slice(130, 194);
+                        const remaining = parseInt(remainingHex, 16) / 1e18;
+                        
+                        const total = sold + remaining;
+                        
+                        document.getElementById('tokens-sold').textContent = 
+                            `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
+                    }
+                } catch (callError) {
+                    console.error('Contract call error:', callError);
+                    // Don't show error, just use static data
                 }
-                */
                 
                 // Load user's purchased amount if connected
                 if (isConnected && userAddress) {
