@@ -104,25 +104,38 @@
     /* INIT */
     async function init() {
       try {
-        await sdk.actions.ready();
+        // 1️⃣ Ensure Farcaster capability prompt
+        if (sdk.wallet?.requestEthereumProvider) {
+          // Request Base (8453) access; will noop on MetaMask
+          await sdk.wallet.requestEthereumProvider({ chainId: "eip155:8453" }).catch(() => {});
+        }
+
         const farcasterProvider = sdk.wallet?.getEthereumProvider?.();
         provider = farcasterProvider || window.ethereum;
         if (farcasterProvider) provider.isFarcaster = true;
-        
         if (!provider) return fatal("Open in Warpcast or MetaMask");
 
-        // only wrap non‑Farcaster provider
+        // wrap if NOT Farcaster
         if (!provider.isFarcaster) {
           ethersProvider = new ethers.providers.Web3Provider(provider);
         }
 
-        const accs = await provider.request({ method: "eth_accounts" }).catch(()=>[]);
-        if (accs && accs.length) await connect(accs[0]); else disconnected();
+        const accs = await provider.request({ method: "eth_accounts" }).catch(() => []);
+        accs && accs.length ? await connect(accs[0]) : disconnected();
 
-        provider.on && provider.on("accountsChanged", accs=> accs.length? connect(accs[0]) : disconnected());
+        provider.on && provider.on("accountsChanged", a => a.length ? connect(a[0]) : disconnected());
         await loadInfo();
-      } catch(e){console.error(e); fatal("Init failed; refresh.");}
-      finally {
+      } catch (e) {
+        console.error("INIT FAIL", e);
+        fatal(e.message || "Init failed; refresh.");
+      } finally {
+        document.getElementById("loading").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
+      }
+    }
+
+    /* UI helpers */
+    function connectedUI(){
         document.getElementById("loading").classList.add("hidden");
         document.getElementById("app").classList.remove("hidden");
       }
