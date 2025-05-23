@@ -105,7 +105,9 @@
     async function init() {
       try {
         await sdk.actions.ready();
-        provider = sdk.wallet?.ethProvider || window.ethereum;
+        provider = (sdk.wallet?.getEthereumProvider?.()) || window.ethereum;
+        const usingFarcaster = !!sdk.wallet && !(window.ethereum && !sdk.wallet?.getEthereumProvider);
+        if (usingFarcaster && provider) provider.isFarcaster = true;
         if (!provider) return fatal("Open in Warpcast or MetaMask");
 
         // only wrap non‑Farcaster provider
