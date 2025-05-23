@@ -566,21 +566,41 @@
                 const ethAmount = parseFloat(amount);
                 const tokensToReceive = ethAmount * 100; // 100M tokens per ETH
                 
-                // Convert ETH to wei (more precise method)
-                const weiAmount = Math.floor(ethAmount * 1e18).toString();
-                const hexValue = '0x' + BigInt(weiAmount).toString(16);
+                // Convert ETH to wei using BigInt for precision
+                const weiAmount = BigInt(Math.floor(ethAmount * 1e18));
+                const hexValue = '0x' + weiAmount.toString(16);
                 
                 console.log('ETH amount:', ethAmount);
-                console.log('Wei amount:', weiAmount);
+                console.log('Wei amount:', weiAmount.toString());
                 console.log('Hex value:', hexValue);
                 
-                // Prepare transaction with minimal params first
+                // First, let's estimate gas
+                try {
+                    const gasEstimate = await provider.request({
+                        method: 'eth_estimateGas',
+                        params: [{
+                            to: CONTRACT_ADDRESS,
+                            from: userAddress,
+                            value: hexValue,
+                            data: '0xec8ac4d8'
+                        }]
+                    });
+                    console.log('Gas estimate:', gasEstimate);
+                } catch (gasError) {
+                    console.error('Gas estimation failed:', gasError);
+                    // This tells us why the transaction would fail
+                    if (gasError.message?.includes('execution reverted')) {
+                        showError('Transaction would fail. Please check: presale active, purchase limits, or wallet balance');
+                        return;
+                    }
+                }
+                
+                // Prepare transaction
                 const transaction = {
                     to: CONTRACT_ADDRESS,
                     from: userAddress,
                     value: hexValue,
-                    data: '0xec8ac4d8', // buyTokens() function selector
-                    // Don't specify gas, let wallet estimate
+                    data: '0xec8ac4d8' // buyTokens() function selector
                 };
                 
                 console.log('Sending transaction:', transaction);
@@ -597,7 +617,7 @@
                     `✅ Transaction Sent!\n\n` +
                     `You will receive: ${tokensToReceive}M FARC\n` +
                     `Tx Hash: ${txHash.slice(0, 10)}...${txHash.slice(-8)}\n\n` +
-                    `Please wait for confirmation...`
+                    `View on BaseScan`
                 );
                 
                 // Clear input
@@ -615,11 +635,11 @@
                 if (error.code === 4001) {
                     showError('Transaction cancelled');
                 } else if (error.code === -32000) {
-                    showError('Insufficient funds for gas');
-                } else if (error.message?.includes('insufficient')) {
-                    showError('Insufficient balance');
-                } else if (error.message?.includes('revert')) {
-                    showError('Transaction would fail - check purchase limits');
+                    showError('Insufficient funds for gas + amount');
+                } else if (error.message?.includes('insufficient funds')) {
+                    showError('Insufficient ETH balance');
+                } else if (error.message?.includes('execution reverted')) {
+                    showError('Transaction failed - check purchase limits');
                 } else {
                     showError('Transaction failed: ' + (error.message || error.code || 'Unknown error'));
                 }
