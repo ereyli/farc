@@ -212,269 +212,186 @@
         </div>
     </div>
 
-    <script type="module">
-        import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
-        
-        // Global state
-        let provider = null;
-        let userAddress = null;
-        let isConnected = false;
-        let farcasterContext = null;
-        
-        // Initialize app
-        async function init() {
-            console.log('Initializing FARC app...');
-            
-            try {
-                // Initialize Farcaster SDK
-                await sdk.actions.ready();
-                console.log('Farcaster SDK ready');
-                
-                // Get Farcaster context
-                try {
-                    farcasterContext = await sdk.context;
-                    console.log('Farcaster context:', farcasterContext);
-                    
-                    // Update UI with user info
-                    if (farcasterContext?.user?.username) {
-                        document.getElementById('header-text').innerHTML = 
-                            `The Official Farcaster Token<br><small>👤 @${farcasterContext.user.username}</small>`;
-                    }
-                } catch (error) {
-                    console.log('Could not get Farcaster context');
-                }
-                
-                // Get wallet provider from Farcaster SDK
-                provider = sdk.wallet?.ethProvider;
-                
-                if (!provider) {
-                    console.log('No wallet provider in SDK');
-                    showError('Please open this app in Warpcast');
-                    disableActions();
-                    return;
-                }
-                
-                console.log('Wallet provider found');
-                
-                // Check if already connected
-                try {
-                    const accounts = await provider.request({ method: 'eth_accounts' });
-                    console.log('Existing accounts:', accounts);
-                    
-                    if (accounts && accounts.length > 0) {
-                        await handleConnection(accounts[0]);
-                    } else {
-                        updateUIForDisconnected();
-                    }
-                } catch (error) {
-                    console.log('No existing connection');
-                    updateUIForDisconnected();
-                }
-                
-                // Listen for account changes
-                if (provider.on) {
-                    provider.on('accountsChanged', handleAccountsChanged);
-                }
-                
-            } catch (error) {
-                console.error('Init error:', error);
-                showError('Failed to initialize. Please refresh.');
-                disableActions();
-            } finally {
-                // Hide loading, show app
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-            }
-        }
-        
-        // Handle account changes
-        function handleAccountsChanged(accounts) {
-            console.log('Accounts changed:', accounts);
-            if (accounts.length === 0) {
-                isConnected = false;
-                userAddress = null;
-                updateUIForDisconnected();
-            } else if (accounts[0] !== userAddress) {
-                handleConnection(accounts[0]);
-            }
-        }
-        
-        // Handle connection
-        async function handleConnection(address) {
-            console.log('Connected with address:', address);
-            userAddress = address;
-            isConnected = true;
-            updateUIForConnected();
-            hideError();
-        }
-        
-        // Update UI for connected state
-        function updateUIForConnected() {
-            const walletInfo = document.getElementById('wallet-info');
-            walletInfo.innerHTML = `
-                <div class="wallet-badge">
-                    <span>🟣</span>
-                    <span>${userAddress.slice(0, 6)}...${userAddress.slice(-4)}</span>
-                </div>
-            `;
-            
-            const button = document.getElementById('action-button');
-            button.textContent = 'Buy FARC 🚀';
-            button.onclick = buyTokens;
-            button.disabled = false;
-        }
-        
-        // Update UI for disconnected state
-        function updateUIForDisconnected() {
-            const walletInfo = document.getElementById('wallet-info');
-            walletInfo.innerHTML = '';
-            
-            const button = document.getElementById('action-button');
-            button.textContent = 'Connect Wallet';
-            button.onclick = connectWallet;
-            button.disabled = false;
-        }
-        
-        // Disable actions
-        function disableActions() {
-            const button = document.getElementById('action-button');
-            button.disabled = true;
-            button.textContent = 'Wallet Not Available';
-        }
-        
-        // Connect wallet
-        async function connectWallet() {
-            console.log('Connect wallet clicked');
-            
-            if (!provider) {
-                showError('Please open this app in Warpcast');
-                return;
-            }
-            
-            try {
-                hideError();
-                const button = document.getElementById('action-button');
-                button.textContent = 'Connecting...';
-                button.disabled = true;
-                
-                console.log('Requesting accounts...');
-                const accounts = await provider.request({ 
-                    method: 'eth_requestAccounts' 
-                });
-                
-                console.log('Accounts received:', accounts);
-                
-                if (accounts && accounts.length > 0) {
-                    await handleConnection(accounts[0]);
-                } else {
-                    showError('No accounts found');
-                    updateUIForDisconnected();
-                }
-                
-            } catch (error) {
-                console.error('Connect error:', error);
-                if (error.code === 4001) {
-                    showError('Connection cancelled');
-                } else {
-                    showError('Failed to connect wallet');
-                }
-                updateUIForDisconnected();
-            }
-        }
-        
-        // Buy tokens
-        async function buyTokens() {
-            const amountInput = document.getElementById('amount-input');
-            const amount = amountInput.value;
-            
-            if (!amount || parseFloat(amount) <= 0) {
-                showError('Please enter a valid amount');
-                return;
-            }
-            
-            if (parseFloat(amount) > 0.05) {
-                showError('Maximum 0.05 ETH (5M FARC)');
-                return;
-            }
-            
-            try {
-                hideError();
-                const button = document.getElementById('action-button');
-                button.textContent = 'Processing...';
-                button.disabled = true;
-                
-                // Calculate tokens
-                const ethAmount = parseFloat(amount);
-                const tokensToReceive = ethAmount * 100; // 100M tokens per ETH
-                
-                // Show confirmation
-                const confirmed = confirm(
-                    `Purchase Summary:\n\n` +
-                    `You pay: ${ethAmount} ETH\n` +
-                    `You receive: ${tokensToReceive}M FARC\n` +
-                    `Wallet: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}\n\n` +
-                    `Proceed?`
-                );
-                
-                if (confirmed) {
-                    // In production, this would send a transaction
-                    alert(
-                        `✅ Transaction Ready!\n\n` +
-                        `Smart contract deployment coming soon...\n\n` +
-                        `Treasury: 0xf7AD40...9C32D`
-                    );
-                    
-                    // Clear input
-                    amountInput.value = '';
-                }
-                
-            } catch (error) {
-                console.error('Buy error:', error);
-                showError('Transaction failed');
-            } finally {
-                updateUIForConnected();
-            }
-        }
-        
-        // Show error
-        function showError(message) {
-            const errorEl = document.getElementById('error-message');
-            errorEl.textContent = message;
-            errorEl.classList.remove('hidden');
-        }
-        
-        // Hide error
-        function hideError() {
-            const errorEl = document.getElementById('error-message');
-            errorEl.classList.add('hidden');
-        }
-        
-        // Share function
-        window.shareToken = function() {
-            const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: '$FARC Token',
-                    text: text
-                }).catch(() => {
-                    copyToClipboard(text);
-                });
-            } else {
-                copyToClipboard(text);
-            }
-        }
-        
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Share text copied!');
-            }).catch(() => {
-                alert('Failed to copy');
-            });
-        }
-        
-        // Start app when DOM is loaded
-        window.addEventListener('DOMContentLoaded', init);
-    </script>
-</body>
-</html>
+   
+           <script type="module">
+import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+import { ethers } from 'https://esm.sh/ethers@5.7.2';
+
+// ✅ Kontrat bilgileri
+const CONTRACT_ADDRESS = "0xed79dff3f8e2ce0d15f2eaa7f853047fdad16c4b";
+const CONTRACT_ABI = [
+  {
+    "inputs": [],
+    "name": "buyTokens",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  }
+];
+
+// Global state
+let provider = null;
+let userAddress = null;
+let isConnected = false;
+let farcasterContext = null;
+
+async function init() {
+  try {
+    await sdk.actions.ready();
+
+    farcasterContext = await sdk.context;
+    provider = sdk.wallet?.ethProvider;
+
+    if (!provider) {
+      showError("Please open this app in Warpcast");
+      disableActions();
+      return;
+    }
+
+    const accounts = await provider.request({ method: 'eth_accounts' });
+    if (accounts && accounts.length > 0) {
+      await handleConnection(accounts[0]);
+    } else {
+      updateUIForDisconnected();
+    }
+
+    if (provider.on) {
+      provider.on('accountsChanged', handleAccountsChanged);
+    }
+
+  } catch (error) {
+    console.error('Init error:', error);
+    showError('Failed to initialize.');
+    disableActions();
+  } finally {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+  }
+}
+
+function handleAccountsChanged(accounts) {
+  if (accounts.length === 0) {
+    isConnected = false;
+    userAddress = null;
+    updateUIForDisconnected();
+  } else if (accounts[0] !== userAddress) {
+    handleConnection(accounts[0]);
+  }
+}
+
+async function handleConnection(address) {
+  userAddress = address;
+  isConnected = true;
+  updateUIForConnected();
+  hideError();
+}
+
+function updateUIForConnected() {
+  document.getElementById('wallet-info').innerHTML = `
+    <div class="wallet-badge">
+      <span>🟣</span>
+      <span>${userAddress.slice(0, 6)}...${userAddress.slice(-4)}</span>
+    </div>
+  `;
+  const btn = document.getElementById('action-button');
+  btn.textContent = 'Buy FARC 🚀';
+  btn.onclick = buyTokens;
+  btn.disabled = false;
+}
+
+function updateUIForDisconnected() {
+  document.getElementById('wallet-info').innerHTML = '';
+  const btn = document.getElementById('action-button');
+  btn.textContent = 'Connect Wallet';
+  btn.onclick = connectWallet;
+  btn.disabled = false;
+}
+
+function disableActions() {
+  const btn = document.getElementById('action-button');
+  btn.disabled = true;
+  btn.textContent = 'Wallet Not Available';
+}
+
+async function connectWallet() {
+  if (!provider) {
+    showError('Please open this app in Warpcast');
+    return;
+  }
+
+  try {
+    hideError();
+    const btn = document.getElementById('action-button');
+    btn.textContent = 'Connecting...';
+    btn.disabled = true;
+
+    const accounts = await provider.request({ method: 'eth_requestAccounts' });
+    if (accounts.length > 0) {
+      await handleConnection(accounts[0]);
+    } else {
+      showError('No accounts found');
+      updateUIForDisconnected();
+    }
+
+  } catch (err) {
+    console.error(err);
+    showError(err.message || 'Wallet connection failed');
+    updateUIForDisconnected();
+  }
+}
+
+async function buyTokens() {
+  const amountInput = document.getElementById('amount-input');
+  const amount = amountInput.value;
+
+  if (!amount || parseFloat(amount) <= 0) {
+    showError('Please enter a valid amount');
+    return;
+  }
+
+  if (parseFloat(amount) > 0.05) {
+    showError('Max 0.05 ETH (5M FARC)');
+    return;
+  }
+
+  try {
+    hideError();
+    const btn = document.getElementById('action-button');
+    btn.textContent = 'Processing...';
+    btn.disabled = true;
+
+    const ethAmount = parseFloat(amount);
+
+    const ethersProvider = new ethers.providers.Web3Provider(provider);
+    const signer = ethersProvider.getSigner();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+    const tx = await contract.buyTokens({
+      value: ethers.utils.parseEther(ethAmount.toString())
+    });
+
+    await tx.wait();
+
+    alert(`✅ Bought ${ethAmount * 100}M FARC!\n\nTx Hash:\n${tx.hash}`);
+    amountInput.value = '';
+  } catch (error) {
+    console.error(error);
+    showError(error.message || 'Transaction failed');
+  } finally {
+    updateUIForConnected();
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-message');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function hideError() {
+  const el = document.getElementById('error-message');
+  el.classList.add('hidden');
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
