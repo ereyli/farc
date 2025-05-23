@@ -172,6 +172,10 @@
             <div class="card">
                 <h2>🔥 Presale LIVE</h2>
                 <div class="info-row">
+                    <span>Network:</span>
+                    <strong>Base (Chain ID: 8453)</strong>
+                </div>
+                <div class="info-row">
                     <span>Price:</span>
                     <strong>0.01 ETH = 1M FARC</strong>
                 </div>
@@ -520,15 +524,21 @@
                 const ethAmount = parseFloat(amount);
                 const tokensToReceive = ethAmount * 100; // 100M tokens per ETH
                 
-                // Convert ETH to wei
-                const weiAmount = '0x' + (ethAmount * 1e18).toString(16);
+                // Convert ETH to wei (more precise method)
+                const weiAmount = Math.floor(ethAmount * 1e18).toString();
+                const hexValue = '0x' + BigInt(weiAmount).toString(16);
                 
-                // Prepare transaction
+                console.log('ETH amount:', ethAmount);
+                console.log('Wei amount:', weiAmount);
+                console.log('Hex value:', hexValue);
+                
+                // Prepare transaction with minimal params first
                 const transaction = {
                     to: CONTRACT_ADDRESS,
                     from: userAddress,
-                    value: weiAmount,
-                    data: '0xec8ac4d8' // buyTokens() function selector
+                    value: hexValue,
+                    data: '0xec8ac4d8', // buyTokens() function selector
+                    // Don't specify gas, let wallet estimate
                 };
                 
                 console.log('Sending transaction:', transaction);
@@ -558,12 +568,18 @@
                 
             } catch (error) {
                 console.error('Buy error:', error);
+                console.error('Error details:', JSON.stringify(error, null, 2));
+                
                 if (error.code === 4001) {
                     showError('Transaction cancelled');
+                } else if (error.code === -32000) {
+                    showError('Insufficient funds for gas');
                 } else if (error.message?.includes('insufficient')) {
                     showError('Insufficient balance');
+                } else if (error.message?.includes('revert')) {
+                    showError('Transaction would fail - check purchase limits');
                 } else {
-                    showError('Transaction failed: ' + (error.message || 'Unknown error'));
+                    showError('Transaction failed: ' + (error.message || error.code || 'Unknown error'));
                 }
             } finally {
                 updateUIForConnected();
