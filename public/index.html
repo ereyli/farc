@@ -7,21 +7,10 @@
   <link rel="icon" href="/farc.png" />
   <link rel="manifest" href="/farcaster.json" />
 
-  <!-- Farcaster Mini App Meta -->
-  <meta name="fc:frame" content="vNext" />
-  <meta name="fc:frame:image" content="https://farc.vercel.app/farc.png" />
-  <meta name="fc:frame:button:1" content="Launch App" />
-  <meta name="fc:frame:button:1:action" content="launch_frame" />
-  <meta name="fc:frame:button:1:target" content="https://farc.vercel.app" />
-
   <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
@@ -29,10 +18,7 @@
       padding: 20px;
       min-height: 100vh;
     }
-    .container {
-      max-width: 400px;
-      margin: 0 auto;
-    }
+    .container { max-width: 400px; margin: 0 auto; }
     .card {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
@@ -70,8 +56,26 @@
       margin-top: 10px;
       display: none;
     }
-    .error:not(.hidden) {
-      display: block;
+    .error:not(.hidden) { display: block; }
+    .wallet-info {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    .progress-container {
+      background: rgba(255,255,255,0.1);
+      height: 10px;
+      width: 100%;
+      border-radius: 5px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-bar {
+      background: #10b981;
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
     }
   </style>
 </head>
@@ -82,6 +86,8 @@
 
     <div class="card">
       <input type="number" id="amount-input" step="0.001" placeholder="ETH amount (max 0.05)">
+      <div class="wallet-info" id="wallet-info">Not connected</div>
+      <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
       <button id="action-button" onclick="buyTokens()">Buy FARC 🚀</button>
       <div id="error-message" class="error hidden"></div>
     </div>
@@ -91,7 +97,8 @@
     const CONTRACT_ADDRESS = '0x638eeea689d3f9678f8753f8ed1d55776f4129cd';
     const CONTRACT_ABI = [
       'function buyTokens() external payable',
-      'function getPresaleInfo() view returns (bool,uint256,uint256,uint256)'
+      'function getPresaleInfo() view returns (bool,uint256,uint256,uint256)',
+      'function purchasedAmount(address) view returns (uint256)'
     ];
 
     let provider = window.ethereum;
@@ -100,6 +107,8 @@
     async function connect() {
       const accounts = await provider.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
+      document.getElementById('wallet-info').textContent = `Connected: ${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+      updateProgress();
     }
 
     async function buyTokens() {
@@ -125,11 +134,21 @@
         const signer = new ethers.providers.Web3Provider(provider).getSigner();
         const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
+        const purchased = await contract.purchasedAmount(userAddress);
+        const max = ethers.utils.parseUnits('5000000', 18);
+        const toBuy = ethAmount.mul(ethers.BigNumber.from('100000000'));
+
+        if (purchased.add(toBuy).gt(max)) {
+          showError("Exceeds max tokens per wallet");
+          return;
+        }
+
         const tx = await contract.buyTokens({ value: ethAmount });
         console.log("Transaction sent:", tx.hash);
 
         alert(`✅ Transaction sent!\n\nTx Hash: ${tx.hash}`);
         amountInput.value = '';
+        updateProgress();
       } catch (error) {
         console.error("Buy error:", error);
         if (error.code === 4001) showError("Transaction cancelled");
@@ -138,6 +157,19 @@
         const button = document.getElementById('action-button');
         button.textContent = 'Buy FARC 🚀';
         button.disabled = false;
+      }
+    }
+
+    async function updateProgress() {
+      try {
+        const providerObj = new ethers.providers.Web3Provider(provider);
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, providerObj);
+        const [, sold, remaining] = await contract.getPresaleInfo();
+        const total = sold.add(remaining);
+        const percent = sold.mul(100).div(total);
+        document.getElementById('progress-bar').style.width = `${percent.toString()}%`;
+      } catch (e) {
+        console.error("Progress update failed:", e);
       }
     }
 
