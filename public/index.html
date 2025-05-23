@@ -198,14 +198,30 @@
                 
                 <div id="error-message" class="error hidden"></div>
                 
+                <div style="margin: 15px 0;">
+                    <label style="font-size: 14px; opacity: 0.8;">Select amount:</label>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0;">
+                        <button onclick="window.setAmount(0.001)" class="button button-secondary" style="padding: 10px; font-size: 14px;">
+                            0.001 ETH
+                        </button>
+                        <button onclick="window.setAmount(0.01)" class="button button-secondary" style="padding: 10px; font-size: 14px;">
+                            0.01 ETH
+                        </button>
+                        <button onclick="window.setAmount(0.05)" class="button button-secondary" style="padding: 10px; font-size: 14px;">
+                            0.05 ETH
+                        </button>
+                    </div>
+                </div>
+                
                 <input 
                     type="number" 
                     id="amount-input" 
-                    placeholder="Amount in ETH (e.g. 0.01)"
+                    placeholder="Amount in ETH"
                     step="0.001"
                     min="0.001"
                     max="0.05"
                     value="0.001"
+                    readonly
                 >
                 
                 <div id="wallet-info" class="wallet-info"></div>
@@ -217,6 +233,13 @@
                 <button class="button button-secondary" onclick="window.shareToken()">
                     Share $FARC 📢
                 </button>
+                
+                <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 12px; text-align: center;">
+                    <p style="margin: 5px 0;">Having issues? Try:</p>
+                    <p style="margin: 5px 0;">• Use preset amounts above</p>
+                    <p style="margin: 5px 0;">• Refresh the app</p>
+                    <p style="margin: 5px 0;">• <a href="https://basescan.org/address/0x638EeEa689d3f9678f8753F8Ed1d55776F4129Cd#writeContract" target="_blank" style="color: #10b981;">Buy on BaseScan</a></p>
+                </div>
             </div>
         </div>
     </div>
@@ -569,36 +592,32 @@
                 const ethAmount = parseFloat(amount);
                 const tokensToReceive = ethAmount * 100; // 100M tokens per ETH
                 
-                // Convert ETH to wei
-                const weiValue = Math.floor(ethAmount * 1e18);
-                const hexValue = '0x' + weiValue.toString(16);
+                // Convert ETH to wei - use exact hex string
+                let hexValue;
+                if (ethAmount === 0.001) {
+                    hexValue = '0x38d7ea4c68000'; // Exactly 0.001 ETH
+                } else if (ethAmount === 0.01) {
+                    hexValue = '0x2386f26fc10000'; // Exactly 0.01 ETH
+                } else if (ethAmount === 0.05) {
+                    hexValue = '0xb1a2bc2ec50000'; // Exactly 0.05 ETH
+                } else {
+                    // For other values, calculate
+                    const weiValue = Math.floor(ethAmount * 1e18);
+                    hexValue = '0x' + weiValue.toString(16);
+                }
                 
                 console.log('Contract:', CONTRACT_ADDRESS);
                 console.log('ETH amount:', ethAmount);
-                console.log('Wei value:', weiValue);
                 console.log('Hex value:', hexValue);
                 
-                // Get current gas price
-                let gasPrice;
-                try {
-                    gasPrice = await provider.request({ method: 'eth_gasPrice' });
-                    console.log('Current gas price:', gasPrice);
-                } catch (e) {
-                    console.log('Could not get gas price, using default');
-                    gasPrice = '0x3b9aca00'; // 1 gwei default
-                }
-                
-                // Transaction with explicit gas parameters
+                // Try the simplest possible transaction format
                 const transaction = {
-                    to: CONTRACT_ADDRESS,
+                    to: CONTRACT_ADDRESS.toLowerCase(), // Ensure lowercase
                     value: hexValue,
-                    data: '0xec8ac4d8', // buyTokens() function selector
-                    gas: '0x186a0', // 100,000 gas limit (should be enough)
-                    gasPrice: gasPrice,
-                    type: '0x0' // Legacy transaction type
+                    data: '0xec8ac4d8' // buyTokens() function selector
                 };
                 
-                console.log('Transaction params:', transaction);
+                console.log('Transaction params:', JSON.stringify(transaction, null, 2));
                 
                 // Send transaction
                 const txHash = await provider.request({
@@ -609,24 +628,14 @@
                 console.log('Transaction sent:', txHash);
                 
                 // Success message
-                const basescanUrl = `https://basescan.org/tx/${txHash}`;
-                
-                // Show success with a better UI
                 showSuccess(
                     `✅ Transaction Sent!\n` +
                     `You will receive: ${tokensToReceive}M FARC\n` +
                     `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
                 );
                 
-                // Open BaseScan if possible
-                if (sdk?.actions?.openUrl) {
-                    setTimeout(() => {
-                        sdk.actions.openUrl({ url: basescanUrl });
-                    }, 1000);
-                }
-                
                 // Clear input
-                amountInput.value = '';
+                amountInput.value = '0.001';
                 
                 // Reload info after delay
                 setTimeout(() => {
@@ -636,59 +645,24 @@
                 
             } catch (error) {
                 console.error('Transaction error:', error);
-                console.error('Error code:', error.code);
-                console.error('Error message:', error.message);
-                console.error('Error data:', error.data);
                 
-                // Try alternative approach if first fails
-                if (error.code === -32602 || error.message?.includes('Invalid params')) {
-                    console.log('Trying alternative transaction format...');
-                    try {
-                        // Simpler transaction without type
-                        const simpleTx = {
-                            to: CONTRACT_ADDRESS,
-                            value: hexValue,
-                            data: '0xec8ac4d8',
-                            gas: '0x186a0'
-                        };
-                        
-                        const txHash = await provider.request({
-                            method: 'eth_sendTransaction',
-                            params: [simpleTx]
-                        });
-                        
-                        showSuccess(`✅ Transaction sent! Hash: ${txHash.slice(0, 10)}...`);
-                        amountInput.value = '';
-                        return;
-                        
-                    } catch (altError) {
-                        console.error('Alternative approach also failed:', altError);
-                    }
-                }
-                
-                if (error.code === 4001) {
+                // If Farcaster wallet fails, suggest alternative
+                if (error.code === -32602 || error.code === -32000) {
+                    showError(
+                        'Farcaster wallet transaction failed. ' +
+                        'Try: 1) Refresh the app, 2) Use exact amounts (0.001, 0.01, 0.05 ETH), ' +
+                        '3) Or purchase directly from contract on BaseScan'
+                    );
+                } else if (error.code === 4001) {
                     showError('Transaction cancelled');
-                } else if (error.code === -32000 || error.message?.includes('insufficient funds')) {
-                    showError('Insufficient ETH balance for transaction + gas');
-                } else if (error.message?.includes('execution reverted')) {
-                    showError('Transaction would fail - please try a smaller amount');
                 } else {
-                    showError('Transaction failed. Please try again or contact support.');
+                    showError('Transaction failed. Please try refreshing the app.');
                 }
             } finally {
                 const button = document.getElementById('action-button');
                 button.textContent = 'Buy FARC 🚀';
                 button.disabled = false;
             }
-        }
-        
-        // Show success message
-        function showSuccess(message) {
-            const messageArea = document.getElementById('error-message');
-            messageArea.textContent = message;
-            messageArea.classList.remove('error', 'hidden');
-            messageArea.style.background = 'rgba(16, 185, 129, 0.2)';
-            messageArea.style.border = '1px solid rgba(16, 185, 129, 0.4)';
         }
         
         // Show error
