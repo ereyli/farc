@@ -238,47 +238,58 @@
             
             try {
                 // Initialize Farcaster SDK
+                console.log('Step 1: Initializing SDK...');
                 await sdk.actions.ready();
-                console.log('Farcaster SDK ready');
+                console.log('Step 2: SDK ready');
                 
                 // Get Farcaster context
                 try {
+                    console.log('Step 3: Getting context...');
                     farcasterContext = await sdk.context;
-                    console.log('Farcaster context:', farcasterContext);
+                    console.log('Step 4: Context received:', farcasterContext);
                     
                     // Update UI with user info
                     if (farcasterContext?.user?.username) {
                         document.getElementById('header-text').innerHTML = 
                             `The Official Farcaster Token<br><small>👤 @${farcasterContext.user.username}</small>`;
                     }
-                } catch (error) {
-                    console.log('Could not get Farcaster context');
+                } catch (contextError) {
+                    console.log('Context error (non-fatal):', contextError);
                 }
                 
                 // Get wallet provider from Farcaster SDK
+                console.log('Step 5: Getting wallet provider...');
                 provider = sdk.wallet?.ethProvider;
                 
                 if (!provider) {
-                    console.log('No wallet provider in SDK');
-                    showError('Please open this app in Warpcast');
-                    disableActions();
-                    return;
+                    console.log('No wallet provider in SDK, trying window.ethereum...');
+                    // Fallback to window.ethereum if available
+                    if (window.ethereum) {
+                        provider = window.ethereum;
+                        console.log('Using window.ethereum as provider');
+                    } else {
+                        console.log('No wallet provider available');
+                        showError('Please open this app in Warpcast');
+                        disableActions();
+                        return;
+                    }
                 }
                 
-                console.log('Wallet provider found');
+                console.log('Step 6: Provider found:', provider);
                 
                 // Check if already connected
                 try {
+                    console.log('Step 7: Checking existing accounts...');
                     const accounts = await provider.request({ method: 'eth_accounts' });
-                    console.log('Existing accounts:', accounts);
+                    console.log('Step 8: Accounts:', accounts);
                     
                     if (accounts && accounts.length > 0) {
                         await handleConnection(accounts[0]);
                     } else {
                         updateUIForDisconnected();
                     }
-                } catch (error) {
-                    console.log('No existing connection');
+                } catch (accountError) {
+                    console.log('Account check error:', accountError);
                     updateUIForDisconnected();
                 }
                 
@@ -288,12 +299,16 @@
                 }
                 
                 // Load presale info
+                console.log('Step 9: Loading presale info...');
                 await loadPresaleInfo();
+                console.log('Step 10: Init complete!');
                 
             } catch (error) {
-                console.error('Init error:', error);
-                showError('Failed to initialize. Please refresh.');
-                disableActions();
+                console.error('Init error details:', error);
+                console.error('Error stack:', error.stack);
+                showError('Initialization error: ' + error.message);
+                // Don't disable actions, allow manual connect
+                updateUIForDisconnected();
             } finally {
                 // Hide loading, show app
                 document.getElementById('loading').classList.add('hidden');
@@ -304,8 +319,17 @@
         // Load presale info from contract
         async function loadPresaleInfo() {
             try {
-                if (!provider) return;
+                console.log('loadPresaleInfo: Starting...');
+                if (!provider) {
+                    console.log('loadPresaleInfo: No provider, skipping');
+                    return;
+                }
                 
+                // For now, just use static data until we can test the connection
+                // Once wallet works, we'll enable contract calls
+                console.log('loadPresaleInfo: Using static data for now');
+                
+                /*
                 // Create a simple contract interface for reading
                 const request = {
                     to: CONTRACT_ADDRESS,
@@ -327,6 +351,7 @@
                     document.getElementById('tokens-sold').textContent = 
                         `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
                 }
+                */
                 
                 // Load user's purchased amount if connected
                 if (isConnected && userAddress) {
@@ -334,15 +359,24 @@
                 }
                 
             } catch (error) {
-                console.error('Error loading presale info:', error);
+                console.error('loadPresaleInfo error:', error);
+                // Don't throw, just log
             }
         }
         
         // Load user info
         async function loadUserInfo() {
             try {
-                if (!provider || !userAddress) return;
+                console.log('loadUserInfo: Starting...');
+                if (!provider || !userAddress) {
+                    console.log('loadUserInfo: Missing provider or address');
+                    return;
+                }
                 
+                // Temporarily disabled until wallet connection is stable
+                console.log('loadUserInfo: Contract calls temporarily disabled');
+                
+                /*
                 // Get user's purchased amount
                 const data = '0x81a73ad5' + userAddress.slice(2).padStart(64, '0'); // purchasedAmount(address)
                 
@@ -370,9 +404,11 @@
                         `;
                     }
                 }
+                */
                 
             } catch (error) {
-                console.error('Error loading user info:', error);
+                console.error('loadUserInfo error:', error);
+                // Don't throw, just log
             }
         }
         
