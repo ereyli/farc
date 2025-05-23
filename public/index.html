@@ -26,14 +26,13 @@
       try {
         await sdk.actions.ready();
 
-        provider = sdk.wallet?.ethProvider;
-        if (!provider) {
-          if (window.ethereum) provider = new ethers.providers.Web3Provider(window.ethereum);
-          else throw new Error("No wallet provider available");
-        } else {
-          provider = new ethers.providers.Web3Provider(provider);
-        }
+        let rawProvider = sdk.wallet?.ethProvider || window.ethereum;
+        if (!rawProvider) throw new Error("No wallet provider available");
 
+        // Fix for ethers not being defined inside module scope
+        const { ethers } = window;
+
+        provider = new ethers.providers.Web3Provider(rawProvider);
         signer = provider.getSigner();
         contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
 
