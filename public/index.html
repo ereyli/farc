@@ -348,9 +348,9 @@
         </div>
     </div>
 
-    <script type="module">
+    <script>
         // Contract configuration
-        const CONTRACT_ADDRESS = '0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc'; // Update this with new address
+        const CONTRACT_ADDRESS = '0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc';
         const CONTRACT_ABI = [
             'function buyTokens() external payable',
             'function getInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)',
@@ -372,24 +372,49 @@
         // Check if we're in Farcaster frame
         async function checkEnvironment() {
             try {
-                // Check if we're in an iframe (Farcaster frames are iframes)
+                // Check if we're in an iframe
                 const inIframe = window !== window.parent;
                 
-                // Try to import Farcaster SDK only if in iframe
                 if (inIframe) {
-                    const module = await import('https://esm.sh/@farcaster/frame-sdk');
-                    sdk = module.sdk;
-                    isFarcasterFrame = true;
-                    console.log('Environment: Farcaster Frame');
-                    return true;
+                    // Try to load Farcaster SDK dynamically
+                    const script = document.createElement('script');
+                    script.type = 'module';
+                    
+                    return new Promise(function(resolve) {
+                        script.onload = async function() {
+                            try {
+                                const module = await import('https://esm.sh/@farcaster/frame-sdk');
+                                sdk = module.sdk;
+                                isFarcasterFrame = true;
+                                console.log('Environment: Farcaster Frame');
+                                resolve(true);
+                            } catch (e) {
+                                console.log('Failed to load Farcaster SDK:', e);
+                                isFarcasterFrame = false;
+                                resolve(false);
+                            }
+                        };
+                        
+                        script.onerror = function() {
+                            console.log('Environment: Web Browser (SDK load failed)');
+                            isFarcasterFrame = false;
+                            resolve(false);
+                        };
+                        
+                        script.src = 'https://esm.sh/@farcaster/frame-sdk';
+                        document.head.appendChild(script);
+                    });
                 }
+                
+                console.log('Environment: Web Browser');
+                isFarcasterFrame = false;
+                return false;
+                
             } catch (error) {
-                // Ignore error - not in Farcaster
+                console.log('Environment check error:', error);
+                isFarcasterFrame = false;
+                return false;
             }
-            
-            console.log('Environment: Web Browser');
-            isFarcasterFrame = false;
-            return false;
         }
         
         // Initialize app
@@ -402,20 +427,27 @@
                 
                 if (isFarcasterFrame) {
                     // Farcaster Frame initialization
-                    await sdk.actions.ready();
-                    console.log('Farcaster SDK ready');
-                    
-                    // Get wallet provider
-                    provider = sdk.wallet?.ethProvider;
-                    
-                    if (!provider) {
-                        console.log('No wallet provider in SDK');
-                        showError('Please open this app in Warpcast');
+                    try {
+                        await sdk.actions.ready();
+                        console.log('Farcaster SDK ready');
+                        
+                        // Get wallet provider
+                        provider = sdk.wallet?.ethProvider;
+                        
+                        if (!provider) {
+                            console.log('No wallet provider in SDK');
+                            showError('Please open this app in Warpcast');
+                            disableActions();
+                            return;
+                        }
+                        
+                        console.log('Farcaster Provider:', provider);
+                    } catch (sdkError) {
+                        console.error('SDK initialization error:', sdkError);
+                        showError('Failed to initialize Farcaster SDK');
                         disableActions();
                         return;
                     }
-                    
-                    console.log('Farcaster Provider:', provider);
                     
                 } else {
                     // Regular web browser initialization
@@ -449,10 +481,10 @@
                 }
                 
                 // Listen for account changes
-                if (provider.on) {
+                if (provider && provider.on) {
                     provider.on('accountsChanged', handleAccountsChanged);
                     if (!isFarcasterFrame) {
-                        provider.on('chainChanged', () => window.location.reload());
+                        provider.on('chainChanged', function() { window.location.reload(); });
                     }
                 }
                 
@@ -904,52 +936,61 @@
                         ethersProvider
                     );
                     
-                    const [buyers, amounts] = await readContract.getLeaderboard();
-                    
-                    // Combine and sort
-                    leaderboardData = buyers.map((buyer, i) => ({
-                        address: buyer,
-                        amount: parseFloat(ethers.utils.formatUnits(amounts[i], 18))
-                    })).filter(item => item.amount > 0)
-                      .sort((a, b) => b.amount - a.amount)
-                      .slice(0, 5); // Top 5
+                    try {
+                        const result = await readContract.getLeaderboard();
+                        const buyers = result[0] || result.buyers || [];
+                        const amounts = result[1] || result.amounts || [];
+                        
+                        // Combine and sort
+                        leaderboardData = buyers.map(function(buyer, i) {
+                            return {
+                                address: buyer,
+                                amount: parseFloat(ethers.utils.formatUnits(amounts[i], 18))
+                            };
+                        }).filter(function(item) {
+                            return item.amount > 0;
+                        }).sort(function(a, b) {
+                            return b.amount - a.amount;
+                        }).slice(0, 5); // Top 5
+                        
+                    } catch (contractError) {
+                        console.error('Contract call error:', contractError);
+                    }
                 }
                 
                 // Display leaderboard
                 const leaderboardEl = document.getElementById('leaderboard');
+                if (!leaderboardEl) return;
+                
                 if (leaderboardData.length === 0) {
-                    leaderboardEl.innerHTML = `
-                        <div style="text-align: center; padding: 20px; opacity: 0.7;">
-                            Be the first to buy FARC! 🚀
-                        </div>
-                    `;
+                    leaderboardEl.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.7;">Be the first to buy FARC! 🚀</div>';
                 } else {
-                    leaderboardEl.innerHTML = leaderboardData.map((item, index) => {
-                        const rank = index + 1;
-                        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
-                        const shortAddress = `${item.address.slice(0, 6)}...${item.address.slice(-4)}`;
+                    let html = '';
+                    for (let i = 0; i < leaderboardData.length; i++) {
+                        const item = leaderboardData[i];
+                        const rank = i + 1;
+                        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '#' + rank;
+                        const shortAddress = item.address.slice(0, 6) + '...' + item.address.slice(-4);
                         const amount = (item.amount / 1e6).toFixed(2);
                         
-                        return `
-                            <div class="leaderboard-item">
-                                <div class="leaderboard-rank">${medal}</div>
-                                <div class="leaderboard-user">
-                                    <span>${shortAddress}</span>
-                                    ${isFarcasterFrame ? '<span style="opacity: 0.7; font-size: 12px;">@farcaster</span>' : ''}
-                                </div>
-                                <div class="leaderboard-amount">${amount}M FARC</div>
-                            </div>
-                        `;
-                    }).join('');
+                        html += '<div class="leaderboard-item">' +
+                            '<div class="leaderboard-rank">' + medal + '</div>' +
+                            '<div class="leaderboard-user">' +
+                            '<span>' + shortAddress + '</span>' +
+                            (isFarcasterFrame ? '<span style="opacity: 0.7; font-size: 12px;">@farcaster</span>' : '') +
+                            '</div>' +
+                            '<div class="leaderboard-amount">' + amount + 'M FARC</div>' +
+                            '</div>';
+                    }
+                    leaderboardEl.innerHTML = html;
                 }
                 
             } catch (error) {
                 console.error('Error loading leaderboard:', error);
-                document.getElementById('leaderboard').innerHTML = `
-                    <div style="text-align: center; padding: 20px; opacity: 0.7;">
-                        Leaderboard unavailable
-                    </div>
-                `;
+                const leaderboardEl = document.getElementById('leaderboard');
+                if (leaderboardEl) {
+                    leaderboardEl.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.7;">Leaderboard unavailable</div>';
+                }
             }
         }
         
