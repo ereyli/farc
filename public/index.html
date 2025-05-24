@@ -348,9 +348,9 @@
         </div>
     </div>
 
-    <script type="module">
+    <script>
         // Contract configuration
-        const CONTRACT_ADDRESS = '0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc'; // Update this with new address
+        const CONTRACT_ADDRESS = '0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc';
         const CONTRACT_ABI = [
             'function buyTokens() external payable',
             'function getInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)',
@@ -372,41 +372,77 @@
         // Check if we're in Farcaster frame
         async function checkEnvironment() {
             try {
-                // Check if we're in an iframe (Farcaster frames are iframes)
+                // Check if we're in an iframe
                 const inIframe = window !== window.parent;
                 
-                // Try to import Farcaster SDK only if in iframe
                 if (inIframe) {
-                    const module = await import('https://esm.sh/@farcaster/frame-sdk');
-                    sdk = module.sdk;
-                    isFarcasterFrame = true;
-                    console.log('Environment: Farcaster Frame');
-                    return true;
+                    // Try to load Farcaster SDK dynamically
+                    const script = document.createElement('script');
+                    script.type = 'module';
+                    
+                    return new Promise(function(resolve) {
+                        script.onload = async function() {
+                            try {
+                                const module = await import('https://esm.sh/@farcaster/frame-sdk');
+                                sdk = module.sdk;
+                                isFarcasterFrame = true;
+                                console.log('Environment: Farcaster Frame');
+                                resolve(true);
+                            } catch (e) {
+                                console.log('Failed to load Farcaster SDK:', e);
+                                isFarcasterFrame = false;
+                                resolve(false);
+                            }
+                        };
+                        
+                        script.onerror = function() {
+                            console.log('Environment: Web Browser (SDK load failed)');
+                            isFarcasterFrame = false;
+                            resolve(false);
+                        };
+                        
+                        script.src = 'https://esm.sh/@farcaster/frame-sdk';
+                        document.head.appendChild(script);
+                    });
                 }
+                
+                console.log('Environment: Web Browser');
+                isFarcasterFrame = false;
+                return false;
+                
             } catch (error) {
-                // Ignore error - not in Farcaster
+                console.log('Environment check error:', error);
+                isFarcasterFrame = false;
+                return false;
             }
-            
-            console.log('Environment: Web Browser');
-            isFarcasterFrame = false;
-            return false;
         }
         
         // Initialize app
-        async function init() {
+        function init() {
             console.log('Initializing FARC app...');
             
+            // First show the UI
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
+            
+            // Then check environment
+            checkEnvironment().then(function() {
+                initializeWallet();
+            }).catch(function(error) {
+                console.error('Environment check failed:', error);
+                initializeWallet();
+            });
+        }
+        
+        // Initialize wallet based on environment
+        async function initializeWallet() {
             try {
-                // Check environment first
-                await checkEnvironment();
-                
-                if (isFarcasterFrame) {
+                if (isFarcasterFrame && sdk) {
                     // Farcaster Frame initialization
                     try {
                         await sdk.actions.ready();
                         console.log('Farcaster SDK ready');
                         
-                        // Get wallet provider
                         provider = sdk.wallet?.ethProvider;
                         
                         if (!provider) {
@@ -432,8 +468,6 @@
                         provider = window.ethereum;
                         ethersProvider = new ethers.providers.Web3Provider(provider);
                         console.log('MetaMask or Web3 wallet detected');
-                        
-                        // Show connect button
                         updateUIForDisconnected();
                     } else {
                         showError('Please install MetaMask or another Web3 wallet');
@@ -451,7 +485,7 @@
                         updateUIForDisconnected();
                     }
                 } catch (error) {
-                    console.log('No existing connection');
+                    console.log('No existing connection:', error);
                     updateUIForDisconnected();
                 }
                 
@@ -463,18 +497,20 @@
                     }
                 }
                 
-                // Load presale info for web browsers
+                // Load presale info
                 if (!isFarcasterFrame) {
-                    await loadPresaleInfo();
+                    loadPresaleInfo();
                 }
                 
+                // Load leaderboard after a delay
+                setTimeout(function() {
+                    loadLeaderboard();
+                }, 2000);
+                
             } catch (error) {
-                console.error('Init error:', error);
+                console.error('Wallet init error:', error);
                 showError('Initialization error. Please refresh.');
                 updateUIForDisconnected();
-            } finally {
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
             }
         }
         
