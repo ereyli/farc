@@ -800,6 +800,12 @@
      <script>
   const isFarcasterFrame = window !== window.parent;
 
+  // ✅ Show App Fonksiyonu
+  function showApp() {
+    document.getElementById('loading')?.classList.add('hidden');
+    document.getElementById('app')?.classList.remove('hidden');
+  }
+
   window.shareToken = async function () {
     try {
       if (isFarcasterFrame && window.sdk) {
@@ -848,14 +854,9 @@
       showError('Failed to copy');
     });
   }
-
-  // Helper: showApp
-  function showApp() {
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('app').classList.remove('hidden');
-  }
 </script>
 
+<!-- ✅ Farcaster SDK ve app başlatma -->
 <script type="module">
   import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
 
@@ -866,16 +867,16 @@
 
       window.sdk = sdk;
 
-      // Splash ekran kapandıysa uygulamayı göster
+      // ✅ App arayüzünü göster
       showApp();
 
-      // ETH input listener
+      // ✅ Input değişikliği takibi
       const amountInput = document.getElementById('amount-input');
       if (amountInput) {
         amountInput.addEventListener('input', updateTokenDisplay);
       }
 
-      // Satış bilgilerini yükle
+      // ✅ Satış verilerini yükle
       loadPresaleInfo();
 
     } catch (err) {
