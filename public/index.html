@@ -289,47 +289,38 @@
     </div>
 
     <script type="module">
-        // Conditional import based on environment
+        // Contract configuration
+        const CONTRACT_ADDRESS = '0x638EeEa689d3f9678f8753F8Ed1d55776F4129Cd';
+        const CONTRACT_ABI = [
+            'function buyTokens() external payable',
+            'function getPresaleInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)'
+        ];
+        
+        // Global state
+        let provider = null;
+        let ethersProvider = null;
+        let ethersSigner = null;
+        let contract = null;
+        let userAddress = null;
+        let isConnected = false;
+        let isFarcasterFrame = false;
         let sdk = null;
         
-        async function loadSDK() {
+        // Check if we're in Farcaster frame
+        async function checkEnvironment() {
             try {
                 // Try to import Farcaster SDK
                 const module = await import('https://esm.sh/@farcaster/frame-sdk');
                 sdk = module.sdk;
+                isFarcasterFrame = true;
+                console.log('Environment: Farcaster Frame');
                 return true;
             } catch (error) {
-                console.log('Farcaster SDK not available - running in web mode');
+                console.log('Environment: Web Browser');
+                isFarcasterFrame = false;
                 return false;
             }
         }
-        
-        // Main script
-        (async function() {
-            const hasFarcasterSDK = await loadSDK();
-            
-            // Contract configuration
-            const CONTRACT_ADDRESS = '0x638EeEa689d3f9678f8753F8Ed1d55776F4129Cd';
-            const CONTRACT_ABI = [
-                'function buyTokens() external payable',
-                'function getPresaleInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)'
-            ];
-            
-            // Global state
-            let provider = null;
-            let ethersProvider = null;
-            let ethersSigner = null;
-            let contract = null;
-            let userAddress = null;
-            let isConnected = false;
-            let isFarcasterFrame = false;
-            
-            // Check if we're in Farcaster frame
-            function checkEnvironment() {
-                // Check if we're in Farcaster by looking for sdk
-                isFarcasterFrame = hasFarcasterSDK && sdk && sdk.wallet;
-                console.log('Environment:', isFarcasterFrame ? 'Farcaster Frame' : 'Web Browser');
-            }
         
         // Initialize app
         async function init() {
