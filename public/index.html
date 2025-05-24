@@ -243,7 +243,7 @@
                 <div id="message-area"></div>
                 
                 <div style="margin: 15px 0;">
-                    <label style="font-size: 14px; opacity: 0.8;">Quick amounts or enter custom:</label>
+                    <label style="font-size: 14px; opacity: 0.8;">Select amount:</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0;">
                         <button onclick="window.setAmount(0.001)" class="button button-amount" data-amount="0.001">
                             0.001 ETH<br><small>0.1M FARC</small>
@@ -260,18 +260,13 @@
                 <input 
                     type="number" 
                     id="amount-input" 
-                    placeholder="Amount in ETH (e.g. 0.015)"
+                    placeholder="Amount in ETH"
                     step="0.001"
                     min="0.001"
                     max="0.05"
                     value="0.01"
+                    readonly
                 >
-                
-                <div style="text-align: center; margin: 10px 0; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
-                    <span id="token-preview" style="font-size: 14px; color: #10b981;">
-                        You will receive: <strong>1M FARC</strong>
-                    </span>
-                </div>
                 
                 <div id="wallet-info" class="wallet-info"></div>
                 
@@ -284,14 +279,12 @@
                 </button>
                 
                 <div class="help-box">
-                    <p style="margin: 8px 0; font-size: 13px;">
-                        🌐 Visit <a href="https://farc.vercel.app" target="_blank" style="color: #10b981; font-weight: bold;">farc.vercel.app</a> for web version
-                    </p>
-                    <p style="margin: 8px 0; font-size: 12px; opacity: 0.9;">
-                        💧 All proceeds will be added to liquidity pool
-                    </p>
+                    <p style="margin: 5px 0;">💡 Purchase Options:</p>
+                    <p style="margin: 5px 0;">• <a href="https://basescan.org/address/0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc#writeContract" target="_blank">Buy directly on BaseScan</a></p>
+                    <p style="margin: 5px 0;">• Visit <a href="https://farc.vercel.app" target="_blank">farc.vercel.app</a> with MetaMask</p>
                     <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">
-                        Contract: 0xdc73...fbdc
+                        Contract: 0xdc73...fbdc<br>
+                        <span style="color: #10b981;">✅ Now Farcaster compatible!</span>
                     </p>
                 </div>
             </div>
@@ -321,24 +314,17 @@
         // Check if we're in Farcaster frame
         async function checkEnvironment() {
             try {
-                // Check if we're in an iframe (Farcaster frames are iframes)
-                const inIframe = window !== window.parent;
-                
-                // Try to import Farcaster SDK only if in iframe
-                if (inIframe) {
-                    const module = await import('https://esm.sh/@farcaster/frame-sdk');
-                    sdk = module.sdk;
-                    isFarcasterFrame = true;
-                    console.log('Environment: Farcaster Frame');
-                    return true;
-                }
+                // Try to import Farcaster SDK
+                const module = await import('https://esm.sh/@farcaster/frame-sdk');
+                sdk = module.sdk;
+                isFarcasterFrame = true;
+                console.log('Environment: Farcaster Frame');
+                return true;
             } catch (error) {
-                // Ignore error - not in Farcaster
+                console.log('Environment: Web Browser');
+                isFarcasterFrame = false;
+                return false;
             }
-            
-            console.log('Environment: Web Browser');
-            isFarcasterFrame = false;
-            return false;
         }
         
         // Initialize app
@@ -374,9 +360,6 @@
                         provider = window.ethereum;
                         ethersProvider = new ethers.providers.Web3Provider(provider);
                         console.log('MetaMask or Web3 wallet detected');
-                        
-                        // Show connect button
-                        updateUIForDisconnected();
                     } else {
                         showError('Please install MetaMask or another Web3 wallet');
                         disableActions();
@@ -405,10 +388,8 @@
                     }
                 }
                 
-                // Load presale info for web browsers
-                if (!isFarcasterFrame) {
-                    await loadPresaleInfo();
-                }
+                // Load presale info
+                await loadPresaleInfo();
                 
             } catch (error) {
                 console.error('Init error:', error);
@@ -438,9 +419,7 @@
             
             // Create ethers objects for web browsers
             if (!isFarcasterFrame && provider) {
-                if (!ethersProvider) {
-                    ethersProvider = new ethers.providers.Web3Provider(provider);
-                }
+                ethersProvider = new ethers.providers.Web3Provider(provider);
                 ethersSigner = ethersProvider.getSigner();
                 contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, ethersSigner);
                 
@@ -461,9 +440,6 @@
             
             updateUIForConnected();
             clearMessage();
-            
-            // Load presale info after connection
-            loadPresaleInfo();
         }
         
         // Update UI for connected state
@@ -729,45 +705,7 @@
             });
             
             clearMessage();
-            updateTokenDisplay();
         }
-        
-        // Update token display when amount changes
-        function updateTokenDisplay() {
-            const amountInput = document.getElementById('amount-input');
-            const amount = parseFloat(amountInput.value) || 0;
-            const tokens = amount * 100; // 100M per ETH
-            
-            // Update preview
-            const preview = document.getElementById('token-preview');
-            if (preview) {
-                if (amount > 0) {
-                    preview.innerHTML = `You will receive: <strong>${tokens}M FARC</strong>`;
-                } else {
-                    preview.innerHTML = `Enter amount to see tokens`;
-                }
-            }
-            
-            if (amount > 0) {
-                // Update quick amount buttons to show if it matches
-                document.querySelectorAll('.button-amount').forEach(btn => {
-                    const btnAmount = parseFloat(btn.getAttribute('data-amount'));
-                    if (Math.abs(btnAmount - amount) < 0.0001) {
-                        btn.classList.add('active');
-                    } else {
-                        btn.classList.remove('active');
-                    }
-                });
-            }
-        }
-        
-        // Add event listener for input changes
-        window.addEventListener('DOMContentLoaded', () => {
-            const amountInput = document.getElementById('amount-input');
-            if (amountInput) {
-                amountInput.addEventListener('input', updateTokenDisplay);
-            }
-        });
         
         window.shareToken = function() {
             const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
