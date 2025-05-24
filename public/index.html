@@ -280,11 +280,11 @@
                 
                 <div class="help-box">
                     <p style="margin: 5px 0;">💡 Purchase Options:</p>
-                    <p style="margin: 5px 0;">• <a href="https://basescan.org/address/0x638EeEa689d3f9678f8753F8Ed1d55776F4129Cd#writeContract" target="_blank">Buy directly on BaseScan</a></p>
+                    <p style="margin: 5px 0;">• <a href="https://basescan.org/address/0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc#writeContract" target="_blank">Buy directly on BaseScan</a></p>
                     <p style="margin: 5px 0;">• Visit <a href="https://farc.vercel.app" target="_blank">farc.vercel.app</a> with MetaMask</p>
                     <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">
-                        Contract: 0x638E...29Cd<br>
-                        <span style="color: #fbbf24;">⚠️ Farcaster wallet: Use BaseScan</span>
+                        Contract: 0xdc73...fbdc<br>
+                        <span style="color: #10b981;">✅ Now Farcaster compatible!</span>
                     </p>
                 </div>
             </div>
@@ -296,7 +296,9 @@
         const CONTRACT_ADDRESS = '0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc';
         const CONTRACT_ABI = [
             'function buyTokens() external payable',
-            'function getPresaleInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)'
+            'function getInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)',
+            'function getRemainingAllocation(address) view returns (uint256)',
+            'function purchasedAmount(address) view returns (uint256)'
         ];
         
         // Global state
@@ -527,20 +529,20 @@
                 console.log('Environment:', isFarcasterFrame ? 'Farcaster' : 'Web');
                 
                 if (isFarcasterFrame) {
-                    // Farcaster Frame - Test without data field
-                    console.log('Testing Farcaster without function call...');
+                    // Farcaster Frame - Simple ETH transfer (no data field!)
+                    console.log('Using Farcaster simple ETH transfer...');
                     
                     const weiValue = Math.floor(ethAmount * 1e18);
                     const hexValue = '0x' + weiValue.toString(16);
                     
-                    // JUST SEND ETH - NO DATA FIELD
+                    // JUST ETH TRANSFER - Contract's receive() will handle it
                     const transaction = {
                         to: CONTRACT_ADDRESS.toLowerCase(),
                         value: hexValue
-                        // NO DATA - This might work!
+                        // NO data field - just ETH!
                     };
                     
-                    console.log('Test transaction (no data):', transaction);
+                    console.log('Simple ETH transfer:', transaction);
                     
                     try {
                         const txHash = await provider.request({
@@ -551,17 +553,32 @@
                         console.log('Success! Transaction sent:', txHash);
                         showSuccess(
                             `✅ Transaction sent!\n` +
-                            `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}\n\n` +
-                            `Note: Current contract needs function call.\n` +
-                            `Deploy new simple contract for auto-purchase.`
+                            `You will receive: ${tokensToReceive}M FARC\n` +
+                            `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
                         );
                         
+                        setTimeout(() => loadPresaleInfo(), 5000);
+                        
                     } catch (txError) {
-                        console.error('Even simple transfer failed:', txError);
-                        showError(
-                            'Farcaster wallet limitations detected.\n\n' +
-                            'Please use BaseScan or MetaMask.'
-                        );
+                        console.error('Farcaster transaction failed:', txError);
+                        
+                        // Try with from address
+                        try {
+                            transaction.from = userAddress.toLowerCase();
+                            console.log('Retry with from address:', transaction);
+                            
+                            const txHash = await provider.request({
+                                method: 'eth_sendTransaction',
+                                params: [transaction]
+                            });
+                            
+                            showSuccess(`✅ Transaction sent! Tx: ${txHash.slice(0, 10)}...`);
+                            setTimeout(() => loadPresaleInfo(), 5000);
+                            
+                        } catch (finalError) {
+                            console.error('Final attempt failed:', finalError);
+                            showError('Transaction failed. Try BaseScan or MetaMask.');
+                        }
                     }
                     
                 } else {
@@ -619,10 +636,31 @@
         // Load presale info
         async function loadPresaleInfo() {
             try {
-                if (isFarcasterFrame) {
-                    // Farcaster doesn't support eth_call, use static data
-                    console.log('Using static data for Farcaster');
-                    document.getElementById('tokens-sold').textContent = '0M / 500M';
+                if (isFarcasterFrame && provider) {
+                    // Try Farcaster with new contract's getInfo function
+                    try {
+                        const data = '0x5a9b0826'; // getInfo() selector
+                        const result = await provider.request({
+                            method: 'eth_call',
+                            params: [{
+                                to: CONTRACT_ADDRESS,
+                                data: data
+                            }, 'latest']
+                        });
+                        
+                        if (result && result !== '0x') {
+                            // Decode getInfo return values
+                            const sold = parseInt(result.slice(130, 194), 16) / 1e18;
+                            const remaining = parseInt(result.slice(194, 258), 16) / 1e18;
+                            const total = sold + remaining;
+                            
+                            document.getElementById('tokens-sold').textContent = 
+                                `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
+                        }
+                    } catch (e) {
+                        console.log('Farcaster call failed, using static:', e);
+                        document.getElementById('tokens-sold').textContent = '0M / 1000M';
+                    }
                 } else if (ethersProvider) {
                     // Web browser - use ethers
                     const readContract = new ethers.Contract(
@@ -631,7 +669,7 @@
                         ethersProvider
                     );
                     
-                    const info = await readContract.getPresaleInfo();
+                    const info = await readContract.getInfo();
                     const sold = parseFloat(ethers.utils.formatUnits(info.sold, 18));
                     const remaining = parseFloat(ethers.utils.formatUnits(info.remaining, 18));
                     const total = sold + remaining;
@@ -639,13 +677,13 @@
                     document.getElementById('tokens-sold').textContent = 
                         `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
                 } else {
-                    // Fallback for initial load
-                    document.getElementById('tokens-sold').textContent = '0M / 500M';
+                    // Fallback
+                    document.getElementById('tokens-sold').textContent = '0M / 1000M';
                 }
                     
             } catch (error) {
                 console.error('Error loading presale info:', error);
-                document.getElementById('tokens-sold').textContent = '0M / 500M';
+                document.getElementById('tokens-sold').textContent = '0M / 1000M';
             }
         }
         
