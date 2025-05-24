@@ -792,20 +792,7 @@
             }
         }
         
-        // Add event listener for input changes
-        window.addEventListener('DOMContentLoaded', () => {
-            const amountInput = document.getElementById('amount-input');
-            if (amountInput) {
-                amountInput.addEventListener('input', updateTokenDisplay);
-            }
-        });
-        
-        window.shareToken = async function() {
-            try {
-                if (isFarcasterFrame && sdk) {
-                    // Farcaster native sharing
-                    console.log('Using Farcaster native share...');
-                    
+       
                     // Create share intent
                     const shareUrl = `https://farcaster.xyz/~/compose?text=${encodeURIComponent(
                         '🚀 Just bought $FARC tokens!\n\n' +
@@ -857,7 +844,19 @@
         }
         
         // Start app
-        window.addEventListener('DOMContentLoaded', init);
-    </script>
+       
+   <script type="module">
+  import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      await sdk.actions.ready({ disableNativeGestures: true });
+      console.log("✅ Farcaster frame is ready");
+    } catch (err) {
+      console.error("❌ Farcaster ready() failed:", err);
+    }
+  });
+</script>
 </body>
 </html>
+
