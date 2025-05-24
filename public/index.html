@@ -314,17 +314,24 @@
         // Check if we're in Farcaster frame
         async function checkEnvironment() {
             try {
-                // Try to import Farcaster SDK
-                const module = await import('https://esm.sh/@farcaster/frame-sdk');
-                sdk = module.sdk;
-                isFarcasterFrame = true;
-                console.log('Environment: Farcaster Frame');
-                return true;
+                // Check if we're in an iframe (Farcaster frames are iframes)
+                const inIframe = window !== window.parent;
+                
+                // Try to import Farcaster SDK only if in iframe
+                if (inIframe) {
+                    const module = await import('https://esm.sh/@farcaster/frame-sdk');
+                    sdk = module.sdk;
+                    isFarcasterFrame = true;
+                    console.log('Environment: Farcaster Frame');
+                    return true;
+                }
             } catch (error) {
-                console.log('Environment: Web Browser');
-                isFarcasterFrame = false;
-                return false;
+                // Ignore error - not in Farcaster
             }
+            
+            console.log('Environment: Web Browser');
+            isFarcasterFrame = false;
+            return false;
         }
         
         // Initialize app
@@ -360,6 +367,9 @@
                         provider = window.ethereum;
                         ethersProvider = new ethers.providers.Web3Provider(provider);
                         console.log('MetaMask or Web3 wallet detected');
+                        
+                        // Show connect button
+                        updateUIForDisconnected();
                     } else {
                         showError('Please install MetaMask or another Web3 wallet');
                         disableActions();
@@ -388,8 +398,10 @@
                     }
                 }
                 
-                // Load presale info
-                await loadPresaleInfo();
+                // Load presale info for web browsers
+                if (!isFarcasterFrame) {
+                    await loadPresaleInfo();
+                }
                 
             } catch (error) {
                 console.error('Init error:', error);
@@ -419,7 +431,9 @@
             
             // Create ethers objects for web browsers
             if (!isFarcasterFrame && provider) {
-                ethersProvider = new ethers.providers.Web3Provider(provider);
+                if (!ethersProvider) {
+                    ethersProvider = new ethers.providers.Web3Provider(provider);
+                }
                 ethersSigner = ethersProvider.getSigner();
                 contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, ethersSigner);
                 
@@ -440,6 +454,9 @@
             
             updateUIForConnected();
             clearMessage();
+            
+            // Load presale info after connection
+            loadPresaleInfo();
         }
         
         // Update UI for connected state
