@@ -3,10 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$FARC - The Farcaster Token</title>
+    <title>$FARC - Farcaster Community Token.</title>
     <link rel="icon" type="image/png" href="/farc.png">
     <link rel="manifest" href="/farcaster.json">
     
+    <meta name="fc:frame" content='{
+  "version": "next",
+  "imageUrl": "https://farc.vercel.app/farc.png",
+  "button": {
+    "title": "Launch App",
+    "action": {
+      "type": "launch_frame",
+      "url": "https://farc.vercel.app"
+    }
+  }
+}' />
+
     <!-- Farcaster Mini App Meta -->
     <meta name="fc:frame" content="vNext">
     <meta name="fc:frame:image" content="https://farc.vercel.app/farc.png">
@@ -198,45 +210,8 @@
             text-decoration: none;
         }
         
-        .social-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .leaderboard-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            margin: 8px 0;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .leaderboard-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(5px);
-        }
-        
-        .leaderboard-rank {
-            font-size: 18px;
-            font-weight: bold;
-            width: 30px;
-        }
-        
-        .leaderboard-user {
-            flex: 1;
-            margin: 0 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .leaderboard-amount {
-            font-weight: bold;
-            color: #10b981;
+        .help-box a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -250,27 +225,15 @@
             <div class="header">
                 <img src="/farc.png" alt="FARC Logo" class="logo">
                 <h1>$FARC</h1>
-                <p id="header-text">The Official Farcaster Token</p>
+                <p id="header-text">Farcaster Community Token</p>
                 <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
-                
-                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
-                    <a href="https://twitter.com/farctoken" target="_blank" class="social-link" style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; background: rgba(29, 161, 242, 0.1); border: 1px solid rgba(29, 161, 242, 0.3); border-radius: 20px; color: #1DA1F2; text-decoration: none; font-size: 14px; transition: all 0.3s;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                        </svg>
-                        Twitter
-                    </a>
-                    <a href="https://warpcast.com/~/channel/farc" target="_blank" class="social-link" style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 20px; color: #8B5CF6; text-decoration: none; font-size: 14px; transition: all 0.3s;">
-                        🟣 Farcaster
-                    </a>
-                </div>
             </div>
             
             <div class="card">
                 <h2>🔥 Presale LIVE</h2>
                 <div class="info-row">
                     <span>Network:</span>
-                    <strong>Base (Chain ID: 8453)</strong>
+                    <strong>BASE </strong>
                 </div>
                 <div class="info-row">
                     <span>Price:</span>
@@ -280,12 +243,7 @@
                     <span>Max per wallet:</span>
                     <strong>5M FARC</strong>
                 </div>
-                <div class="info-row">
-                    <span>Sold:</span>
-                    <strong id="tokens-sold">Loading...</strong>
-                </div>
-            </div>
-            
+                
             <div class="card">
                 <h3>Buy $FARC</h3>
                 
@@ -295,7 +253,7 @@
                     <label style="font-size: 14px; opacity: 0.8;">Quick amounts or enter custom:</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0;">
                         <button onclick="window.setAmount(0.001)" class="button button-amount" data-amount="0.001">
-                            0.001 ETH<br><small>0.1M FARC</small>
+                            0.001 ETH<br><small>100K FARC</small>
                         </button>
                         <button onclick="window.setAmount(0.01)" class="button button-amount active" data-amount="0.01">
                             0.01 ETH<br><small>1M FARC</small>
@@ -341,22 +299,27 @@
                         💧 All proceeds will be added to liquidity pool
                     </p>
                     <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">
-                        Contract: 0xdc73...fbdc
+                        Contract: 0x0148d27a8821115eb16062456369a693cc8d53ec 
+
+                        <a href="https://x.com/YOUR_USERNAME" target="_blank" style="margin: 0 10px; display: inline-block;">
+    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968958.png" alt="X" width="32" height="32" style="border:none; outline:none;" />
+  </a>
+                        
                     </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
+         
+    <script type="module">
         // Contract configuration
-        const CONTRACT_ADDRESS = '0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc';
+        const CONTRACT_ADDRESS = '0x0148d27a8821115eb16062456369a693cc8d53ec';
         const CONTRACT_ABI = [
             'function buyTokens() external payable',
             'function getInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)',
             'function getRemainingAllocation(address) view returns (uint256)',
-            'function purchasedAmount(address) view returns (uint256)',
-            'function getLeaderboard() view returns (address[] buyers, uint256[] amounts)'
+            'function purchasedAmount(address) view returns (uint256)'
         ];
         
         // Global state
@@ -372,49 +335,24 @@
         // Check if we're in Farcaster frame
         async function checkEnvironment() {
             try {
-                // Check if we're in an iframe
+                // Check if we're in an iframe (Farcaster frames are iframes)
                 const inIframe = window !== window.parent;
                 
+                // Try to import Farcaster SDK only if in iframe
                 if (inIframe) {
-                    // Try to load Farcaster SDK dynamically
-                    const script = document.createElement('script');
-                    script.type = 'module';
-                    
-                    return new Promise(function(resolve) {
-                        script.onload = async function() {
-                            try {
-                                const module = await import('https://esm.sh/@farcaster/frame-sdk');
-                                sdk = module.sdk;
-                                isFarcasterFrame = true;
-                                console.log('Environment: Farcaster Frame');
-                                resolve(true);
-                            } catch (e) {
-                                console.log('Failed to load Farcaster SDK:', e);
-                                isFarcasterFrame = false;
-                                resolve(false);
-                            }
-                        };
-                        
-                        script.onerror = function() {
-                            console.log('Environment: Web Browser (SDK load failed)');
-                            isFarcasterFrame = false;
-                            resolve(false);
-                        };
-                        
-                        script.src = 'https://esm.sh/@farcaster/frame-sdk';
-                        document.head.appendChild(script);
-                    });
+                    const module = await import('https://esm.sh/@farcaster/frame-sdk');
+                    sdk = module.sdk;
+                    isFarcasterFrame = true;
+                    console.log('Environment: Farcaster Frame');
+                    return true;
                 }
-                
-                console.log('Environment: Web Browser');
-                isFarcasterFrame = false;
-                return false;
-                
             } catch (error) {
-                console.log('Environment check error:', error);
-                isFarcasterFrame = false;
-                return false;
+                // Ignore error - not in Farcaster
             }
+            
+            console.log('Environment: Web Browser');
+            isFarcasterFrame = false;
+            return false;
         }
         
         // Initialize app
@@ -427,27 +365,20 @@
                 
                 if (isFarcasterFrame) {
                     // Farcaster Frame initialization
-                    try {
-                        await sdk.actions.ready();
-                        console.log('Farcaster SDK ready');
-                        
-                        // Get wallet provider
-                        provider = sdk.wallet?.ethProvider;
-                        
-                        if (!provider) {
-                            console.log('No wallet provider in SDK');
-                            showError('Please open this app in Warpcast');
-                            disableActions();
-                            return;
-                        }
-                        
-                        console.log('Farcaster Provider:', provider);
-                    } catch (sdkError) {
-                        console.error('SDK initialization error:', sdkError);
-                        showError('Failed to initialize Farcaster SDK');
+                    await sdk.actions.ready();
+                    console.log('Farcaster SDK ready');
+                    
+                    // Get wallet provider
+                    provider = sdk.wallet?.ethProvider;
+                    
+                    if (!provider) {
+                        console.log('No wallet provider in SDK');
+                        showError('Please open this app in Warpcast');
                         disableActions();
                         return;
                     }
+                    
+                    console.log('Farcaster Provider:', provider);
                     
                 } else {
                     // Regular web browser initialization
@@ -481,10 +412,10 @@
                 }
                 
                 // Listen for account changes
-                if (provider && provider.on) {
+                if (provider.on) {
                     provider.on('accountsChanged', handleAccountsChanged);
                     if (!isFarcasterFrame) {
-                        provider.on('chainChanged', function() { window.location.reload(); });
+                        provider.on('chainChanged', () => window.location.reload());
                     }
                 }
                 
@@ -674,10 +605,7 @@
                             }
                         }, 2000);
                         
-                        setTimeout(() => {
-                            loadPresaleInfo();
-                            loadLeaderboard(); // Refresh leaderboard after purchase
-                        }, 5000);
+                        setTimeout(() => loadPresaleInfo(), 5000);
                         
                     } catch (txError) {
                         console.error('Farcaster transaction failed:', txError);
@@ -710,23 +638,12 @@
                     const receipt = await tx.wait();
                     
                     console.log('Transaction confirmed:', receipt);
-                    
                     showSuccess(
                         `✅ Success! You bought ${tokensToReceive}M FARC\n` +
                         `Tx: ${tx.hash.slice(0, 10)}...${tx.hash.slice(-8)}`
                     );
                     
-                    // Prompt to share for web users too
-                    setTimeout(() => {
-                        if (confirm('🎉 Congrats! Share your FARC purchase?')) {
-                            window.shareToken();
-                        }
-                    }, 1000);
-                    
-                    setTimeout(() => {
-                        loadPresaleInfo();
-                        loadLeaderboard(); // Refresh leaderboard
-                    }, 3000);
+                    setTimeout(() => loadPresaleInfo(), 3000);
                 }
                 
             } catch (error) {
@@ -868,7 +785,7 @@
         }
         
         // Add event listener for input changes
-        window.addEventListener('DOMContentLoaded', function() {
+        window.addEventListener('DOMContentLoaded', () => {
             const amountInput = document.getElementById('amount-input');
             if (amountInput) {
                 amountInput.addEventListener('input', updateTokenDisplay);
@@ -923,75 +840,12 @@
             copyToClipboard(text);
         }
         
-        // Load and display leaderboard
-        async function loadLeaderboard() {
-            try {
-                let leaderboardData = [];
-                
-                if (ethersProvider) {
-                    // Load from contract
-                    const readContract = new ethers.Contract(
-                        CONTRACT_ADDRESS, 
-                        CONTRACT_ABI, 
-                        ethersProvider
-                    );
-                    
-                    try {
-                        const result = await readContract.getLeaderboard();
-                        const buyers = result[0] || result.buyers || [];
-                        const amounts = result[1] || result.amounts || [];
-                        
-                        // Combine and sort
-                        leaderboardData = buyers.map(function(buyer, i) {
-                            return {
-                                address: buyer,
-                                amount: parseFloat(ethers.utils.formatUnits(amounts[i], 18))
-                            };
-                        }).filter(function(item) {
-                            return item.amount > 0;
-                        }).sort(function(a, b) {
-                            return b.amount - a.amount;
-                        }).slice(0, 5); // Top 5
-                        
-                    } catch (contractError) {
-                        console.error('Contract call error:', contractError);
-                    }
-                }
-                
-                // Display leaderboard
-                const leaderboardEl = document.getElementById('leaderboard');
-                if (!leaderboardEl) return;
-                
-                if (leaderboardData.length === 0) {
-                    leaderboardEl.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.7;">Be the first to buy FARC! 🚀</div>';
-                } else {
-                    let html = '';
-                    for (let i = 0; i < leaderboardData.length; i++) {
-                        const item = leaderboardData[i];
-                        const rank = i + 1;
-                        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '#' + rank;
-                        const shortAddress = item.address.slice(0, 6) + '...' + item.address.slice(-4);
-                        const amount = (item.amount / 1e6).toFixed(2);
-                        
-                        html += '<div class="leaderboard-item">' +
-                            '<div class="leaderboard-rank">' + medal + '</div>' +
-                            '<div class="leaderboard-user">' +
-                            '<span>' + shortAddress + '</span>' +
-                            (isFarcasterFrame ? '<span style="opacity: 0.7; font-size: 12px;">@farcaster</span>' : '') +
-                            '</div>' +
-                            '<div class="leaderboard-amount">' + amount + 'M FARC</div>' +
-                            '</div>';
-                    }
-                    leaderboardEl.innerHTML = html;
-                }
-                
-            } catch (error) {
-                console.error('Error loading leaderboard:', error);
-                const leaderboardEl = document.getElementById('leaderboard');
-                if (leaderboardEl) {
-                    leaderboardEl.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.7;">Leaderboard unavailable</div>';
-                }
-            }
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showSuccess('Share text copied!');
+            }).catch(() => {
+                showError('Failed to copy');
+            });
         }
         
         // Start app
