@@ -465,32 +465,42 @@
         // Initialize wallet based on environment
         async function initializeWallet() {
             try {
-                if (isFarcasterFrame && sdk) {
-                    // Farcaster Frame initialization
-                    try {
-                        await sdk.actions.ready();
-                        console.log('Farcaster SDK ready');
-                        
-                        provider = sdk.wallet?.ethProvider;
-                        
-                        if (!provider) {
-                            console.log('No wallet provider in SDK');
+                // Check if mobile
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                
+                if (isMobile || isFarcasterFrame) {
+                    // Mobile or Farcaster - only show Farcaster wallet
+                    if (isFarcasterFrame && sdk) {
+                        // Farcaster Frame initialization
+                        try {
+                            await sdk.actions.ready();
+                            console.log('Farcaster SDK ready');
+                            
+                            provider = sdk.wallet?.ethProvider;
+                            
+                            if (!provider) {
+                                console.log('No wallet provider in SDK');
+                                showError('Please open this app in Warpcast');
+                                disableActions();
+                                return;
+                            }
+                            
+                            console.log('Farcaster Provider:', provider);
+                        } catch (sdkError) {
+                            console.error('SDK initialization error:', sdkError);
                             showError('Please open this app in Warpcast');
                             disableActions();
                             return;
                         }
-                        
-                        console.log('Farcaster Provider:', provider);
-                    } catch (sdkError) {
-                        console.error('SDK initialization error:', sdkError);
-                        showError('Failed to initialize Farcaster SDK');
-                        disableActions();
+                    } else if (isMobile) {
+                        // Mobile web - direct to Warpcast
+                        showMobileMessage();
                         return;
                     }
                     
                 } else {
-                    // Regular web browser initialization
-                    console.log('Web browser mode - checking for wallet...');
+                    // Desktop - show MetaMask
+                    console.log('Desktop mode - checking for wallet...');
                     
                     if (typeof window.ethereum !== 'undefined') {
                         provider = window.ethereum;
@@ -505,22 +515,24 @@
                 }
                 
                 // Check if already connected
-                try {
-                    const accounts = await provider.request({ method: 'eth_accounts' });
-                    if (accounts && accounts.length > 0) {
-                        await handleConnection(accounts[0]);
-                    } else {
+                if (provider) {
+                    try {
+                        const accounts = await provider.request({ method: 'eth_accounts' });
+                        if (accounts && accounts.length > 0) {
+                            await handleConnection(accounts[0]);
+                        } else {
+                            updateUIForDisconnected();
+                        }
+                    } catch (error) {
+                        console.log('No existing connection:', error);
                         updateUIForDisconnected();
                     }
-                } catch (error) {
-                    console.log('No existing connection:', error);
-                    updateUIForDisconnected();
                 }
                 
                 // Listen for account changes
                 if (provider && provider.on) {
                     provider.on('accountsChanged', handleAccountsChanged);
-                    if (!isFarcasterFrame) {
+                    if (!isFarcasterFrame && !isMobile) {
                         provider.on('chainChanged', function() { window.location.reload(); });
                     }
                 }
@@ -604,8 +616,32 @@
             button.disabled = false;
         }
         
+        // Show mobile message
+        function showMobileMessage() {
+            const walletInfo = document.getElementById('wallet-info');
+            walletInfo.innerHTML = '';
+            
+            const button = document.getElementById('action-button');
+            button.textContent = 'Open in Warpcast 🟣';
+            button.onclick = function() {
+                // Deep link to Warpcast
+                const warpcastUrl = 'https://warpcast.com/~/add-cast-action?url=' + encodeURIComponent('https://farc.vercel.app');
+                window.location.href = warpcastUrl;
+            };
+            button.disabled = false;
+            
+            showError('📱 Mobile users: Please open this app in Warpcast to connect your Farcaster wallet');
+        }
+        
         // Update UI for disconnected state
         function updateUIForDisconnected() {
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile && !isFarcasterFrame) {
+                showMobileMessage();
+                return;
+            }
+            
             const walletInfo = document.getElementById('wallet-info');
             walletInfo.innerHTML = '';
             
@@ -627,6 +663,15 @@
             try {
                 clearMessage();
                 const button = document.getElementById('action-button');
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                
+                if (isMobile && !isFarcasterFrame) {
+                    // Mobile - redirect to Warpcast
+                    const warpcastUrl = 'https://warpcast.com/~/add-cast-action?url=' + encodeURIComponent('https://farc.vercel.app');
+                    window.location.href = warpcastUrl;
+                    return;
+                }
+                
                 button.textContent = 'Connecting...';
                 button.disabled = true;
                 
