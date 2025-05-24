@@ -304,7 +304,7 @@
                         💧 All proceeds will be added to liquidity pool
                     </p>
                     <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">
-                        Contract: 0xdc73...fbdc
+                       
                     </p>
                 </div>
             </div>
@@ -313,7 +313,7 @@
 
     <script type="module">
         // Contract configuration
-        const CONTRACT_ADDRESS = '0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc'; // Update this with new address
+        const CONTRACT_ADDRESS = '0x0148d27a8821115eb16062456369a693cc8d53ec'; // Update this with new address
         const CONTRACT_ABI = [
             'function buyTokens() external payable',
             'function getInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)',
@@ -809,7 +809,7 @@
                     // Create share intent
                     const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
                         '🚀 Just bought $FARC tokens!\n\n' +
-                        'The Official Farcaster Token\n' +
+                        'The Community Token\n' +
                         '💜 Presale: 0.01 ETH = 1M FARC\n' +
                         '🔥 Max 5M per wallet\n\n' +
                         'Get yours now! 👇'
@@ -824,7 +824,7 @@
                     }
                 } else {
                     // Web browser sharing
-                    const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
+                    const text = 'Check out $FARC - The Community Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
                     
                     if (navigator.share) {
                         navigator.share({
@@ -844,7 +844,7 @@
         }
         
         function copyShareText() {
-            const text = '🚀 Just bought $FARC tokens!\n\nThe Official Farcaster Token\n💜 Presale: 0.01 ETH = 1M FARC\n🔥 Max 5M per wallet\n\nGet yours: https://farc.vercel.app';
+            const text = '🚀 Just bought $FARC tokens!\n\nThe Community Token\n💜 Presale: 0.01 ETH = 1M FARC\n🔥 Max 5M per wallet\n\nGet yours: https://farc.vercel.app';
             copyToClipboard(text);
         }
         
