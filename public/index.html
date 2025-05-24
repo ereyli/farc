@@ -556,32 +556,21 @@
             button.disabled = false;
         }
         
-        // Show mobile message - improved
+        // Show mobile message
         function showMobileMessage() {
             const walletInfo = document.getElementById('wallet-info');
-            if (walletInfo) {
-                walletInfo.innerHTML = '<div style="text-align: center; padding: 10px; background: rgba(139, 92, 246, 0.1); border-radius: 8px; margin: 10px 0;">' +
-                    '<p style="margin: 5px 0;">📱 Mobile detected</p>' +
-                    '<p style="margin: 5px 0; font-size: 12px; opacity: 0.8;">Use Warpcast for best experience</p>' +
-                    '</div>';
-            }
+            walletInfo.innerHTML = '';
             
             const button = document.getElementById('action-button');
-            if (button) {
-                button.textContent = 'Open in Warpcast 🟣';
-                button.onclick = function() {
-                    // Try multiple methods
-                    const urls = [
-                        'https://warpcast.com/~/developers/frames?url=' + encodeURIComponent('https://farc.vercel.app'),
-                        'https://warpcast.com/~/add-cast-action?actionType=post&name=FARC&icon=dollar&url=' + encodeURIComponent('https://farc.vercel.app'),
-                        'https://warpcast.com'
-                    ];
-                    
-                    // Try first URL
-                    window.location.href = urls[0];
-                };
-                button.disabled = false;
-            }
+            button.textContent = 'Open in Warpcast 🟣';
+            button.onclick = function() {
+                // Deep link to Warpcast
+                const warpcastUrl = 'https://warpcast.com/~/add-cast-action?url=' + encodeURIComponent('https://farc.vercel.app');
+                window.location.href = warpcastUrl;
+            };
+            button.disabled = false;
+            
+            showError('📱 Mobile users: Please open this app in Warpcast to connect your Farcaster wallet');
         }
         
         // Update UI for disconnected state
@@ -1023,7 +1012,42 @@
                     }
                 }
                 
-               
+                // Display leaderboard
+                const leaderboardEl = document.getElementById('leaderboard');
+                if (!leaderboardEl) return;
+                
+                if (leaderboardData.length === 0) {
+                    leaderboardEl.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.7;">Be the first to buy FARC! 🚀</div>';
+                } else {
+                    let html = '';
+                    for (let i = 0; i < leaderboardData.length; i++) {
+                        const item = leaderboardData[i];
+                        const rank = i + 1;
+                        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '#' + rank;
+                        const shortAddress = item.address.slice(0, 6) + '...' + item.address.slice(-4);
+                        const amount = (item.amount / 1e6).toFixed(2);
+                        
+                        html += '<div class="leaderboard-item">' +
+                            '<div class="leaderboard-rank">' + medal + '</div>' +
+                            '<div class="leaderboard-user">' +
+                            '<span>' + shortAddress + '</span>' +
+                            (isFarcasterFrame ? '<span style="opacity: 0.7; font-size: 12px;">@farcaster</span>' : '') +
+                            '</div>' +
+                            '<div class="leaderboard-amount">' + amount + 'M FARC</div>' +
+                            '</div>';
+                    }
+                    leaderboardEl.innerHTML = html;
+                }
+                
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                const leaderboardEl = document.getElementById('leaderboard');
+                if (leaderboardEl) {
+                    leaderboardEl.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.7;">Leaderboard unavailable</div>';
+                }
+            }
+        }
+        
         // Start app
         window.addEventListener('DOMContentLoaded', init);
     </script>
