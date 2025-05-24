@@ -797,73 +797,75 @@
                 amountInput.addEventListener('input', updateTokenDisplay);
             }
         });
-        
-        window.shareToken = async function() {
-            try {
-                if (isFarcasterFrame && sdk) {
-                    // Farcaster native sharing
-                    console.log('Using Farcaster native share...');
-                    
-                    // Create share intent
-                    const shareUrl = `https://farcaster.xyz/~/compose?text=${encodeURIComponent(
-                    '🚀 Just bought $FARC tokens!\n\n' +
-                    'The Community Token\n' +
-                    '💜 Presale: 0.01 ETH = 1M FARC\n' +
-                    '🔥 Max 5M per wallet\n\n' +
-                    'Get yours now! 👇'
-                    )}&embeds[]=${encodeURIComponent('https://farcaster.xyz/miniapps/zp8WXCloRpka/farc-token')}`;
+      <script>
+  const isFarcasterFrame = window !== window.parent;
 
-                    
-                    // Try to open share dialog
-                    if (sdk.actions?.openUrl) {
-                        await sdk.actions.openUrl({ url: shareUrl });
-                    } else {
-                        // Fallback to clipboard
-                        copyShareText();
-                    }
-                } else {
-                    // Web browser sharing
-                    const text = 'Check out $FARC - The Community Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farcaster.xyz/miniapps/zp8WXCloRpka/farc-token';
-                    
-                    if (navigator.share) {
-                        navigator.share({
-                            title: '$FARC Token',
-                            text: text
-                        }).catch(() => {
-                            copyToClipboard(text);
-                        });
-                    } else {
-                        copyToClipboard(text);
-                    }
-                }
-            } catch (error) {
-                console.error('Share error:', error);
-                copyShareText();
-            }
+  window.shareToken = async function () {
+    try {
+      if (isFarcasterFrame && window.sdk) {
+        console.log('Using Farcaster native share...');
+
+        const shareUrl = `https://farcaster.xyz/~/compose?text=${encodeURIComponent(
+          '🚀 Just bought $FARC tokens!\n\n' +
+          'The Community Token\n' +
+          '💜 Presale: 0.01 ETH = 1M FARC\n' +
+          '🔥 Max 5M per wallet\n\n' +
+          'Get yours now! 👇'
+        )}&embeds[]=${encodeURIComponent('https://farcaster.xyz/miniapps/zp8WXCloRpka/farc-token')}`;
+
+        if (window.sdk.actions?.openUrl) {
+          await window.sdk.actions.openUrl({ url: shareUrl });
+        } else {
+          copyShareText();
         }
-        
-        function copyShareText() {
-            const text = '🚀 Just bought $FARC tokens!\n\nThe Community Token\n💜 Presale: 0.01 ETH = 1M FARC\n🔥 Max 5M per wallet\n\nGet yours: https://farcaster.xyz/miniapps/zp8WXCloRpka/farc-token';
+      } else {
+        const text = 'Check out $FARC - The Community Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farcaster.xyz/miniapps/zp8WXCloRpka/farc-token';
+
+        if (navigator.share) {
+          navigator.share({
+            title: '$FARC Token',
+            text: text
+          }).catch(() => {
             copyToClipboard(text);
+          });
+        } else {
+          copyToClipboard(text);
         }
-        
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showSuccess('Share text copied!');
-            }).catch(() => {
-                showError('Failed to copy');
-            });
-        }
-        
-        // Start app
-       
-   <script type="module">
+      }
+    } catch (error) {
+      console.error('Share error:', error);
+      copyShareText();
+    }
+  };
+
+  function copyShareText() {
+    const text = '🚀 Just bought $FARC tokens!\n\nThe Community Token\n💜 Presale: 0.01 ETH = 1M FARC\n🔥 Max 5M per wallet\n\nGet yours: https://farcaster.xyz/miniapps/zp8WXCloRpka/farc-token';
+    copyToClipboard(text);
+  }
+
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      showSuccess('Share text copied!');
+    }).catch(() => {
+      showError('Failed to copy');
+    });
+  }
+</script>
+
+<script type="module">
   import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
 
   window.addEventListener('DOMContentLoaded', async () => {
     try {
       await sdk.actions.ready({ disableNativeGestures: true });
       console.log("✅ Farcaster frame is ready");
+
+      window.sdk = sdk; // 👈 Burası önemli: global olarak kullanılacak
+
+      const amountInput = document.getElementById('amount-input');
+      if (amountInput) {
+        amountInput.addEventListener('input', updateTokenDisplay);
+      }
     } catch (err) {
       console.error("❌ Farcaster ready() failed:", err);
     }
