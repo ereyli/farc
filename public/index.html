@@ -282,7 +282,10 @@
                     <p style="margin: 5px 0;">💡 Purchase Options:</p>
                     <p style="margin: 5px 0;">• <a href="https://basescan.org/address/0x638EeEa689d3f9678f8753F8Ed1d55776F4129Cd#writeContract" target="_blank">Buy directly on BaseScan</a></p>
                     <p style="margin: 5px 0;">• Visit <a href="https://farc.vercel.app" target="_blank">farc.vercel.app</a> with MetaMask</p>
-                    <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">Contract: 0x638E...29Cd</p>
+                    <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">
+                        Contract: 0x638E...29Cd<br>
+                        <span style="color: #fbbf24;">⚠️ Farcaster wallet: Use BaseScan</span>
+                    </p>
                 </div>
             </div>
         </div>
@@ -530,27 +533,45 @@
                     const weiValue = Math.floor(ethAmount * 1e18);
                     const hexValue = '0x' + weiValue.toString(16);
                     
+                    // Try the simplest possible format for Farcaster
                     const transaction = {
-                        to: CONTRACT_ADDRESS,
+                        to: CONTRACT_ADDRESS.toLowerCase(),
                         value: hexValue,
-                        data: '0xec8ac4d8' // buyTokens() selector
+                        data: '0xec8ac4d8', // buyTokens() selector
+                        from: userAddress.toLowerCase()
                     };
                     
                     console.log('Transaction params:', transaction);
                     
-                    const txHash = await provider.request({
-                        method: 'eth_sendTransaction',
-                        params: [transaction]
-                    });
-                    
-                    console.log('Transaction sent:', txHash);
-                    showSuccess(
-                        `✅ Transaction sent!\n` +
-                        `You will receive: ${tokensToReceive}M FARC\n` +
-                        `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
-                    );
-                    
-                    setTimeout(() => loadPresaleInfo(), 5000);
+                    try {
+                        const txHash = await provider.request({
+                            method: 'eth_sendTransaction',
+                            params: [transaction]
+                        });
+                        
+                        console.log('Transaction sent:', txHash);
+                        showSuccess(
+                            `✅ Transaction sent!\n` +
+                            `You will receive: ${tokensToReceive}M FARC\n` +
+                            `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
+                        );
+                        
+                        setTimeout(() => loadPresaleInfo(), 5000);
+                    } catch (txError) {
+                        console.error('Farcaster transaction error:', txError);
+                        
+                        // If Farcaster fails, suggest alternatives
+                        if (txError.message?.includes('UnsupportedMethodError')) {
+                            showError(
+                                'Farcaster wallet not fully supported yet.\n\n' +
+                                '✅ Please use one of these options:\n' +
+                                '1. Buy on BaseScan (link below)\n' +
+                                '2. Visit farc.vercel.app with MetaMask'
+                            );
+                        } else {
+                            throw txError;
+                        }
+                    }
                     
                 } else {
                     // Web browser transaction (MetaMask, etc.)
@@ -607,31 +628,10 @@
         // Load presale info
         async function loadPresaleInfo() {
             try {
-                if (isFarcasterFrame && provider) {
-                    // Farcaster direct call
-                    try {
-                        const data = '0x5a3b74a0'; // getPresaleInfo() selector
-                        const result = await provider.request({
-                            method: 'eth_call',
-                            params: [{
-                                to: CONTRACT_ADDRESS,
-                                data: data
-                            }, 'latest']
-                        });
-                        
-                        if (result && result !== '0x') {
-                            // Decode manually
-                            const sold = parseInt(result.slice(66, 130), 16) / 1e18;
-                            const remaining = parseInt(result.slice(130, 194), 16) / 1e18;
-                            const total = sold + remaining;
-                            
-                            document.getElementById('tokens-sold').textContent = 
-                                `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
-                        }
-                    } catch (e) {
-                        console.log('Direct call failed:', e);
-                        document.getElementById('tokens-sold').textContent = '0M / 500M';
-                    }
+                if (isFarcasterFrame) {
+                    // Farcaster doesn't support eth_call, use static data
+                    console.log('Using static data for Farcaster');
+                    document.getElementById('tokens-sold').textContent = '0M / 500M';
                 } else if (ethersProvider) {
                     // Web browser - use ethers
                     const readContract = new ethers.Contract(
