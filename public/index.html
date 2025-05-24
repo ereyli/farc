@@ -535,14 +535,15 @@
                     const weiValue = Math.floor(ethAmount * 1e18);
                     const hexValue = '0x' + weiValue.toString(16);
                     
-                    // JUST ETH TRANSFER - Contract's receive() will handle it
+                    // ETH TRANSFER with from address for Farcaster
                     const transaction = {
+                        from: userAddress.toLowerCase(), // Farcaster needs this
                         to: CONTRACT_ADDRESS.toLowerCase(),
                         value: hexValue
                         // NO data field - just ETH!
                     };
                     
-                    console.log('Simple ETH transfer:', transaction);
+                    console.log('Farcaster ETH transfer:', transaction);
                     
                     try {
                         const txHash = await provider.request({
@@ -562,7 +563,6 @@
                     } catch (txError) {
                         console.error('Farcaster transaction failed:', txError);
                         
-                        // Don't retry automatically - just show error
                         if (txError.code === 4001) {
                             showError('Transaction cancelled');
                         } else {
