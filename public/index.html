@@ -243,7 +243,7 @@
                 <div id="message-area"></div>
                 
                 <div style="margin: 15px 0;">
-                    <label style="font-size: 14px; opacity: 0.8;">Select amount:</label>
+                    <label style="font-size: 14px; opacity: 0.8;">Quick amounts or enter custom:</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0;">
                         <button onclick="window.setAmount(0.001)" class="button button-amount" data-amount="0.001">
                             0.001 ETH<br><small>0.1M FARC</small>
@@ -260,13 +260,18 @@
                 <input 
                     type="number" 
                     id="amount-input" 
-                    placeholder="Amount in ETH"
+                    placeholder="Amount in ETH (e.g. 0.015)"
                     step="0.001"
                     min="0.001"
                     max="0.05"
                     value="0.01"
-                    readonly
                 >
+                
+                <div style="text-align: center; margin: 10px 0; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                    <span id="token-preview" style="font-size: 14px; color: #10b981;">
+                        You will receive: <strong>1M FARC</strong>
+                    </span>
+                </div>
                 
                 <div id="wallet-info" class="wallet-info"></div>
                 
@@ -274,17 +279,20 @@
                     Loading...
                 </button>
                 
-                <button class="button button-secondary" onclick="window.shareToken()">
-                    Share $FARC 📢
+                <button class="button button-secondary" onclick="window.shareToken()" style="position: relative;">
+                    <span id="share-button-text">Share $FARC 📢</span>
+                    <span style="font-size: 10px; opacity: 0.7; display: block;">Cast on Farcaster</span>
                 </button>
                 
                 <div class="help-box">
-                    <p style="margin: 5px 0;">💡 Purchase Options:</p>
-                    <p style="margin: 5px 0;">• <a href="https://basescan.org/address/0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc#writeContract" target="_blank">Buy directly on BaseScan</a></p>
-                    <p style="margin: 5px 0;">• Visit <a href="https://farc.vercel.app" target="_blank">farc.vercel.app</a> with MetaMask</p>
+                    <p style="margin: 8px 0; font-size: 13px;">
+                        🌐 Visit <a href="https://farc.vercel.app" target="_blank" style="color: #10b981; font-weight: bold;">farc.vercel.app</a> for web version
+                    </p>
+                    <p style="margin: 8px 0; font-size: 12px; opacity: 0.9;">
+                        💧 All proceeds will be added to liquidity pool
+                    </p>
                     <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">
-                        Contract: 0xdc73...fbdc<br>
-                        <span style="color: #10b981;">✅ Now Farcaster compatible!</span>
+                        Contract: 0xdc73...fbdc
                     </p>
                 </div>
             </div>
@@ -569,11 +577,20 @@
                         });
                         
                         console.log('Success! Transaction sent:', txHash);
+                        
+                        // Show success with share prompt
                         showSuccess(
                             `✅ Transaction sent!\n` +
                             `You will receive: ${tokensToReceive}M FARC\n` +
                             `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
                         );
+                        
+                        // Prompt to share after successful purchase
+                        setTimeout(() => {
+                            if (confirm('🎉 Congrats! Share your FARC purchase on Farcaster?')) {
+                                window.shareToken();
+                            }
+                        }, 2000);
                         
                         setTimeout(() => loadPresaleInfo(), 5000);
                         
@@ -722,21 +739,92 @@
             });
             
             clearMessage();
+            updateTokenDisplay();
         }
         
-        window.shareToken = function() {
-            const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
+        // Update token display when amount changes
+        function updateTokenDisplay() {
+            const amountInput = document.getElementById('amount-input');
+            const amount = parseFloat(amountInput.value) || 0;
+            const tokens = amount * 100; // 100M per ETH
             
-            if (navigator.share) {
-                navigator.share({
-                    title: '$FARC Token',
-                    text: text
-                }).catch(() => {
-                    copyToClipboard(text);
-                });
-            } else {
-                copyToClipboard(text);
+            // Update preview
+            const preview = document.getElementById('token-preview');
+            if (preview) {
+                if (amount > 0) {
+                    preview.innerHTML = `You will receive: <strong>${tokens}M FARC</strong>`;
+                } else {
+                    preview.innerHTML = `Enter amount to see tokens`;
+                }
             }
+            
+            if (amount > 0) {
+                // Update quick amount buttons to show if it matches
+                document.querySelectorAll('.button-amount').forEach(btn => {
+                    const btnAmount = parseFloat(btn.getAttribute('data-amount'));
+                    if (Math.abs(btnAmount - amount) < 0.0001) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+        }
+        
+        // Add event listener for input changes
+        window.addEventListener('DOMContentLoaded', () => {
+            const amountInput = document.getElementById('amount-input');
+            if (amountInput) {
+                amountInput.addEventListener('input', updateTokenDisplay);
+            }
+        });
+        
+        window.shareToken = async function() {
+            try {
+                if (isFarcasterFrame && sdk) {
+                    // Farcaster native sharing
+                    console.log('Using Farcaster native share...');
+                    
+                    // Create share intent
+                    const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
+                        '🚀 Just bought $FARC tokens!\n\n' +
+                        'The Official Farcaster Token\n' +
+                        '💜 Presale: 0.01 ETH = 1M FARC\n' +
+                        '🔥 Max 5M per wallet\n\n' +
+                        'Get yours now! 👇'
+                    )}&embeds[]=${encodeURIComponent('https://farc.vercel.app')}`;
+                    
+                    // Try to open share dialog
+                    if (sdk.actions?.openUrl) {
+                        await sdk.actions.openUrl({ url: shareUrl });
+                    } else {
+                        // Fallback to clipboard
+                        copyShareText();
+                    }
+                } else {
+                    // Web browser sharing
+                    const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
+                    
+                    if (navigator.share) {
+                        navigator.share({
+                            title: '$FARC Token',
+                            text: text
+                        }).catch(() => {
+                            copyToClipboard(text);
+                        });
+                    } else {
+                        copyToClipboard(text);
+                    }
+                }
+            } catch (error) {
+                console.error('Share error:', error);
+                copyShareText();
+            }
+        }
+        
+        function copyShareText() {
+            const text = '🚀 Just bought $FARC tokens!\n\nThe Official Farcaster Token\n💜 Presale: 0.01 ETH = 1M FARC\n🔥 Max 5M per wallet\n\nGet yours: https://farc.vercel.app';
+            copyToClipboard(text);
         }
         
         function copyToClipboard(text) {
