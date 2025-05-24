@@ -797,14 +797,12 @@
                 amountInput.addEventListener('input', updateTokenDisplay);
             }
         
-      <script>
+     <script>
   const isFarcasterFrame = window !== window.parent;
 
   window.shareToken = async function () {
     try {
       if (isFarcasterFrame && window.sdk) {
-        console.log('Using Farcaster native share...');
-
         const shareUrl = `https://farcaster.xyz/~/compose?text=${encodeURIComponent(
           '🚀 Just bought $FARC tokens!\n\n' +
           'The Community Token\n' +
@@ -850,6 +848,12 @@
       showError('Failed to copy');
     });
   }
+
+  // Helper: showApp
+  function showApp() {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+  }
 </script>
 
 <script type="module">
@@ -860,12 +864,20 @@
       await sdk.actions.ready({ disableNativeGestures: true });
       console.log("✅ Farcaster frame is ready");
 
-      window.sdk = sdk; // 👈 Burası önemli: global olarak kullanılacak
+      window.sdk = sdk;
 
+      // Splash ekran kapandıysa uygulamayı göster
+      showApp();
+
+      // ETH input listener
       const amountInput = document.getElementById('amount-input');
       if (amountInput) {
         amountInput.addEventListener('input', updateTokenDisplay);
       }
+
+      // Satış bilgilerini yükle
+      loadPresaleInfo();
+
     } catch (err) {
       console.error("❌ Farcaster ready() failed:", err);
     }
