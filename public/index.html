@@ -4,184 +4,176 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>$FARC - The Farcaster Token</title>
-  <link rel="icon" type="image/png" href="/farc.png" />
-  <link rel="manifest" href="/farcaster.json" />
-
-  <!-- Farcaster Mini‑App Meta -->
-  <meta name="fc:frame" content="vNext" />
-  <meta name="fc:frame:image" content="https://farc.vercel.app/farc.png" />
-  <meta name="fc:frame:button:1" content="Launch App" />
-  <meta name="fc:frame:button:1:action" content="launch_frame" />
-  <meta name="fc:frame:button:1:target" content="https://farc.vercel.app" />
-
+  <link rel="icon" href="/farc.png" type="image/png" />
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* ---- same CSS as before ---- */
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(135deg,#8b5cf6 0%,#6366f1 100%);color:#fff;min-height:100vh;padding:20px}
-    .container{max-width:400px;margin:0 auto}
-    .header{text-align:center;margin-bottom:30px}
-    .logo{width:120px;height:120px;border-radius:20px;margin-bottom:20px}
-    h1{font-size:36px;margin-bottom:10px}
-    .card{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border-radius:20px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,.2)}
-    .button{width:100%;padding:15px;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;transition:all .3s ease}
-    .button-primary{background:#10b981;color:#fff}.button-primary:hover{background:#059669}.button-primary:disabled{background:#6b7280;cursor:not-allowed;opacity:.7}
-    .button-secondary{background:rgba(255,255,255,.2);color:#fff;margin-top:10px}.button-secondary:hover{background:rgba(255,255,255,.3)}
-    .button-amount{padding:10px;font-size:14px;background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.4)}
-    .button-amount:hover{background:rgba(139,92,246,.3)}.button-amount.active{background:rgba(139,92,246,.5);border-color:#8b5cf6}
-    .info-row{display:flex;justify-content:space-between;margin-bottom:10px}
-    .loading{text-align:center;padding:50px}
-    .hidden{display:none}
-    .wallet-info{text-align:center;margin:10px 0;font-size:14px;opacity:.8}
-    .wallet-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.4);padding:8px 16px;border-radius:20px;font-size:14px}
-    input[type=number]{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-size:16px;text-align:center}
-    input[type=number]::placeholder{color:rgba(255,255,255,.6)}
-    .error{background:rgba(239,68,68,.2);border:1px solid rgba(239,68,68,.4);padding:10px;border-radius:8px;margin:10px 0;font-size:14px;text-align:center}
-    .success{background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.4);padding:10px;border-radius:8px;margin:10px 0;font-size:14px;text-align:center}
-    .help-box{margin-top:15px;padding:10px;background:rgba(255,255,255,.05);border-radius:8px;font-size:12px;text-align:center}
-    .help-box a{color:#10b981;text-decoration:none}.help-box a:hover{text-decoration:underline}
+    :root {
+      --bg: #0e0e2c;
+      --accent: #8a63d2;
+      --text: #e0e0ff;
+      --card: #1b1b3a;
+      --success: #22c55e;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .logo {
+      width: 80px;
+      display: block;
+      margin: 0 auto 12px;
+    }
+    h1, h2, h3 { text-align: center; margin-bottom: 12px; }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    input {
+      background: #2e2e4d;
+      color: var(--text);
+    }
+    button {
+      background: var(--accent);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #7c4dde;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .success { background: rgba(34,197,94,0.2); color: var(--success); }
+    .error { background: rgba(239,68,68,0.2); color: var(--danger); }
+    .footer {
+      font-size: 14px;
+      text-align: center;
+      opacity: 0.7;
+      padding-top: 12px;
+    }
+    canvas {
+      background: #131325;
+      border-radius: 12px;
+      padding: 10px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div id="loading" class="loading"><h2>Loading $FARC...</h2></div>
-    <div id="app" class="hidden">
-      <div class="header">
-        <img src="/farc.png" alt="FARC Logo" class="logo" />
-        <h1>$FARC</h1>
-        <p id="header-text">The Official Farcaster Token</p>
-        <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
-      </div>
-      <div class="card">
-        <h2>🔥 Presale LIVE</h2>
-        <div class="info-row"><span>Network:</span><strong>Base (Chain ID: 8453)</strong></div>
-        <div class="info-row"><span>Price:</span><strong>0.01 ETH = 1M FARC</strong></div>
-        <div class="info-row"><span>Max per wallet:</span><strong>5M FARC</strong></div>
-        <div class="info-row"><span>Sold:</span><strong id="tokens-sold">Loading...</strong></div>
-      </div>
-      <div class="card">
-        <h3>Buy $FARC</h3>
-        <div id="message-area"></div>
-        <div style="margin: 15px 0;">
-          <label style="font-size: 14px; opacity: 0.8;">Select amount:</label>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0;">
-            <button onclick="window.setAmount(0.001)" class="button button-amount" data-amount="0.001">0.001 ETH<br /><small>0.1M FARC</small></button>
-            <button onclick="window.setAmount(0.01)" class="button button-amount active" data-amount="0.01">0.01 ETH<br /><small>1M FARC</small></button>
-            <button onclick="window.setAmount(0.05)" class="button button-amount" data-amount="0.05">0.05 ETH<br /><small>5M FARC</small></button>
-          </div>
-        </div>
-        <input type="number" id="amount-input" placeholder="Amount in ETH" step="0.001" min="0.001" max="0.05" value="0.01" readonly />
-        <div id="wallet-info" class="wallet-info"></div>
-        <button id="action-button" class="button button-primary">Loading...</button>
-        <button class="button button-secondary" onclick="window.shareToken()">Share $FARC 📢</button>
-        <div class="help-box">
-          <p style="margin: 5px 0;">💡 Purchase Options:</p>
-          <p style="margin: 5px 0;">• <a href="https://basescan.org/address/0x638EeEa689d3f9678f8753F8Ed1d55776F4129Cd#writeContract" target="_blank">Buy directly on BaseScan</a></p>
-          <p style="margin: 5px 0;">• Visit <a href="https://farc.vercel.app" target="_blank">farc.vercel.app</a> with MetaMask</p>
-          <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">Contract: 0x638E...12Cd<br /><span style="color: #10b981;">✅ Now Farcaster compatible!</span></p>
-        </div>
-      </div>
+    <div class="card">
+      <img src="/farc.png" alt="$FARC Logo" class="logo" />
+      <h1>$FARC Token</h1>
+      <div id="status"></div>
+      <input id="amount" type="number" placeholder="Amount in ETH" step="0.001" min="0.001" max="0.05" value="0.01" />
+      <button id="connect">Connect Wallet</button>
+      <button id="buy">Buy $FARC</button>
+    </div>
+    <div class="card">
+      <h3>Token Sale Progress</h3>
+      <canvas id="salesChart" width="400" height="200"></canvas>
+    </div>
+    <div class="footer">
+      Total Supply: 1 Billion $FARC<br>
+      ETH raised in presale will be used for LP.<br>
+      Join the movement — powered by Farcaster colors.
     </div>
   </div>
 
-<script type="module">
-import { sdk } from "https://esm.sh/@farcaster/frame-sdk";
-const ADDRESS="0x638EeEa689d3f9678f8753F8Ed1d55776F4129Cd";
-const ABI=["function buyTokens() external payable","function getPresaleInfo() view returns (bool,uint256,uint256,uint256)"];
-let provider,ethersProvider,signer,contract,user;
-const $=s=>document.querySelector(s);
-const show=(cls,msg)=>$('#message-area').innerHTML=`<div class="${cls}">${msg}</div>`;
-const clear=()=>$('#message-area').innerHTML="";
+  <script type="module">
+    import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
 
-async function init(){
-  try{
-    await sdk.actions.ready();
-    provider = sdk.wallet?.getEthereumProvider?.() || window.ethereum;
-    if(provider && sdk.wallet?.getEthereumProvider) provider.isFarcaster=true;
-    if(!provider) return fatal('Open in Warpcast or MetaMask');
-    if(!provider.isFarcaster) ethersProvider=new ethers.providers.Web3Provider(provider);
-    const accs=await provider.request({method:'eth_accounts'}).catch(()=>[]);
-    accs.length?await connect(accs[0]):disconnected();
-    provider.on&&provider.on('accountsChanged',a=>a.length?connect(a[0]):disconnected());
-    await loadInfo();
-  }catch(e){console.error(e);fatal(e.message||'Init failed');}
-  finally{$('#loading').classList.add('hidden');$('#app').classList.remove('hidden');}
-}
+    const CONTRACT_ADDRESS = '0x638EeEa689d3f9678f8753F8Ed1d55776F4129Cd';
+    const ABI = ['function buyTokens() external payable'];
+    let provider, signer, contract, user;
+    const $ = id => document.getElementById(id);
+    const status = msg => $('status').innerHTML = `<div class="status success">${msg}</div>`;
+    const error = msg => $('status').innerHTML = `<div class="status error">${msg}</div>`;
 
-function fatal(m){show('error',m);$('#action-button').disabled=true;}
-function connectedUI(){
-  $('#wallet-info').innerHTML=`<div class="wallet-badge"><span>🟣</span><span>${user.slice(0,6)}...${user.slice(-4)}</span></div>`;
-  const b=$('#action-button');b.textContent='Buy FARC 🚀';b.disabled=false;b.onclick=buy;
-}
-function disconnected(){
-  $('#wallet-info').innerHTML='';const b=$('#action-button');b.textContent='Connect Wallet';b.disabled=false;b.onclick=connectWallet;
-}
-async function connectWallet(){
-  try{const b=$('#action-button');b.textContent='Connecting…';b.disabled=true;const a=await provider.request({method:'eth_requestAccounts'});a.length?connect(a[0]):fatal('No account');}
-  catch(e){console.error(e);fatal('Connect failed');disconnected();}}
-async function connect(a){user=a;if(ethersProvider){signer=ethersProvider.getSigner();contract=new ethers.Contract(ADDRESS,ABI,signer);}connectedUI();clear();}
-
-async function buy(){
-  const amt=parseFloat($('#amount-input').value||'0');if(!amt) return show('error','Pick amount');
-  const b=$('#action-button');b.textContent='Processing…';b.disabled=true;
-  try{
-    const tokens=amt*100;
-    if(provider.isFarcaster){
-      const gasLimitHex = '0x5208';
-      const txObj = { to: ADDRESS, value: '0x' + BigInt(Math.floor(amt*1e18)).toString(16), gas: gasLimitHex };
-      const hash = await provider.request({ method: 'eth_sendTransaction', params: [txObj] });
-      show('success',`✅ Tx sent! Receive ${tokens}M\n${hash.slice(0,10)}...${hash.slice(-8)}`);
-    }else{
-      const tx=await contract.buyTokens({value:ethers.utils.parseEther(amt.toString())});
-      show('success',`Tx sent ${tx.hash.slice(0,10)}...`);
-      b.textContent='Confirming…';await tx.wait();
-      show('success',`✅ Bought ${tokens}M FARC\n${tx.hash.slice(0,10)}...${tx.hash.slice(-8)}`);
+    async function init() {
+      await sdk.actions.ready();
+      provider = sdk.wallet?.getEthereumProvider?.() || window.ethereum;
+      if (!provider?.request) return error('Wallet not available');
+      const web3Provider = new ethers.providers.Web3Provider(provider);
+      signer = web3Provider.getSigner();
+      contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+      const accounts = await provider.request({ method: 'eth_accounts' });
+      if (accounts[0]) connected(accounts[0]);
+      $('connect').onclick = async () => {
+        const acc = await provider.request({ method: 'eth_requestAccounts' });
+        if (acc[0]) connected(acc[0]);
+      };
+      $('buy').onclick = buy;
+      drawChart();
     }
-    setTimeout(loadInfo,4000);
-  }catch(e){console.error(e);if(e.code===4001||e.code==='ACTION_REJECTED')show('error','User rejected');else show('error','Tx failed');}
-  finally{connectedUI();}
-}
 
-async function loadInfo(){
-  if(!ethersProvider)return$('#tokens-sold').textContent='—';
-  try{
-    const infoContract = new ethers.Contract(ADDRESS, ABI, ethersProvider);
-    const info = await infoContract.getPresaleInfo();
-    const sold = parseFloat(ethers.utils.formatUnits(info[1], 18));
-    const remaining = parseFloat(ethers.utils.formatUnits(info[2], 18));
-    const total = sold + remaining;
-    $('#tokens-sold').textContent = `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
-  }catch(e){console.error(e);$('#tokens-sold').textContent='—';}
-}
-
-window.setAmount = function(amount){
-  document.getElementById('amount-input').value = amount;
-  document.querySelectorAll('.button-amount').forEach(btn => {
-    if (btn.getAttribute('data-amount') === amount.toString()) {
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
+    function connected(address) {
+      user = address;
+      $('connect').textContent = `${address.slice(0, 6)}...${address.slice(-4)}`;
+      status('Wallet connected');
     }
-  });
-  clear();
-};
 
-window.shareToken = function() {
-  const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
-  if (navigator.share) {
-    navigator.share({ title: '$FARC Token', text }).catch(() => copyToClipboard(text));
-  } else {
-    copyToClipboard(text);
-  }
-};
+    async function buy() {
+      const amt = parseFloat($('amount').value);
+      if (!amt || amt <= 0) return error('Enter valid amount');
+      try {
+        const tx = await contract.buyTokens({ value: ethers.utils.parseEther(amt.toString()) });
+        status(`Sent: ${tx.hash.slice(0, 10)}...`);
+        await tx.wait();
+        status(`✅ Success! Tx: ${tx.hash.slice(0, 10)}...${tx.hash.slice(-8)}`);
+        drawChart();
+      } catch (e) {
+        console.error(e);
+        error('Transaction failed');
+      }
+    }
 
-function copyToClipboard(text){
-  navigator.clipboard.writeText(text).then(() => show('success','Share text copied!')).catch(() => show('error','Copy failed'));
-}
+    function drawChart() {
+      const ctx = document.getElementById('salesChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Week 1', 'Week 2', 'Week 3', 'Now'],
+          datasets: [{
+            label: 'Tokens Sold (Millions)',
+            data: [10, 30, 55, 72],
+            backgroundColor: '#8a63d2'
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
 
-window.addEventListener('DOMContentLoaded', init);
-</script>
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
 </body>
 </html>
