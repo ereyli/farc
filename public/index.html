@@ -948,19 +948,29 @@
         }
         
         // Load Farcaster SDK separately
-        async function loadFarcasterSDK() {
-            try {
-                const module = await import('https://esm.sh/@farcaster/frame-sdk');
-                sdk = module.sdk;
-                
-                await sdk.actions.ready();
-                console.log('Farcaster SDK ready');
-                
-                provider = sdk.wallet?.ethProvider;
-                
-                if (provider) {
-                    console.log('Farcaster Provider:', provider);
-                    
+        
+       async function loadFarcasterSDK() {
+    try {
+        const module = await import('https://esm.sh/@farcaster/frame-sdk');
+        sdk = module.sdk;
+
+        await sdk.actions.ready();
+        console.log('✅ Farcaster SDK ready');
+
+        if (sdk?.wallet?.ethProvider && typeof sdk.wallet.ethProvider.request === 'function') {
+            provider = sdk.wallet.ethProvider;
+            console.log('✅ Farcaster Provider connected:', provider);
+        } else {
+            throw new Error('❌ Farcaster provider not available or invalid');
+        }
+
+    } catch (error) {
+        console.error('Farcaster SDK load error:', error);
+        setDebugError(error);
+        showError('Farcaster wallet unavailable');
+    }
+}
+
                     // Check connection
                     const accounts = await provider.request({ method: 'eth_accounts' });
                     if (accounts && accounts.length > 0) {
