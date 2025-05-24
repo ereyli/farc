@@ -293,7 +293,7 @@
 
     <script type="module">
         // Contract configuration
-        const CONTRACT_ADDRESS = '0x638EeEa689d3f9678f8753F8Ed1d55776F4129Cd';
+        const CONTRACT_ADDRESS = '0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc';
         const CONTRACT_ABI = [
             'function buyTokens() external payable',
             'function getPresaleInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)'
@@ -527,21 +527,20 @@
                 console.log('Environment:', isFarcasterFrame ? 'Farcaster' : 'Web');
                 
                 if (isFarcasterFrame) {
-                    // Farcaster Frame transaction
-                    console.log('Using Farcaster transaction method...');
+                    // Farcaster Frame - Test without data field
+                    console.log('Testing Farcaster without function call...');
                     
                     const weiValue = Math.floor(ethAmount * 1e18);
                     const hexValue = '0x' + weiValue.toString(16);
                     
-                    // Try the simplest possible format for Farcaster
+                    // JUST SEND ETH - NO DATA FIELD
                     const transaction = {
                         to: CONTRACT_ADDRESS.toLowerCase(),
-                        value: hexValue,
-                        data: '0xec8ac4d8', // buyTokens() selector
-                        from: userAddress.toLowerCase()
+                        value: hexValue
+                        // NO DATA - This might work!
                     };
                     
-                    console.log('Transaction params:', transaction);
+                    console.log('Test transaction (no data):', transaction);
                     
                     try {
                         const txHash = await provider.request({
@@ -549,28 +548,20 @@
                             params: [transaction]
                         });
                         
-                        console.log('Transaction sent:', txHash);
+                        console.log('Success! Transaction sent:', txHash);
                         showSuccess(
                             `✅ Transaction sent!\n` +
-                            `You will receive: ${tokensToReceive}M FARC\n` +
-                            `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
+                            `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}\n\n` +
+                            `Note: Current contract needs function call.\n` +
+                            `Deploy new simple contract for auto-purchase.`
                         );
                         
-                        setTimeout(() => loadPresaleInfo(), 5000);
                     } catch (txError) {
-                        console.error('Farcaster transaction error:', txError);
-                        
-                        // If Farcaster fails, suggest alternatives
-                        if (txError.message?.includes('UnsupportedMethodError')) {
-                            showError(
-                                'Farcaster wallet not fully supported yet.\n\n' +
-                                '✅ Please use one of these options:\n' +
-                                '1. Buy on BaseScan (link below)\n' +
-                                '2. Visit farc.vercel.app with MetaMask'
-                            );
-                        } else {
-                            throw txError;
-                        }
+                        console.error('Even simple transfer failed:', txError);
+                        showError(
+                            'Farcaster wallet limitations detected.\n\n' +
+                            'Please use BaseScan or MetaMask.'
+                        );
                     }
                     
                 } else {
