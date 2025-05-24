@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>$FARC - The Farcaster Token</title>
     <link rel="icon" type="image/png" href="/farc.png">
     <link rel="manifest" href="/farcaster.json">
@@ -19,7 +19,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -28,7 +27,6 @@
             color: white;
             min-height: 100vh;
             padding: 20px;
-            -webkit-font-smoothing: antialiased;
         }
         
         .container {
@@ -56,7 +54,6 @@
         .card {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
@@ -72,8 +69,6 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            -webkit-appearance: none;
-            touch-action: manipulation;
         }
         
         .button-primary {
@@ -81,9 +76,8 @@
             color: white;
         }
         
-        .button-primary:active {
+        .button-primary:hover {
             background: #059669;
-            transform: scale(0.98);
         }
         
         .button-primary:disabled {
@@ -98,9 +92,8 @@
             margin-top: 10px;
         }
         
-        .button-secondary:active {
+        .button-secondary:hover {
             background: rgba(255, 255, 255, 0.3);
-            transform: scale(0.98);
         }
         
         .info-row {
@@ -115,7 +108,7 @@
         }
         
         .hidden {
-            display: none !important;
+            display: none;
         }
         
         .wallet-info {
@@ -145,7 +138,6 @@
             background: rgba(255, 255, 255, 0.1);
             color: white;
             font-size: 16px;
-            -webkit-appearance: none;
         }
         
         input[type="number"]::placeholder {
@@ -161,43 +153,6 @@
             font-size: 14px;
             text-align: center;
         }
-        
-        .success {
-            background: rgba(16, 185, 129, 0.2);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-            padding: 10px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 14px;
-            text-align: center;
-        }
-        
-        .mobile-warning {
-            background: rgba(251, 191, 36, 0.2);
-            border: 1px solid rgba(251, 191, 36, 0.4);
-            padding: 15px;
-            border-radius: 12px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .mobile-warning h3 {
-            margin-bottom: 10px;
-        }
-        
-        .mobile-warning p {
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        
-        .debug-info {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 12px;
-            font-family: monospace;
-        }
     </style>
 </head>
 <body>
@@ -208,15 +163,10 @@
         
         <div id="app" class="hidden">
             <div class="header">
-                <img src="/farc.png" alt="FARC Logo" class="logo" onerror="this.style.display='none'">
+                <img src="/farc.png" alt="FARC Logo" class="logo">
                 <h1>$FARC</h1>
                 <p id="header-text">The Official Farcaster Token</p>
                 <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
-            </div>
-            
-            <div id="mobile-warning" class="mobile-warning hidden">
-                <h3>📱 Browser Detected</h3>
-                <p>For the best experience, please open this app inside Warpcast or another Farcaster client.</p>
             </div>
             
             <div class="card">
@@ -247,7 +197,6 @@
                 </div>
                 
                 <div id="error-message" class="error hidden"></div>
-                <div id="success-message" class="success hidden"></div>
                 
                 <input 
                     type="number" 
@@ -256,7 +205,6 @@
                     step="0.001"
                     min="0.001"
                     max="0.05"
-                    inputmode="decimal"
                 >
                 
                 <div id="wallet-info" class="wallet-info"></div>
@@ -268,21 +216,12 @@
                 <button class="button button-secondary" onclick="window.shareToken()">
                     Share $FARC 📢
                 </button>
-                
-                <button class="button button-secondary" onclick="window.toggleDebug()" style="margin-top: 10px;">
-                    🐛 Toggle Debug Info
-                </button>
-                
-                <div id="debug-info" class="debug-info hidden">
-                    <div>Debug Info:</div>
-                    <div id="debug-content"></div>
-                </div>
             </div>
         </div>
     </div>
 
     <script type="module">
-        import { sdk } from 'https://esm.sh/@farcaster/frame-sdk@0.1.1';
+        import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
         
         // Contract configuration
         const CONTRACT_ADDRESS = '0x638eeea689d3f9678f8753f8ed1d55776f4129cd';
@@ -300,91 +239,57 @@
         let userAddress = null;
         let isConnected = false;
         let farcasterContext = null;
-        let isFrameReady = false;
-        
-        // Debug logging
-        function debug(message, data = null) {
-            console.log(`[FARC Debug] ${message}`, data);
-            const debugContent = document.getElementById('debug-content');
-            if (debugContent) {
-                const entry = document.createElement('div');
-                entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
-                if (data) {
-                    entry.textContent += ` - ${JSON.stringify(data)}`;
-                }
-                debugContent.appendChild(entry);
-                // Keep only last 5 entries
-                while (debugContent.children.length > 5) {
-                    debugContent.removeChild(debugContent.firstChild);
-                }
-            }
-        }
         
         // Initialize app
         async function init() {
-            debug('Initializing FARC app...');
+            console.log('Initializing FARC app...');
             
             try {
                 // Initialize Farcaster SDK
-                debug('Calling ready()');
+                console.log('Step 1: Initializing SDK...');
                 await sdk.actions.ready();
-                isFrameReady = true;
-                debug('SDK ready');
+                console.log('Step 2: SDK ready');
                 
                 // Get Farcaster context
                 try {
-                    debug('Getting context...');
+                    console.log('Step 3: Getting context...');
                     farcasterContext = await sdk.context;
-                    debug('Context received', {
-                        user: farcasterContext?.user?.username,
-                        client: farcasterContext?.client?.id
-                    });
+                    console.log('Step 4: Context received:', farcasterContext);
                     
                     // Update UI with user info
                     if (farcasterContext?.user?.username) {
                         document.getElementById('header-text').innerHTML = 
                             `The Official Farcaster Token<br><small>👤 @${farcasterContext.user.username}</small>`;
                     }
-                    
-                    // Check if we're in a Farcaster client
-                    if (!farcasterContext?.client) {
-                        document.getElementById('mobile-warning').classList.remove('hidden');
-                    }
                 } catch (contextError) {
-                    debug('Context error (non-fatal)', contextError.message);
+                    console.log('Context error (non-fatal):', contextError);
                 }
                 
-                // Get wallet provider using the correct method
-                debug('Getting wallet provider...');
-                try {
-                    provider = await sdk.wallet.getEthereumProvider();
-                    debug('Provider obtained via getEthereumProvider()');
-                } catch (providerError) {
-                    debug('getEthereumProvider error', providerError.message);
+                // Get wallet provider from Farcaster SDK
+                console.log('Step 5: Getting wallet provider...');
+                provider = sdk.wallet?.ethProvider;
+                
+                if (!provider) {
+                    console.log('No wallet provider in SDK, trying window.ethereum...');
                     // Fallback to window.ethereum if available
                     if (window.ethereum) {
                         provider = window.ethereum;
-                        debug('Using window.ethereum as fallback');
+                        console.log('Using window.ethereum as provider');
+                    } else {
+                        console.log('No wallet provider available');
+                        showError('Please open this app in Warpcast');
+                        disableActions();
+                        return;
                     }
                 }
                 
-                if (!provider) {
-                    debug('No wallet provider available');
-                    showError('Please open this app in Warpcast or another Farcaster client');
-                    disableActions();
-                    return;
-                }
-                
-                debug('Provider found', { isMetaMask: provider.isMetaMask });
-                
-                // Setup provider event handlers
-                setupProviderHandlers();
+                console.log('Step 6: Provider found:', provider);
                 
                 // Check if already connected
                 try {
-                    debug('Checking existing accounts...');
+                    console.log('Step 7: Checking existing accounts...');
                     const accounts = await provider.request({ method: 'eth_accounts' });
-                    debug('Accounts found', accounts);
+                    console.log('Step 8: Accounts:', accounts);
                     
                     if (accounts && accounts.length > 0) {
                         await handleConnection(accounts[0]);
@@ -392,18 +297,25 @@
                         updateUIForDisconnected();
                     }
                 } catch (accountError) {
-                    debug('Account check error', accountError.message);
+                    console.log('Account check error:', accountError);
                     updateUIForDisconnected();
                 }
                 
+                // Listen for account changes
+                if (provider.on) {
+                    provider.on('accountsChanged', handleAccountsChanged);
+                }
+                
                 // Load presale info
+                console.log('Step 9: Loading presale info...');
                 await loadPresaleInfo();
-                debug('Init complete');
+                console.log('Step 10: Init complete!');
                 
             } catch (error) {
-                debug('Init error', error.message);
                 console.error('Init error details:', error);
+                console.error('Error stack:', error.stack);
                 showError('Initialization error: ' + error.message);
+                // Don't disable actions, allow manual connect
                 updateUIForDisconnected();
             } finally {
                 // Hide loading, show app
@@ -412,49 +324,17 @@
             }
         }
         
-        // Setup provider event handlers
-        function setupProviderHandlers() {
-            if (!provider || !provider.on) return;
-            
-            try {
-                provider.on('accountsChanged', (accounts) => {
-                    debug('Accounts changed', accounts);
-                    if (accounts.length === 0) {
-                        userAddress = null;
-                        isConnected = false;
-                        updateUIForDisconnected();
-                    } else if (accounts[0] !== userAddress) {
-                        handleConnection(accounts[0]);
-                    }
-                });
-                
-                provider.on('chainChanged', (chainId) => {
-                    debug('Chain changed', chainId);
-                    window.location.reload();
-                });
-            } catch (error) {
-                debug('Failed to setup event handlers', error.message);
-            }
-        }
-        
         // Load presale info from contract
         async function loadPresaleInfo() {
             try {
-                debug('Loading presale info...');
+                console.log('loadPresaleInfo: Starting...');
                 if (!provider) {
-                    debug('No provider, skipping presale info');
+                    console.log('loadPresaleInfo: No provider, skipping');
                     return;
                 }
                 
-                // Ensure we're on the right network
-                const chainId = await provider.request({ method: 'eth_chainId' });
-                debug('Current chain ID', chainId);
-                
-                if (chainId !== '0x2105' && parseInt(chainId, 16) !== 8453) {
-                    debug('Wrong network detected');
-                    showError('Please switch to Base network (Chain ID: 8453)');
-                    return;
-                }
+                // Enable contract calls
+                console.log('loadPresaleInfo: Checking presale status...');
                 
                 // Create a simple contract interface for reading
                 const request = {
@@ -468,12 +348,13 @@
                         params: [request, 'latest']
                     });
                     
-                    debug('Presale info result', result);
+                    console.log('Presale info raw result:', result);
                     
+                    // Decode result (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)
                     if (result && result !== '0x') {
                         // Extract isActive (first 32 bytes after '0x')
                         const isActive = result.slice(2, 66) === '0'.repeat(63) + '1';
-                        debug('Presale active', isActive);
+                        console.log('Presale active:', isActive);
                         
                         if (!isActive) {
                             showError('⚠️ Presale is not active yet. Please wait for the owner to start it.');
@@ -494,23 +375,76 @@
                             `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
                     }
                 } catch (callError) {
-                    debug('Contract call error', callError.message);
+                    console.error('Contract call error:', callError);
+                    // Don't show error, just use static data
+                }
+                
+                // Load user's purchased amount if connected
+                if (isConnected && userAddress) {
+                    await loadUserInfo();
                 }
                 
             } catch (error) {
-                debug('loadPresaleInfo error', error.message);
+                console.error('loadPresaleInfo error:', error);
+                // Don't throw, just log
+            }
+        }
+        
+        // Load user info
+        async function loadUserInfo() {
+            try {
+                console.log('loadUserInfo: Starting...');
+                if (!provider || !userAddress) {
+                    console.log('loadUserInfo: Missing provider or address');
+                    return;
+                }
+                
+                // Temporarily disabled until wallet connection is stable
+                console.log('loadUserInfo: Contract calls temporarily disabled');
+                
+                /*
+                // Get user's purchased amount
+                const data = '0x81a73ad5' + userAddress.slice(2).padStart(64, '0'); // purchasedAmount(address)
+                
+                const request = {
+                    to: CONTRACT_ADDRESS,
+                    data: data
+                };
+                
+                const result = await provider.request({
+                    method: 'eth_call',
+                    params: [request, 'latest']
+                });
+                
+                if (result && result !== '0x') {
+                    const purchased = parseInt(result, 16) / 1e18;
+                    const remaining = 5e6 - purchased; // 5M max per wallet
+                    
+                    if (purchased > 0) {
+                        const walletInfo = document.getElementById('wallet-info');
+                        walletInfo.innerHTML += `
+                            <div style="margin-top: 5px; font-size: 12px;">
+                                Purchased: ${(purchased / 1e6).toFixed(2)}M FARC | 
+                                Remaining: ${(remaining / 1e6).toFixed(2)}M FARC
+                            </div>
+                        `;
+                    }
+                }
+                */
+                
+            } catch (error) {
+                console.error('loadUserInfo error:', error);
+                // Don't throw, just log
             }
         }
         
         // Handle connection
         async function handleConnection(address) {
-            debug('Connected with address', address);
+            console.log('Connected with address:', address);
             userAddress = address;
             isConnected = true;
             updateUIForConnected();
             hideError();
-            showSuccess(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
-            setTimeout(hideSuccess, 3000);
         }
         
         // Update UI for connected state
@@ -549,74 +483,45 @@
         
         // Connect wallet
         async function connectWallet() {
-            debug('Connect wallet clicked');
+            console.log('Connect wallet clicked');
             
             if (!provider) {
-                showError('Please open this app in Warpcast or another Farcaster client');
+                showError('Please open this app in Warpcast');
                 return;
             }
             
             try {
                 hideError();
-                hideSuccess();
                 const button = document.getElementById('action-button');
                 button.textContent = 'Connecting...';
                 button.disabled = true;
                 
                 // Check network first
                 const chainId = await provider.request({ method: 'eth_chainId' });
-                debug('Current chain ID', chainId);
+                console.log('Current chain ID:', chainId);
                 
                 // Base chain ID is 8453 (0x2105 in hex)
                 if (chainId !== '0x2105' && parseInt(chainId, 16) !== 8453) {
-                    debug('Wrong network, requesting switch to Base...');
+                    console.log('Wrong network, requesting switch to Base...');
                     try {
                         await provider.request({
                             method: 'wallet_switchEthereumChain',
                             params: [{ chainId: '0x2105' }]
                         });
-                        debug('Switched to Base network');
                     } catch (switchError) {
-                        if (switchError.code === 4902) {
-                            // Chain not added, try to add it
-                            debug('Adding Base network...');
-                            try {
-                                await provider.request({
-                                    method: 'wallet_addEthereumChain',
-                                    params: [{
-                                        chainId: '0x2105',
-                                        chainName: 'Base',
-                                        nativeCurrency: {
-                                            name: 'Ether',
-                                            symbol: 'ETH',
-                                            decimals: 18
-                                        },
-                                        rpcUrls: ['https://mainnet.base.org'],
-                                        blockExplorerUrls: ['https://basescan.org']
-                                    }]
-                                });
-                                debug('Base network added');
-                            } catch (addError) {
-                                debug('Add chain error', addError.message);
-                                showError('Please add Base network to your wallet');
-                                updateUIForDisconnected();
-                                return;
-                            }
-                        } else {
-                            debug('Network switch error', switchError.message);
-                            showError('Please switch to Base network');
-                            updateUIForDisconnected();
-                            return;
-                        }
+                        console.error('Network switch error:', switchError);
+                        showError('Please switch to Base network');
+                        updateUIForDisconnected();
+                        return;
                     }
                 }
                 
-                debug('Requesting accounts...');
+                console.log('Requesting accounts...');
                 const accounts = await provider.request({ 
                     method: 'eth_requestAccounts' 
                 });
                 
-                debug('Accounts received', accounts);
+                console.log('Accounts received:', accounts);
                 
                 if (accounts && accounts.length > 0) {
                     await handleConnection(accounts[0]);
@@ -626,12 +531,11 @@
                 }
                 
             } catch (error) {
-                debug('Connect error', error);
                 console.error('Connect error:', error);
                 if (error.code === 4001) {
                     showError('Connection cancelled');
                 } else {
-                    showError('Failed to connect: ' + (error.message || 'Unknown error'));
+                    showError('Failed to connect wallet');
                 }
                 updateUIForDisconnected();
             }
@@ -654,7 +558,6 @@
             
             try {
                 hideError();
-                hideSuccess();
                 const button = document.getElementById('action-button');
                 button.textContent = 'Processing...';
                 button.disabled = true;
@@ -667,47 +570,29 @@
                 const weiAmount = BigInt(Math.floor(ethAmount * 1e18));
                 const hexValue = '0x' + weiAmount.toString(16);
                 
-                debug('Transaction details', {
-                    eth: ethAmount,
-                    wei: weiAmount.toString(),
-                    hex: hexValue,
-                    tokens: tokensToReceive + 'M'
-                });
+                console.log('ETH amount:', ethAmount);
+                console.log('Wei amount:', weiAmount.toString());
+                console.log('Hex value:', hexValue);
                 
-                // First, estimate gas to check if transaction would succeed
-                let gasEstimate = '0x30d40'; // Default 200000
+                // First, let's estimate gas
                 try {
-                    debug('Estimating gas...');
-                    const estimate = await provider.request({
+                    const gasEstimate = await provider.request({
                         method: 'eth_estimateGas',
                         params: [{
                             to: CONTRACT_ADDRESS,
                             from: userAddress,
                             value: hexValue,
-                            data: '0xec8ac4d8' // buyTokens() function selector
+                            data: '0xec8ac4d8'
                         }]
                     });
-                    // Add 20% buffer to gas estimate
-                    gasEstimate = '0x' + Math.floor(parseInt(estimate, 16) * 1.2).toString(16);
-                    debug('Gas estimate with buffer', gasEstimate);
+                    console.log('Gas estimate:', gasEstimate);
                 } catch (gasError) {
-                    debug('Gas estimation failed', gasError.message);
+                    console.error('Gas estimation failed:', gasError);
+                    // This tells us why the transaction would fail
                     if (gasError.message?.includes('execution reverted')) {
-                        // Try to get more specific error
-                        if (gasError.message?.includes('Presale not active')) {
-                            showError('Presale is not active yet');
-                        } else if (gasError.message?.includes('Exceeds maximum')) {
-                            showError('Exceeds maximum purchase limit (5M FARC)');
-                        } else if (gasError.message?.includes('Sold out')) {
-                            showError('Presale is sold out');
-                        } else {
-                            showError('Transaction would fail. Check presale status and limits');
-                        }
-                        updateUIForConnected();
+                        showError('Transaction would fail. Please check: presale active, purchase limits, or wallet balance');
                         return;
                     }
-                    // Continue with default gas if estimation fails
-                    debug('Using default gas limit');
                 }
                 
                 // Prepare transaction
@@ -715,11 +600,10 @@
                     to: CONTRACT_ADDRESS,
                     from: userAddress,
                     value: hexValue,
-                    data: '0xec8ac4d8', // buyTokens() function selector
-                    gas: gasEstimate
+                    data: '0xec8ac4d8' // buyTokens() function selector
                 };
                 
-                debug('Sending transaction', transaction);
+                console.log('Sending transaction:', transaction);
                 
                 // Send transaction
                 const txHash = await provider.request({
@@ -727,11 +611,13 @@
                     params: [transaction]
                 });
                 
-                debug('Transaction sent', txHash);
+                console.log('Transaction sent:', txHash);
                 
-                showSuccess(
-                    `✅ Transaction Sent! You will receive ${tokensToReceive}M FARC. ` +
-                    `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
+                alert(
+                    `✅ Transaction Sent!\n\n` +
+                    `You will receive: ${tokensToReceive}M FARC\n` +
+                    `Tx Hash: ${txHash.slice(0, 10)}...${txHash.slice(-8)}\n\n` +
+                    `View on BaseScan`
                 );
                 
                 // Clear input
@@ -743,8 +629,8 @@
                 }, 5000);
                 
             } catch (error) {
-                debug('Buy error', error);
                 console.error('Buy error:', error);
+                console.error('Error details:', JSON.stringify(error, null, 2));
                 
                 if (error.code === 4001) {
                     showError('Transaction cancelled');
@@ -753,7 +639,7 @@
                 } else if (error.message?.includes('insufficient funds')) {
                     showError('Insufficient ETH balance');
                 } else if (error.message?.includes('execution reverted')) {
-                    showError('Transaction failed - check purchase limits or presale status');
+                    showError('Transaction failed - check purchase limits');
                 } else {
                     showError('Transaction failed: ' + (error.message || error.code || 'Unknown error'));
                 }
@@ -767,7 +653,6 @@
             const errorEl = document.getElementById('error-message');
             errorEl.textContent = message;
             errorEl.classList.remove('hidden');
-            hideSuccess();
         }
         
         // Hide error
@@ -776,20 +661,7 @@
             errorEl.classList.add('hidden');
         }
         
-        // Show success
-        function showSuccess(message) {
-            const successEl = document.getElementById('success-message');
-            successEl.textContent = message;
-            successEl.classList.remove('hidden');
-            hideError();
-        }
-        
-        // Hide success
-        function hideSuccess() {
-            const successEl = document.getElementById('success-message');
-            successEl.classList.add('hidden');
-        }
-        
+         
         // Share function
         window.shareToken = function() {
             const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
