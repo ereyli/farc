@@ -536,11 +536,13 @@
                     const hexValue = '0x' + weiValue.toString(16);
                     
                     // JUST ETH TRANSFER - Contract's receive() will handle it
-                    const transaction = {
-                        to: CONTRACT_ADDRESS.toLowerCase(),
-                        value: hexValue
-                        // NO data field - just ETH!
-                    };
+                   const transaction = {
+     to: CONTRACT_ADDRESS.toLowerCase(),
+    value: hexValue,
++   gas: '0x5208'          // 21000 → tek onay penceresi
+    // NO data field – just ETH!
+};
+
                     
                     console.log('Simple ETH transfer:', transaction);
                     
