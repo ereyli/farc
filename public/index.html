@@ -326,10 +326,10 @@
         async function init() {
             console.log('Initializing FARC app...');
             
-            // Check environment first
-            checkEnvironment();
-            
             try {
+                // Check environment first
+                await checkEnvironment();
+                
                 if (isFarcasterFrame) {
                     // Farcaster Frame initialization
                     await sdk.actions.ready();
@@ -345,9 +345,7 @@
                         return;
                     }
                     
-                    // Log provider info for debugging
                     console.log('Farcaster Provider:', provider);
-                    console.log('Provider methods:', Object.getOwnPropertyNames(provider));
                     
                 } else {
                     // Regular web browser initialization
@@ -380,7 +378,9 @@
                 // Listen for account changes
                 if (provider.on) {
                     provider.on('accountsChanged', handleAccountsChanged);
-                    provider.on('chainChanged', () => window.location.reload());
+                    if (!isFarcasterFrame) {
+                        provider.on('chainChanged', () => window.location.reload());
+                    }
                 }
                 
                 // Load presale info
@@ -479,44 +479,15 @@
                 button.textContent = 'Connecting...';
                 button.disabled = true;
                 
-                if (isFarcasterFrame) {
-                    // Farcaster connection
-                    if (!provider) {
-                        showError('Please open this app in Warpcast');
-                        updateUIForDisconnected();
-                        return;
-                    }
-                    
-                    const accounts = await provider.request({ 
-                        method: 'eth_requestAccounts' 
-                    });
-                    
-                    if (accounts && accounts.length > 0) {
-                        await handleConnection(accounts[0]);
-                    } else {
-                        showError('No accounts found');
-                        updateUIForDisconnected();
-                    }
-                    
+                const accounts = await provider.request({ 
+                    method: 'eth_requestAccounts' 
+                });
+                
+                if (accounts && accounts.length > 0) {
+                    await handleConnection(accounts[0]);
                 } else {
-                    // Web browser connection
-                    if (!provider) {
-                        showError('Please install MetaMask');
-                        updateUIForDisconnected();
-                        return;
-                    }
-                    
-                    // Request accounts
-                    const accounts = await provider.request({ 
-                        method: 'eth_requestAccounts' 
-                    });
-                    
-                    if (accounts && accounts.length > 0) {
-                        await handleConnection(accounts[0]);
-                    } else {
-                        showError('No accounts found');
-                        updateUIForDisconnected();
-                    }
+                    showError('No accounts found');
+                    updateUIForDisconnected();
                 }
                 
             } catch (error) {
@@ -530,7 +501,7 @@
             }
         }
         
-        // Buy tokens - handles both Farcaster and web
+        // Buy tokens
         async function buyTokens() {
             const amount = document.getElementById('amount-input').value;
             
@@ -556,76 +527,30 @@
                     // Farcaster Frame transaction
                     console.log('Using Farcaster transaction method...');
                     
-                    // Try multiple approaches for Farcaster
                     const weiValue = Math.floor(ethAmount * 1e18);
                     const hexValue = '0x' + weiValue.toString(16);
                     
-                    // Approach 1: Minimal parameters
-                    let transaction = {
+                    const transaction = {
                         to: CONTRACT_ADDRESS,
                         value: hexValue,
                         data: '0xec8ac4d8' // buyTokens() selector
                     };
                     
-                    console.log('Farcaster transaction (attempt 1):', transaction);
+                    console.log('Transaction params:', transaction);
                     
-                    try {
-                        const txHash = await provider.request({
-                            method: 'eth_sendTransaction',
-                            params: [transaction]
-                        });
-                        
-                        console.log('Transaction sent:', txHash);
-                        showSuccess(
-                            `✅ Transaction sent!\n` +
-                            `You will receive: ${tokensToReceive}M FARC\n` +
-                            `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
-                        );
-                        
-                        setTimeout(() => loadPresaleInfo(), 5000);
-                        return;
-                        
-                    } catch (err1) {
-                        console.error('Attempt 1 failed:', err1);
-                        
-                        // Approach 2: With from address
-                        transaction.from = userAddress;
-                        console.log('Farcaster transaction (attempt 2):', transaction);
-                        
-                        try {
-                            const txHash = await provider.request({
-                                method: 'eth_sendTransaction',
-                                params: [transaction]
-                            });
-                            
-                            console.log('Transaction sent:', txHash);
-                            showSuccess(`✅ Transaction sent! Tx: ${txHash.slice(0, 10)}...`);
-                            setTimeout(() => loadPresaleInfo(), 5000);
-                            return;
-                            
-                        } catch (err2) {
-                            console.error('Attempt 2 failed:', err2);
-                            
-                            // Approach 3: Legacy format
-                            const legacyTx = {
-                                to: CONTRACT_ADDRESS,
-                                value: hexValue,
-                                data: '0xec8ac4d8',
-                                gas: '0x5208' // 21000 in hex
-                            };
-                            
-                            console.log('Farcaster transaction (attempt 3):', legacyTx);
-                            
-                            const txHash = await provider.request({
-                                method: 'eth_sendTransaction',
-                                params: [legacyTx]
-                            });
-                            
-                            console.log('Transaction sent:', txHash);
-                            showSuccess(`✅ Transaction sent! Tx: ${txHash.slice(0, 10)}...`);
-                            setTimeout(() => loadPresaleInfo(), 5000);
-                        }
-                    }
+                    const txHash = await provider.request({
+                        method: 'eth_sendTransaction',
+                        params: [transaction]
+                    });
+                    
+                    console.log('Transaction sent:', txHash);
+                    showSuccess(
+                        `✅ Transaction sent!\n` +
+                        `You will receive: ${tokensToReceive}M FARC\n` +
+                        `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
+                    );
+                    
+                    setTimeout(() => loadPresaleInfo(), 5000);
                     
                 } else {
                     // Web browser transaction (MetaMask, etc.)
@@ -789,7 +714,6 @@
         
         // Start app
         window.addEventListener('DOMContentLoaded', init);
-        })(); // End of async IIFE
     </script>
 </body>
 </html>
