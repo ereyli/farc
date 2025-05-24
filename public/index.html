@@ -785,7 +785,7 @@
             }
         }
 
-        // Initialize when DOM is ready
+               // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             debug('DOM loaded, starting initialization...');
             
@@ -811,5 +811,19 @@
             console.error('Unhandled promise rejection:', event.reason);
         });
     </script>
+
+    <!-- ✅ Farcaster Frame Ready çağrısı -->
+    <script type="module">
+      import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+
+      sdk.actions.ready({
+        disableNativeGestures: true  // Swipe kapanır, UX daha stabil olur
+      }).then(() => {
+        console.log("✅ Farcaster frame is ready");
+      }).catch(err => {
+        console.error("❌ Farcaster ready() failed:", err);
+      });
+    </script>
+
 </body>
 </html>
