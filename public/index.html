@@ -855,7 +855,8 @@
 
 <!-- ✅ Farcaster splash screen'i kapatmak için -->
 <script type="module">
-    import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+    import { sdk } from 'https://esm.run/@farcaster/frame-sdk';
+
 
     sdk.actions.ready({ disableNativeGestures: true })
         .then(() => {
