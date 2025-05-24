@@ -198,8 +198,45 @@
             text-decoration: none;
         }
         
-        .help-box a:hover {
-            text-decoration: underline;
+        .social-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .leaderboard-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+        
+        .leaderboard-rank {
+            font-size: 18px;
+            font-weight: bold;
+            width: 30px;
+        }
+        
+        .leaderboard-user {
+            flex: 1;
+            margin: 0 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .leaderboard-amount {
+            font-weight: bold;
+            color: #10b981;
         }
     </style>
 </head>
@@ -215,6 +252,18 @@
                 <h1>$FARC</h1>
                 <p id="header-text">The Official Farcaster Token</p>
                 <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
+                
+                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+                    <a href="https://twitter.com/farctoken" target="_blank" class="social-link" style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; background: rgba(29, 161, 242, 0.1); border: 1px solid rgba(29, 161, 242, 0.3); border-radius: 20px; color: #1DA1F2; text-decoration: none; font-size: 14px; transition: all 0.3s;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                        Twitter
+                    </a>
+                    <a href="https://warpcast.com/~/channel/farc" target="_blank" class="social-link" style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 20px; color: #8B5CF6; text-decoration: none; font-size: 14px; transition: all 0.3s;">
+                        🟣 Farcaster
+                    </a>
+                </div>
             </div>
             
             <div class="card">
@@ -301,12 +350,13 @@
 
     <script type="module">
         // Contract configuration
-        const CONTRACT_ADDRESS = '0x0148d27A8821115Eb16062456369a693cc8d53EC';
+        const CONTRACT_ADDRESS = '0xdc73ad5d961d32703db3c61b4294ac5b584bfbdc'; // Update this with new address
         const CONTRACT_ABI = [
             'function buyTokens() external payable',
             'function getInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)',
             'function getRemainingAllocation(address) view returns (uint256)',
-            'function purchasedAmount(address) view returns (uint256)'
+            'function purchasedAmount(address) view returns (uint256)',
+            'function getLeaderboard() view returns (address[] buyers, uint256[] amounts)'
         ];
         
         // Global state
@@ -592,7 +642,10 @@
                             }
                         }, 2000);
                         
-                        setTimeout(() => loadPresaleInfo(), 5000);
+                        setTimeout(() => {
+                            loadPresaleInfo();
+                            loadLeaderboard(); // Refresh leaderboard after purchase
+                        }, 5000);
                         
                     } catch (txError) {
                         console.error('Farcaster transaction failed:', txError);
@@ -625,12 +678,23 @@
                     const receipt = await tx.wait();
                     
                     console.log('Transaction confirmed:', receipt);
+                    
                     showSuccess(
                         `✅ Success! You bought ${tokensToReceive}M FARC\n` +
                         `Tx: ${tx.hash.slice(0, 10)}...${tx.hash.slice(-8)}`
                     );
                     
-                    setTimeout(() => loadPresaleInfo(), 3000);
+                    // Prompt to share for web users too
+                    setTimeout(() => {
+                        if (confirm('🎉 Congrats! Share your FARC purchase?')) {
+                            window.shareToken();
+                        }
+                    }, 1000);
+                    
+                    setTimeout(() => {
+                        loadPresaleInfo();
+                        loadLeaderboard(); // Refresh leaderboard
+                    }, 3000);
                 }
                 
             } catch (error) {
@@ -827,12 +891,66 @@
             copyToClipboard(text);
         }
         
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showSuccess('Share text copied!');
-            }).catch(() => {
-                showError('Failed to copy');
-            });
+        // Load and display leaderboard
+        async function loadLeaderboard() {
+            try {
+                let leaderboardData = [];
+                
+                if (ethersProvider) {
+                    // Load from contract
+                    const readContract = new ethers.Contract(
+                        CONTRACT_ADDRESS, 
+                        CONTRACT_ABI, 
+                        ethersProvider
+                    );
+                    
+                    const [buyers, amounts] = await readContract.getLeaderboard();
+                    
+                    // Combine and sort
+                    leaderboardData = buyers.map((buyer, i) => ({
+                        address: buyer,
+                        amount: parseFloat(ethers.utils.formatUnits(amounts[i], 18))
+                    })).filter(item => item.amount > 0)
+                      .sort((a, b) => b.amount - a.amount)
+                      .slice(0, 5); // Top 5
+                }
+                
+                // Display leaderboard
+                const leaderboardEl = document.getElementById('leaderboard');
+                if (leaderboardData.length === 0) {
+                    leaderboardEl.innerHTML = `
+                        <div style="text-align: center; padding: 20px; opacity: 0.7;">
+                            Be the first to buy FARC! 🚀
+                        </div>
+                    `;
+                } else {
+                    leaderboardEl.innerHTML = leaderboardData.map((item, index) => {
+                        const rank = index + 1;
+                        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                        const shortAddress = `${item.address.slice(0, 6)}...${item.address.slice(-4)}`;
+                        const amount = (item.amount / 1e6).toFixed(2);
+                        
+                        return `
+                            <div class="leaderboard-item">
+                                <div class="leaderboard-rank">${medal}</div>
+                                <div class="leaderboard-user">
+                                    <span>${shortAddress}</span>
+                                    ${isFarcasterFrame ? '<span style="opacity: 0.7; font-size: 12px;">@farcaster</span>' : ''}
+                                </div>
+                                <div class="leaderboard-amount">${amount}M FARC</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                document.getElementById('leaderboard').innerHTML = `
+                    <div style="text-align: center; padding: 20px; opacity: 0.7;">
+                        Leaderboard unavailable
+                    </div>
+                `;
+            }
         }
         
         // Start app
