@@ -269,6 +269,10 @@
                     Share $FARC 📢
                 </button>
                 
+                <button class="button button-secondary" onclick="window.toggleDebug()" style="margin-top: 10px;">
+                    🐛 Toggle Debug Info
+                </button>
+                
                 <div id="debug-info" class="debug-info hidden">
                     <div>Debug Info:</div>
                     <div id="debug-content"></div>
@@ -671,9 +675,10 @@
                 });
                 
                 // First, estimate gas to check if transaction would succeed
+                let gasEstimate = '0x30d40'; // Default 200000
                 try {
                     debug('Estimating gas...');
-                    const gasEstimate = await provider.request({
+                    const estimate = await provider.request({
                         method: 'eth_estimateGas',
                         params: [{
                             to: CONTRACT_ADDRESS,
@@ -682,14 +687,27 @@
                             data: '0xec8ac4d8' // buyTokens() function selector
                         }]
                     });
-                    debug('Gas estimate', gasEstimate);
+                    // Add 20% buffer to gas estimate
+                    gasEstimate = '0x' + Math.floor(parseInt(estimate, 16) * 1.2).toString(16);
+                    debug('Gas estimate with buffer', gasEstimate);
                 } catch (gasError) {
                     debug('Gas estimation failed', gasError.message);
                     if (gasError.message?.includes('execution reverted')) {
-                        showError('Transaction would fail. Check: presale active, purchase limits, or wallet balance');
+                        // Try to get more specific error
+                        if (gasError.message?.includes('Presale not active')) {
+                            showError('Presale is not active yet');
+                        } else if (gasError.message?.includes('Exceeds maximum')) {
+                            showError('Exceeds maximum purchase limit (5M FARC)');
+                        } else if (gasError.message?.includes('Sold out')) {
+                            showError('Presale is sold out');
+                        } else {
+                            showError('Transaction would fail. Check presale status and limits');
+                        }
                         updateUIForConnected();
                         return;
                     }
+                    // Continue with default gas if estimation fails
+                    debug('Using default gas limit');
                 }
                 
                 // Prepare transaction
@@ -698,7 +716,7 @@
                     from: userAddress,
                     value: hexValue,
                     data: '0xec8ac4d8', // buyTokens() function selector
-                    gas: '0x30d40' // 200000 gas limit
+                    gas: gasEstimate
                 };
                 
                 debug('Sending transaction', transaction);
