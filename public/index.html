@@ -101,8 +101,8 @@
     </div>
     <div class="footer">
       Total Supply: 1 Billion $FARC<br>
-      ETH raised in presale will be used for LP.<br>
-      Join the movement — powered by Farcaster colors.
+      ETH raised from token sales will be added as liquidity.<br>
+      Built with 💜 by the Farcaster community.
     </div>
   </div>
 
@@ -118,17 +118,28 @@
 
     async function init() {
       await sdk.actions.ready();
-      provider = sdk.wallet?.getEthereumProvider?.() || window.ethereum;
+
+      const farcasterProvider = sdk.wallet?.getEthereumProvider?.();
+      provider = farcasterProvider || window.ethereum;
+
+      if (!provider?.request && provider?.send) {
+        provider.request = ({ method, params }) => provider.send(method, params);
+      }
+
       if (!provider?.request) return error('Wallet not available');
+
       const web3Provider = new ethers.providers.Web3Provider(provider);
       signer = web3Provider.getSigner();
       contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
       const accounts = await provider.request({ method: 'eth_accounts' });
       if (accounts[0]) connected(accounts[0]);
+
       $('connect').onclick = async () => {
         const acc = await provider.request({ method: 'eth_requestAccounts' });
         if (acc[0]) connected(acc[0]);
       };
+
       $('buy').onclick = buy;
       drawChart();
     }
