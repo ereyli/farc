@@ -3,22 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>$FARC - Farcaster Community Token.</title>
+    <title>$FARC - The Farcaster Token</title>
     <link rel="icon" type="image/png" href="/farc.png">
     <link rel="manifest" href="/farcaster.json">
     
-    <meta name="fc:frame" content='{
-  "version": "next",
-  "imageUrl": "https://farc.vercel.app/farc.png",
-  "button": {
-    "title": "Launch App",
-    "action": {
-      "type": "launch_frame",
-      "url": "https://farc.vercel.app"
-    }
-  }
-}' />
-
     <!-- Farcaster Mini App Meta -->
     <meta name="fc:frame" content="vNext">
     <meta name="fc:frame:image" content="https://farc.vercel.app/farc.png">
@@ -225,7 +213,7 @@
             <div class="header">
                 <img src="/farc.png" alt="FARC Logo" class="logo">
                 <h1>$FARC</h1>
-                <p id="header-text">Farcaster Community Token</p>
+                <p id="header-text">The Official Farcaster Token</p>
                 <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
             </div>
             
@@ -233,7 +221,7 @@
                 <h2>🔥 Presale LIVE</h2>
                 <div class="info-row">
                     <span>Network:</span>
-                    <strong>BASE </strong>
+                    <strong>Base (Chain ID: 8453)</strong>
                 </div>
                 <div class="info-row">
                     <span>Price:</span>
@@ -243,7 +231,12 @@
                     <span>Max per wallet:</span>
                     <strong>5M FARC</strong>
                 </div>
-                
+                <div class="info-row">
+                    <span>Sold:</span>
+                    <strong id="tokens-sold">Loading...</strong>
+                </div>
+            </div>
+            
             <div class="card">
                 <h3>Buy $FARC</h3>
                 
@@ -253,7 +246,7 @@
                     <label style="font-size: 14px; opacity: 0.8;">Quick amounts or enter custom:</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0;">
                         <button onclick="window.setAmount(0.001)" class="button button-amount" data-amount="0.001">
-                            0.001 ETH<br><small>100K FARC</small>
+                            0.001 ETH<br><small>0.1M FARC</small>
                         </button>
                         <button onclick="window.setAmount(0.01)" class="button button-amount active" data-amount="0.01">
                             0.01 ETH<br><small>1M FARC</small>
@@ -299,22 +292,16 @@
                         💧 All proceeds will be added to liquidity pool
                     </p>
                     <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">
-                        Contract: 0x0148d27a8821115eb16062456369a693cc8d53ec 
-
-                        <a href="https://x.com/YOUR_USERNAME" target="_blank" style="margin: 0 10px; display: inline-block;">
-    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968958.png" alt="X" width="32" height="32" style="border:none; outline:none;" />
-  </a>
-                        
+                        Contract: 0xdc73...fbdc
                     </p>
                 </div>
             </div>
         </div>
     </div>
 
-         
     <script type="module">
         // Contract configuration
-        const CONTRACT_ADDRESS = '0x0148d27a8821115eb16062456369a693cc8d53ec';
+        const CONTRACT_ADDRESS = '0x0148d27A8821115Eb16062456369a693cc8d53EC';
         const CONTRACT_ABI = [
             'function buyTokens() external payable',
             'function getInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)',
