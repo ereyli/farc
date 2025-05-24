@@ -799,31 +799,72 @@
             safeInit();
         });
 
-        // Global error handler
-        window.addEventListener('error', function(event) {
-            setDebugError(event.error || event.message);
-            console.error('Global error:', event.error || event.message);
+      <script>
+    // Global error handler
+    window.addEventListener('error', function(event) {
+        setDebugError(event.error || event.message);
+        console.error('Global error:', event.error || event.message);
+    });
+
+    // Unhandled promise rejection handler
+    window.addEventListener('unhandledrejection', function(event) {
+        setDebugError(event.reason);
+        console.error('Unhandled promise rejection:', event.reason);
+    });
+
+    // ✅ Farcaster özel initialization fonksiyonu
+    async function initFarcaster() {
+        debug('Initializing Farcaster...');
+
+        try {
+            const module = await import('https://esm.sh/@farcaster/frame-sdk');
+            sdk = module.sdk;
+
+            debug('SDK loaded, calling ready...');
+            await sdk.actions.ready({ disableNativeGestures: true });
+
+            debug('SDK ready, checking wallet...');
+
+            if (sdk?.wallet?.ethProvider) {
+                provider = sdk.wallet.ethProvider;
+                document.getElementById('debug-wallet').textContent = 'Farcaster';
+
+                const accounts = await provider.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    userAddress = accounts[0];
+                    isConnected = true;
+                    debug('Connected: ' + userAddress);
+                    updateUIForConnected();
+                } else {
+                    debug('No accounts found');
+                    updateUIForDisconnected();
+                }
+
+            } else {
+                throw new Error('Farcaster wallet provider not available');
+            }
+
+        } catch (error) {
+            debug('Farcaster init failed: ' + error.message);
+            setDebugError(error);
+            showError('Farcaster wallet unavailable. Please try refreshing.');
+            updateUIForDisconnected();
+        }
+    }
+</script>
+
+<!-- ✅ Farcaster splash screen'i kapatmak için -->
+<script type="module">
+    import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+
+    sdk.actions.ready({ disableNativeGestures: true })
+        .then(() => {
+            console.log("✅ Farcaster frame is ready");
+        })
+        .catch(err => {
+            console.error("❌ Farcaster ready() failed:", err);
         });
-
-        // Unhandled promise rejection handler
-        window.addEventListener('unhandledrejection', function(event) {
-            setDebugError(event.reason);
-            console.error('Unhandled promise rejection:', event.reason);
-        });
-    </script>
-
-    <!-- ✅ Farcaster Frame Ready çağrısı -->
-    <script type="module">
-      import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
-
-      sdk.actions.ready({
-        disableNativeGestures: true  // Swipe kapanır, UX daha stabil olur
-      }).then(() => {
-        console.log("✅ Farcaster frame is ready");
-      }).catch(err => {
-        console.error("❌ Farcaster ready() failed:", err);
-      });
-    </script>
+</script>
 
 </body>
 </html>
