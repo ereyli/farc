@@ -213,10 +213,10 @@
             <div class="header">
                 <img src="/farc.png" alt="FARC Logo" class="logo">
                 <h1>$FARC</h1>
-                <p id="header-text">The Community Token</p>
+                <p id="header-text">The Official Farcaster Token</p>
                 <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
-            
-                           <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+                
+                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
                     <a href="https://twitter.com/farctoken" target="_blank" class="social-link" style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; background: rgba(29, 161, 242, 0.1); border: 1px solid rgba(29, 161, 242, 0.3); border-radius: 20px; color: #1DA1F2; text-decoration: none; font-size: 14px; transition: all 0.3s;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
@@ -255,10 +255,10 @@
                 <div id="message-area"></div>
                 
                 <div style="margin: 15px 0;">
-                    <label style="font-size: 14px; opacity: 0.8;">Select amount:</label>
+                    <label style="font-size: 14px; opacity: 0.8;">Quick amounts or enter custom:</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0;">
                         <button onclick="window.setAmount(0.001)" class="button button-amount" data-amount="0.001">
-                            0.001 ETH<br><small>100K FARC</small>
+                            0.001 ETH<br><small>0.1M FARC</small>
                         </button>
                         <button onclick="window.setAmount(0.01)" class="button button-amount active" data-amount="0.01">
                             0.01 ETH<br><small>1M FARC</small>
@@ -272,13 +272,18 @@
                 <input 
                     type="number" 
                     id="amount-input" 
-                    placeholder="Amount in ETH"
+                    placeholder="Amount in ETH (e.g. 0.015)"
                     step="0.001"
                     min="0.001"
                     max="0.05"
                     value="0.01"
-                    readonly
                 >
+                
+                <div style="text-align: center; margin: 10px 0; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                    <span id="token-preview" style="font-size: 14px; color: #10b981;">
+                        You will receive: <strong>1M FARC</strong>
+                    </span>
+                </div>
                 
                 <div id="wallet-info" class="wallet-info"></div>
                 
@@ -286,21 +291,26 @@
                     Loading...
                 </button>
                 
-                <button class="button button-secondary" onclick="window.shareToken()">
-                    Share $FARC 📢
+                <button class="button button-secondary" onclick="window.shareToken()" style="position: relative;">
+                    <span id="share-button-text">Share $FARC 📢</span>
+                    <span style="font-size: 10px; opacity: 0.7; display: block;">Cast on Farcaster</span>
                 </button>
                 
                 <div class="help-box">
-                    <p style="margin: 5px 0;">• Visit <a href="https://farc.vercel.app" target="_blank">farc.vercel.app</a> with MetaMask</p>
+                    <p style="margin: 8px 0; font-size: 13px;">
+                        🌐 Visit <a href="https://farc.vercel.app" target="_blank" style="color: #10b981; font-weight: bold;">farc.vercel.app</a> for web version
+                    </p>
+                    <p style="margin: 8px 0; font-size: 12px; opacity: 0.9;">
+                        💧 All proceeds will be added to liquidity pool
+                    </p>
                     <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">
-                        Contract:0x0148d27a8821115eb16062456369a693cc8d53ec<br>
-                        
+                       
                     </p>
                 </div>
             </div>
         </div>
-    </div>
-
+    </div> 
+    
     <script type="module">
         // Contract configuration
         const CONTRACT_ADDRESS = '0x0148d27a8821115eb16062456369a693cc8d53ec';
