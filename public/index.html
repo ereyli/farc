@@ -718,26 +718,6 @@
             
             clearMessage();
         }
-         // Farcaster native sharing
-                    console.log('Using Farcaster native share...');
-                    
-                    // Create share intent
-                    const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(
-                        '🚀 Just bought $FARC tokens!\n\n' +
-                        'The Official Farcaster Token\n' +
-                        '💜 Presale: 0.01 ETH = 1M FARC\n' +
-                        '🔥 Max 5M per wallet\n\n' +
-                        'Get yours now! 👇'
-                    )}&embeds[]=${encodeURIComponent('https://farc.vercel.app')}`;
-                    
-                    // Try to open share dialog
-                    if (sdk.actions?.openUrl) {
-                        await sdk.actions.openUrl({ url: shareUrl });
-                    } else {
-                        // Fallback to clipboard
-                        copyShareText();
-                    }
-                } else {
         
         window.shareToken = function() {
             const text = 'Check out $FARC - The Community Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farcaster.xyz/miniapps/zp8WXCloRpka/farc-token';
