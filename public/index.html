@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>$FARC - The Farcaster Token</title>
     <link rel="icon" type="image/png" href="/farc.png">
+    <link rel="manifest" href="/farcaster.json">
     
     <!-- Farcaster Mini App Meta -->
     <meta name="fc:frame" content="vNext">
@@ -200,24 +201,6 @@
         .help-box a:hover {
             text-decoration: underline;
         }
-        
-        .social-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 8px 16px;
-            background: rgba(29, 161, 242, 0.1);
-            border: 1px solid rgba(29, 161, 242, 0.3);
-            border-radius: 20px;
-            color: #1DA1F2;
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .social-link:hover {
-            background: rgba(29, 161, 242, 0.2);
-        }
     </style>
 </head>
 <body>
@@ -228,19 +211,19 @@
         
         <div id="app" class="hidden">
             <div class="header">
-                <img src="/farc.png" alt="FARC Logo" class="logo" onerror="this.style.display='none'">
+                <img src="/farc.png" alt="FARC Logo" class="logo">
                 <h1>$FARC</h1>
-                <p id="header-text">The Community Token</p>
+                <p id="header-text">The Official Farcaster Token</p>
                 <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
-            
+                
                 <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
-                    <a href="https://twitter.com/farctoken" target="_blank" class="social-link">
+                    <a href="https://twitter.com/farctoken" target="_blank" class="social-link" style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; background: rgba(29, 161, 242, 0.1); border: 1px solid rgba(29, 161, 242, 0.3); border-radius: 20px; color: #1DA1F2; text-decoration: none; font-size: 14px; transition: all 0.3s;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
                         </svg>
                         Twitter
                     </a>
-                    <a href="https://warpcast.com/~/channel/farc" target="_blank" class="social-link" style="background: rgba(139, 92, 246, 0.1); border-color: rgba(139, 92, 246, 0.3); color: #8B5CF6;">
+                    <a href="https://warpcast.com/~/channel/farc" target="_blank" class="social-link" style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 20px; color: #8B5CF6; text-decoration: none; font-size: 14px; transition: all 0.3s;">
                         🟣 Farcaster
                     </a>
                 </div>
@@ -272,10 +255,10 @@
                 <div id="message-area"></div>
                 
                 <div style="margin: 15px 0;">
-                    <label style="font-size: 14px; opacity: 0.8;">Select amount:</label>
+                    <label style="font-size: 14px; opacity: 0.8;">Quick amounts or enter custom:</label>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0;">
                         <button onclick="window.setAmount(0.001)" class="button button-amount" data-amount="0.001">
-                            0.001 ETH<br><small>100K FARC</small>
+                            0.001 ETH<br><small>0.1M FARC</small>
                         </button>
                         <button onclick="window.setAmount(0.01)" class="button button-amount active" data-amount="0.01">
                             0.01 ETH<br><small>1M FARC</small>
@@ -289,13 +272,18 @@
                 <input 
                     type="number" 
                     id="amount-input" 
-                    placeholder="Amount in ETH"
+                    placeholder="Amount in ETH (e.g. 0.015)"
                     step="0.001"
                     min="0.001"
                     max="0.05"
                     value="0.01"
-                    readonly
                 >
+                
+                <div style="text-align: center; margin: 10px 0; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                    <span id="token-preview" style="font-size: 14px; color: #10b981;">
+                        You will receive: <strong>1M FARC</strong>
+                    </span>
+                </div>
                 
                 <div id="wallet-info" class="wallet-info"></div>
                 
@@ -303,24 +291,27 @@
                     Loading...
                 </button>
                 
-                <button class="button button-secondary" onclick="window.shareToken()">
-                    Share $FARC 📢
+                <button class="button button-secondary" onclick="window.shareToken()" style="position: relative;">
+                    <span id="share-button-text">Share $FARC 📢</span>
+                    <span style="font-size: 10px; opacity: 0.7; display: block;">Cast on Farcaster</span>
                 </button>
                 
                 <div class="help-box">
-                    <p style="margin: 5px 0;">💡 Purchase Options:</p>
-                    <p style="margin: 5px 0;">• <a href="https://basescan.org/address/0x0148d27a8821115eb16062456369a693cc8d53ec#writeContract" target="_blank">Buy directly on BaseScan</a></p>
-                    <p style="margin: 5px 0;">• Visit <a href="https://farc.vercel.app" target="_blank">farc.vercel.app</a> with MetaMask</p>
+                    <p style="margin: 8px 0; font-size: 13px;">
+                        🌐 Visit <a href="https://farc.vercel.app" target="_blank" style="color: #10b981; font-weight: bold;">farc.vercel.app</a> for web version
+                    </p>
+                    <p style="margin: 8px 0; font-size: 12px; opacity: 0.9;">
+                        💧 All proceeds will be added to liquidity pool
+                    </p>
                     <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">
-                        Contract: 0x0148d27a8821115eb16062456369a693cc8d53ec<br>
-                        <span style="color: #10b981;">✅ Now Farcaster compatible!</span>
+                       
                     </p>
                 </div>
             </div>
         </div>
-    </div>
-
-    <script>
+    </div> 
+    
+    <script type="module">
         // Contract configuration
         const CONTRACT_ADDRESS = '0x0148d27a8821115eb16062456369a693cc8d53ec';
         const CONTRACT_ABI = [
@@ -382,48 +373,17 @@
                     console.log('Farcaster Provider:', provider);
                     
                 } else {
+                    
                     // Regular web browser initialization
                     console.log('Web browser mode - checking for wallet...');
                     
-                    // Wait a bit for wallet extensions to initialize
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                    // Check multiple wallet providers
-                    if (window.ethereum) {
-                        // Handle multiple wallet providers
-                        if (window.ethereum.providers?.length) {
-                            console.log('Multiple wallet providers detected');
-                            // Try to find MetaMask
-                            const metamaskProvider = window.ethereum.providers.find(
-                                (provider) => provider.isMetaMask
-                            );
-                            provider = metamaskProvider || window.ethereum;
-                        } else {
-                            provider = window.ethereum;
-                        }
+                    if (typeof window.ethereum !== 'undefined') {
+                        provider = window.ethereum;
+                        ethersProvider = new ethers.providers.Web3Provider(provider);
+                        console.log('MetaMask or Web3 wallet detected');
                         
-                        console.log('Wallet detected:', {
-                            isMetaMask: provider.isMetaMask,
-                            isCoinbaseWallet: provider.isCoinbaseWallet,
-                            isRabby: provider.isRabby
-                        });
-                        
-                        // Create ethers provider
-                        try {
-                            ethersProvider = new ethers.providers.Web3Provider(provider);
-                            console.log('Ethers provider created');
-                        } catch (e) {
-                            console.error('Failed to create ethers provider:', e);
-                        }
-                        
-                        // Test provider
-                        try {
-                            await provider.request({ method: 'eth_chainId' });
-                            console.log('Provider is ready');
-                        } catch (e) {
-                            console.log('Provider test failed:', e);
-                            // Continue anyway, might work later
-                        }
+                        // Show connect button
+                        updateUIForDisconnected();
                     } else {
                         showError('Please install MetaMask or another Web3 wallet');
                         disableActions();
@@ -478,68 +438,32 @@
         
         // Handle connection
         async function handleConnection(address) {
-            console.log('Handling connection for address:', address);
             userAddress = address;
             isConnected = true;
             
-            // Create ethers objects for both web browsers and Farcaster
-            try {
-                if (!isFarcasterFrame && provider) {
-                    ethersProvider = new ethers.providers.Web3Provider(provider);
-                    ethersSigner = ethersProvider.getSigner();
-                    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, ethersSigner);
-                    
-                    // Check network
-                    const network = await ethersProvider.getNetwork();
-                    console.log('Current network:', network.chainId);
-                    
-                    if (network.chainId !== 8453) {
-                        showError('Please switch to Base network (Chain ID: 8453)');
-                        try {
-                            await provider.request({
-                                method: 'wallet_switchEthereumChain',
-                                params: [{ chainId: '0x2105' }] // 8453 in hex
-                            });
-                            // Re-create ethers objects after network switch
-                            ethersProvider = new ethers.providers.Web3Provider(provider);
-                            ethersSigner = ethersProvider.getSigner();
-                            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, ethersSigner);
-                        } catch (switchError) {
-                            if (switchError.code === 4902) {
-                                // Chain not added, try to add it
-                                try {
-                                    await provider.request({
-                                        method: 'wallet_addEthereumChain',
-                                        params: [{
-                                            chainId: '0x2105',
-                                            chainName: 'Base',
-                                            nativeCurrency: {
-                                                name: 'Ether',
-                                                symbol: 'ETH',
-                                                decimals: 18
-                                            },
-                                            rpcUrls: ['https://mainnet.base.org'],
-                                            blockExplorerUrls: ['https://basescan.org']
-                                        }]
-                                    });
-                                } catch (addError) {
-                                    console.error('Failed to add Base network:', addError);
-                                }
-                            } else {
-                                console.error('Failed to switch network:', switchError);
-                            }
-                        }
+            // Create ethers objects for web browsers
+            if (!isFarcasterFrame && provider) {
+                ethersProvider = new ethers.providers.Web3Provider(provider);
+                ethersSigner = ethersProvider.getSigner();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, ethersSigner);
+                
+                // Check network
+                const network = await ethersProvider.getNetwork();
+                if (network.chainId !== 8453) {
+                    showError('Please switch to Base network (Chain ID: 8453)');
+                    try {
+                        await provider.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x2105' }] // 8453 in hex
+                        });
+                    } catch (switchError) {
+                        console.error('Failed to switch network:', switchError);
                     }
                 }
-            } catch (error) {
-                console.error('Error setting up ethers:', error);
             }
             
             updateUIForConnected();
             clearMessage();
-            
-            // Load user-specific info after connection
-            await loadPresaleInfo();
         }
         
         // Update UI for connected state
@@ -578,107 +502,15 @@
         
         // Connect wallet
         async function connectWallet() {
-            console.log('Connect wallet clicked');
-            
-            if (!provider) {
-                showError('No wallet detected. Please install MetaMask.');
-                return;
-            }
-            
             try {
                 clearMessage();
                 const button = document.getElementById('action-button');
                 button.textContent = 'Connecting...';
                 button.disabled = true;
                 
-                // First check if MetaMask is unlocked
-                try {
-                    const accounts = await provider.request({ method: 'eth_accounts' });
-                    if (accounts.length > 0) {
-                        // Already connected, just handle it
-                        await handleConnection(accounts[0]);
-                        return;
-                    }
-                } catch (e) {
-                    console.log('eth_accounts check failed:', e);
-                }
-                
-                // Check and switch network BEFORE requesting accounts
-                let currentChainId;
-                try {
-                    currentChainId = await provider.request({ method: 'eth_chainId' });
-                    console.log('Current chain ID:', currentChainId);
-                } catch (chainError) {
-                    console.error('Failed to get chain ID:', chainError);
-                    showError('Failed to connect to wallet. Please try again.');
-                    updateUIForDisconnected();
-                    return;
-                }
-                
-                // Switch to Base network if needed
-                if (currentChainId !== '0x2105') {
-                    console.log('Switching to Base network...');
-                    try {
-                        await provider.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{ chainId: '0x2105' }]
-                        });
-                        console.log('Switched to Base network');
-                    } catch (switchError) {
-                        console.error('Switch error:', switchError);
-                        if (switchError.code === 4902) {
-                            // Chain not added, add it
-                            console.log('Adding Base network...');
-                            try {
-                                await provider.request({
-                                    method: 'wallet_addEthereumChain',
-                                    params: [{
-                                        chainId: '0x2105',
-                                        chainName: 'Base',
-                                        nativeCurrency: {
-                                            name: 'Ether',
-                                            symbol: 'ETH',
-                                            decimals: 18
-                                        },
-                                        rpcUrls: ['https://mainnet.base.org'],
-                                        blockExplorerUrls: ['https://basescan.org']
-                                    }]
-                                });
-                                console.log('Base network added');
-                            } catch (addError) {
-                                console.error('Failed to add network:', addError);
-                                showError('Failed to add Base network. Please add it manually.');
-                                updateUIForDisconnected();
-                                return;
-                            }
-                        } else if (switchError.code === 4001) {
-                            showError('Network switch cancelled');
-                            updateUIForDisconnected();
-                            return;
-                        }
-                    }
-                }
-                
-                // Now request accounts
-                console.log('Requesting accounts...');
-                let accounts;
-                try {
-                    accounts = await provider.request({ 
-                        method: 'eth_requestAccounts' 
-                    });
-                    console.log('Accounts received:', accounts);
-                } catch (requestError) {
-                    console.error('eth_requestAccounts failed:', requestError);
-                    if (requestError.code === 4001) {
-                        showError('Connection cancelled');
-                    } else if (requestError.code === -32002) {
-                        showError('Please check MetaMask - a connection request may be pending');
-                    } else {
-                        showError('Failed to connect wallet. Please try again.');
-                    }
-                    updateUIForDisconnected();
-                    return;
-                }
+                const accounts = await provider.request({ 
+                    method: 'eth_requestAccounts' 
+                });
                 
                 if (accounts && accounts.length > 0) {
                     await handleConnection(accounts[0]);
@@ -689,7 +521,11 @@
                 
             } catch (error) {
                 console.error('Connect error:', error);
-                showError('Connection failed. Please try again.');
+                if (error.code === 4001) {
+                    showError('Connection cancelled');
+                } else {
+                    showError('Failed to connect wallet');
+                }
                 updateUIForDisconnected();
             }
         }
@@ -764,7 +600,6 @@
                     
                     if (!contract) {
                         showError('Contract not initialized. Please reconnect wallet.');
-                        updateUIForDisconnected();
                         return;
                     }
                     
@@ -897,14 +732,13 @@
         }
         
         window.shareToken = function() {
-            const text = 'Check out $FARC - The Community Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
+            const text = 'Check out $FARC - The Community Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farcaster.xyz/miniapps/zp8WXCloRpka/farc-token';
             
             if (navigator.share) {
                 navigator.share({
                     title: '$FARC Token',
                     text: text
-                }).catch((error) => {
-                    console.log('Share failed:', error);
+                }).catch(() => {
                     copyToClipboard(text);
                 });
             } else {
@@ -913,36 +747,15 @@
         }
         
         function copyToClipboard(text) {
-            // Create textarea element
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            
-            // Select and copy
-            textarea.select();
-            textarea.setSelectionRange(0, 99999); // For mobile devices
-            
-            try {
-                document.execCommand('copy');
+            navigator.clipboard.writeText(text).then(() => {
                 showSuccess('Share text copied!');
-            } catch (err) {
-                console.error('Copy failed:', err);
-                showError('Failed to copy text');
-            }
-            
-            // Remove textarea
-            document.body.removeChild(textarea);
+            }).catch(() => {
+                showError('Failed to copy');
+            });
         }
         
-        // Start app - wait for window to be fully loaded
-        if (document.readyState === 'loading') {
-            window.addEventListener('DOMContentLoaded', init);
-        } else {
-            // DOM already loaded, but wait for wallet extensions
-            setTimeout(init, 100);
-        }
+        // Start app
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
