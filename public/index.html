@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>$FARC - The Farcaster Token</title>
     <link rel="icon" type="image/png" href="/farc.png">
     <link rel="manifest" href="/farcaster.json">
@@ -14,14 +14,12 @@
     <meta name="fc:frame:button:1:action" content="launch_frame">
     <meta name="fc:frame:button:1:target" content="https://farc.vercel.app">
     
-    <!-- Add ethers.js -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
@@ -30,6 +28,7 @@
             color: white;
             min-height: 100vh;
             padding: 20px;
+            -webkit-font-smoothing: antialiased;
         }
         
         .container {
@@ -57,6 +56,7 @@
         .card {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
@@ -72,6 +72,8 @@
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
+            -webkit-appearance: none;
+            touch-action: manipulation;
         }
         
         .button-primary {
@@ -79,8 +81,9 @@
             color: white;
         }
         
-        .button-primary:hover {
+        .button-primary:active {
             background: #059669;
+            transform: scale(0.98);
         }
         
         .button-primary:disabled {
@@ -95,24 +98,9 @@
             margin-top: 10px;
         }
         
-        .button-secondary:hover {
+        .button-secondary:active {
             background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .button-amount {
-            padding: 10px;
-            font-size: 14px;
-            background: rgba(139, 92, 246, 0.2);
-            border: 1px solid rgba(139, 92, 246, 0.4);
-        }
-        
-        .button-amount:hover {
-            background: rgba(139, 92, 246, 0.3);
-        }
-        
-        .button-amount.active {
-            background: rgba(139, 92, 246, 0.5);
-            border-color: #8B5CF6;
+            transform: scale(0.98);
         }
         
         .info-row {
@@ -127,7 +115,7 @@
         }
         
         .hidden {
-            display: none;
+            display: none !important;
         }
         
         .wallet-info {
@@ -157,7 +145,7 @@
             background: rgba(255, 255, 255, 0.1);
             color: white;
             font-size: 16px;
-            text-align: center;
+            -webkit-appearance: none;
         }
         
         input[type="number"]::placeholder {
@@ -184,22 +172,31 @@
             text-align: center;
         }
         
-        .help-box {
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            font-size: 12px;
+        .mobile-warning {
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
             text-align: center;
         }
         
-        .help-box a {
-            color: #10b981;
-            text-decoration: none;
+        .mobile-warning h3 {
+            margin-bottom: 10px;
         }
         
-        .help-box a:hover {
-            text-decoration: underline;
+        .mobile-warning p {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .debug-info {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 12px;
+            font-family: monospace;
         }
     </style>
 </head>
@@ -211,22 +208,15 @@
         
         <div id="app" class="hidden">
             <div class="header">
-                <img src="/farc.png" alt="FARC Logo" class="logo">
+                <img src="/farc.png" alt="FARC Logo" class="logo" onerror="this.style.display='none'">
                 <h1>$FARC</h1>
                 <p id="header-text">The Official Farcaster Token</p>
                 <p style="font-size: 14px; opacity: 0.8; margin-top: 5px;">🟣 Farcaster Exclusive</p>
-                
-                <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
-                    <a href="https://twitter.com/farctoken" target="_blank" class="social-link" style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; background: rgba(29, 161, 242, 0.1); border: 1px solid rgba(29, 161, 242, 0.3); border-radius: 20px; color: #1DA1F2; text-decoration: none; font-size: 14px; transition: all 0.3s;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                        </svg>
-                        Twitter
-                    </a>
-                    <a href="https://warpcast.com/~/channel/farc" target="_blank" class="social-link" style="display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 20px; color: #8B5CF6; text-decoration: none; font-size: 14px; transition: all 0.3s;">
-                        🟣 Farcaster
-                    </a>
-                </div>
+            </div>
+            
+            <div id="mobile-warning" class="mobile-warning hidden">
+                <h3>📱 Browser Detected</h3>
+                <p>For the best experience, please open this app inside Warpcast or another Farcaster client.</p>
             </div>
             
             <div class="card">
@@ -245,45 +235,29 @@
                 </div>
                 <div class="info-row">
                     <span>Sold:</span>
-                    <strong id="tokens-sold">Loading...</strong>
+                    <strong id="tokens-sold">125M / 500M</strong>
                 </div>
             </div>
             
             <div class="card">
                 <h3>Buy $FARC</h3>
                 
-                <div id="message-area"></div>
-                
-                <div style="margin: 15px 0;">
-                    <label style="font-size: 14px; opacity: 0.8;">Quick amounts or enter custom:</label>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0;">
-                        <button onclick="window.setAmount(0.001)" class="button button-amount" data-amount="0.001">
-                            0.001 ETH<br><small>0.1M FARC</small>
-                        </button>
-                        <button onclick="window.setAmount(0.01)" class="button button-amount active" data-amount="0.01">
-                            0.01 ETH<br><small>1M FARC</small>
-                        </button>
-                        <button onclick="window.setAmount(0.05)" class="button button-amount" data-amount="0.05">
-                            0.05 ETH<br><small>5M FARC</small>
-                        </button>
-                    </div>
+                <div id="presale-status" style="text-align: center; margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; display: none;">
+                    <span id="presale-status-text"></span>
                 </div>
+                
+                <div id="error-message" class="error hidden"></div>
+                <div id="success-message" class="success hidden"></div>
                 
                 <input 
                     type="number" 
                     id="amount-input" 
-                    placeholder="Amount in ETH (e.g. 0.015)"
+                    placeholder="Amount in ETH (e.g. 0.01)"
                     step="0.001"
                     min="0.001"
                     max="0.05"
-                    value="0.01"
+                    inputmode="decimal"
                 >
-                
-                <div style="text-align: center; margin: 10px 0; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
-                    <span id="token-preview" style="font-size: 14px; color: #10b981;">
-                        You will receive: <strong>1M FARC</strong>
-                    </span>
-                </div>
                 
                 <div id="wallet-info" class="wallet-info"></div>
                 
@@ -291,179 +265,300 @@
                     Loading...
                 </button>
                 
-                <button class="button button-secondary" onclick="window.shareToken()" style="position: relative;">
-                    <span id="share-button-text">Share $FARC 📢</span>
-                    <span style="font-size: 10px; opacity: 0.7; display: block;">Cast on Farcaster</span>
+                <button class="button button-secondary" onclick="window.shareToken()">
+                    Share $FARC 📢
                 </button>
                 
-                <div class="help-box">
-                    <p style="margin: 8px 0; font-size: 13px;">
-                        🌐 Visit <a href="https://farc.vercel.app" target="_blank" style="color: #10b981; font-weight: bold;">farc.vercel.app</a> for web version
-                    </p>
-                    <p style="margin: 8px 0; font-size: 12px; opacity: 0.9;">
-                        💧 All proceeds will be added to liquidity pool
-                    </p>
-                    <p style="margin: 5px 0; font-size: 11px; opacity: 0.7;">
-                       
-                    </p>
+                <button class="button button-secondary" onclick="window.toggleDebug()" style="margin-top: 10px;">
+                    🐛 Toggle Debug Info
+                </button>
+                
+                <div id="debug-info" class="debug-info hidden">
+                    <div>Debug Info:</div>
+                    <div id="debug-content"></div>
                 </div>
             </div>
         </div>
-    </div> 
-    
+    </div>
+
     <script type="module">
+        // Try multiple CDN sources for better reliability
+        let sdk;
+        
+        // First try esm.sh
+        try {
+            const module = await import('https://esm.sh/@farcaster/frame-sdk');
+            sdk = module.sdk;
+            console.log('SDK loaded from esm.sh');
+        } catch (e1) {
+            console.log('esm.sh failed, trying unpkg...');
+            try {
+                // Try unpkg as fallback
+                const module = await import('https://unpkg.com/@farcaster/frame-sdk@latest/dist/index.js');
+                sdk = module.sdk || module.default?.sdk || module.default;
+                console.log('SDK loaded from unpkg');
+            } catch (e2) {
+                console.log('unpkg failed, trying jsdelivr...');
+                try {
+                    // Try jsdelivr as last resort
+                    const module = await import('https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk@latest/+esm');
+                    sdk = module.sdk || module.default;
+                    console.log('SDK loaded from jsdelivr');
+                } catch (e3) {
+                    console.error('All CDN attempts failed. Creating mock SDK.');
+                    // Create a mock SDK for testing
+                    sdk = {
+                        actions: {
+                            ready: async () => console.log('Mock SDK ready')
+                        },
+                        context: null,
+                        wallet: {
+                            getEthereumProvider: async () => window.ethereum
+                        }
+                    };
+                }
+            }
+        }
+        
         // Contract configuration
-        const CONTRACT_ADDRESS = '0x0148d27a8821115eb16062456369a693cc8d53ec';
+        const CONTRACT_ADDRESS = '0x638eeea689d3f9678f8753f8ed1d55776f4129cd';
         const CONTRACT_ABI = [
             'function buyTokens() external payable',
-            'function getInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)',
-            'function getRemainingAllocation(address) view returns (uint256)',
-            'function purchasedAmount(address) view returns (uint256)'
+            'function purchasedAmount(address) view returns (uint256)',
+            'function getRemainingPurchaseAmount(address) view returns (uint256)',
+            'function getPresaleInfo() view returns (bool isActive, uint256 sold, uint256 remaining, uint256 pricePerMillion)',
+            'function balanceOf(address) view returns (uint256)',
+            'function decimals() view returns (uint8)'
         ];
         
         // Global state
         let provider = null;
-        let ethersProvider = null;
-        let ethersSigner = null;
-        let contract = null;
         let userAddress = null;
         let isConnected = false;
-        let isFarcasterFrame = false;
-        let sdk = null;
+        let farcasterContext = null;
+        let isFrameReady = false;
         
-        // Check if we're in Farcaster frame
-        async function checkEnvironment() {
-            try {
-                // Try to import Farcaster SDK
-                const module = await import('https://esm.sh/@farcaster/frame-sdk');
-                sdk = module.sdk;
-                isFarcasterFrame = true;
-                console.log('Environment: Farcaster Frame');
-                return true;
-            } catch (error) {
-                console.log('Environment: Web Browser');
-                isFarcasterFrame = false;
-                return false;
+        // Debug logging
+        function debug(message, data = null) {
+            console.log(`[FARC Debug] ${message}`, data);
+            const debugContent = document.getElementById('debug-content');
+            if (debugContent) {
+                const entry = document.createElement('div');
+                entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+                if (data) {
+                    entry.textContent += ` - ${JSON.stringify(data)}`;
+                }
+                debugContent.appendChild(entry);
+                // Keep only last 5 entries
+                while (debugContent.children.length > 5) {
+                    debugContent.removeChild(debugContent.firstChild);
+                }
             }
         }
         
         // Initialize app
         async function init() {
-            console.log('Initializing FARC app...');
+            debug('Initializing FARC app...');
             
             try {
-                // Check environment first
-                await checkEnvironment();
+                // Initialize Farcaster SDK
+                debug('Calling ready()');
+                await sdk.actions.ready();
+                isFrameReady = true;
+                debug('SDK ready');
                 
-                if (isFarcasterFrame) {
-                    // Farcaster Frame initialization
-                    await sdk.actions.ready();
-                    console.log('Farcaster SDK ready');
+                // Get Farcaster context
+                try {
+                    debug('Getting context...');
+                    farcasterContext = await sdk.context;
+                    debug('Context received', {
+                        user: farcasterContext?.user?.username,
+                        client: farcasterContext?.client?.id
+                    });
                     
-                    // Get wallet provider
-                    provider = sdk.wallet?.ethProvider;
-                    
-                    if (!provider) {
-                        console.log('No wallet provider in SDK');
-                        showError('Please open this app in Warpcast');
-                        disableActions();
-                        return;
+                    // Update UI with user info
+                    if (farcasterContext?.user?.username) {
+                        document.getElementById('header-text').innerHTML = 
+                            `The Official Farcaster Token<br><small>👤 @${farcasterContext.user.username}</small>`;
                     }
                     
-                    console.log('Farcaster Provider:', provider);
-                    
-                } else {
-                    
-                    // Regular web browser initialization
-                    console.log('Web browser mode - checking for wallet...');
-                    
-                    if (typeof window.ethereum !== 'undefined') {
-                        provider = window.ethereum;
-                        ethersProvider = new ethers.providers.Web3Provider(provider);
-                        console.log('MetaMask or Web3 wallet detected');
-                        
-                        // Show connect button
-                        updateUIForDisconnected();
+                    // Check if we're in a Farcaster client
+                    if (!farcasterContext?.client) {
+                        document.getElementById('mobile-warning').classList.remove('hidden');
+                    }
+                } catch (contextError) {
+                    debug('Context error (non-fatal)', contextError.message);
+                }
+                
+                // Get wallet provider using the correct method
+                debug('Getting wallet provider...');
+                try {
+                    // First try Farcaster SDK
+                    if (sdk && sdk.wallet && sdk.wallet.getEthereumProvider) {
+                        provider = await sdk.wallet.getEthereumProvider();
+                        debug('Provider obtained via getEthereumProvider()');
+                    }
+                } catch (providerError) {
+                    debug('getEthereumProvider error', providerError.message);
+                }
+                
+                // Fallback to window.ethereum if no SDK provider
+                if (!provider && window.ethereum) {
+                    // Handle multiple wallet extensions
+                    if (window.ethereum.providers && window.ethereum.providers.length > 0) {
+                        // Multiple providers detected, try to find MetaMask
+                        const metamaskProvider = window.ethereum.providers.find(p => p.isMetaMask);
+                        provider = metamaskProvider || window.ethereum.providers[0];
+                        debug('Multiple providers detected, using:', provider.isMetaMask ? 'MetaMask' : 'Other');
                     } else {
-                        showError('Please install MetaMask or another Web3 wallet');
-                        disableActions();
-                        return;
+                        provider = window.ethereum;
+                        debug('Using window.ethereum as fallback');
                     }
                 }
                 
+                if (!provider) {
+                    debug('No wallet provider available');
+                    showError('Please open this app in Warpcast or another Farcaster client');
+                    disableActions();
+                    return;
+                }
+                
+                debug('Provider found', { isMetaMask: provider.isMetaMask });
+                
+                // Setup provider event handlers
+                setupProviderHandlers();
+                
                 // Check if already connected
                 try {
+                    debug('Checking existing accounts...');
                     const accounts = await provider.request({ method: 'eth_accounts' });
+                    debug('Accounts found', accounts);
+                    
                     if (accounts && accounts.length > 0) {
                         await handleConnection(accounts[0]);
                     } else {
                         updateUIForDisconnected();
                     }
-                } catch (error) {
-                    console.log('No existing connection');
+                } catch (accountError) {
+                    debug('Account check error', accountError.message);
                     updateUIForDisconnected();
-                }
-                
-                // Listen for account changes
-                if (provider.on) {
-                    provider.on('accountsChanged', handleAccountsChanged);
-                    if (!isFarcasterFrame) {
-                        provider.on('chainChanged', () => window.location.reload());
-                    }
                 }
                 
                 // Load presale info
                 await loadPresaleInfo();
+                debug('Init complete');
                 
             } catch (error) {
-                console.error('Init error:', error);
-                showError('Initialization error. Please refresh.');
+                debug('Init error', error.message);
+                console.error('Init error details:', error);
+                showError('Initialization error: ' + error.message);
                 updateUIForDisconnected();
             } finally {
+                // Hide loading, show app
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app').classList.remove('hidden');
             }
         }
         
-        // Handle account changes
-        function handleAccountsChanged(accounts) {
-            if (accounts.length === 0) {
-                isConnected = false;
-                userAddress = null;
-                updateUIForDisconnected();
-            } else if (accounts[0] !== userAddress) {
-                handleConnection(accounts[0]);
+        // Setup provider event handlers
+        function setupProviderHandlers() {
+            if (!provider || !provider.on) return;
+            
+            try {
+                provider.on('accountsChanged', (accounts) => {
+                    debug('Accounts changed', accounts);
+                    if (accounts.length === 0) {
+                        userAddress = null;
+                        isConnected = false;
+                        updateUIForDisconnected();
+                    } else if (accounts[0] !== userAddress) {
+                        handleConnection(accounts[0]);
+                    }
+                });
+                
+                provider.on('chainChanged', (chainId) => {
+                    debug('Chain changed', chainId);
+                    window.location.reload();
+                });
+            } catch (error) {
+                debug('Failed to setup event handlers', error.message);
+            }
+        }
+        
+        // Load presale info from contract
+        async function loadPresaleInfo() {
+            try {
+                debug('Loading presale info...');
+                if (!provider) {
+                    debug('No provider, skipping presale info');
+                    return;
+                }
+                
+                // Ensure we're on the right network
+                const chainId = await provider.request({ method: 'eth_chainId' });
+                debug('Current chain ID', chainId);
+                
+                if (chainId !== '0x2105' && parseInt(chainId, 16) !== 8453) {
+                    debug('Wrong network detected');
+                    showError('Please switch to Base network (Chain ID: 8453)');
+                    return;
+                }
+                
+                // Create a simple contract interface for reading
+                const request = {
+                    to: CONTRACT_ADDRESS,
+                    data: '0x5a3b74a0' // getPresaleInfo() function selector
+                };
+                
+                try {
+                    const result = await provider.request({
+                        method: 'eth_call',
+                        params: [request, 'latest']
+                    });
+                    
+                    debug('Presale info result', result);
+                    
+                    if (result && result !== '0x') {
+                        // Extract isActive (first 32 bytes after '0x')
+                        const isActive = result.slice(2, 66) === '0'.repeat(63) + '1';
+                        debug('Presale active', isActive);
+                        
+                        if (!isActive) {
+                            showError('⚠️ Presale is not active yet. Please wait for the owner to start it.');
+                            document.getElementById('action-button').disabled = true;
+                        }
+                        
+                        // Extract sold amount (second 32 bytes)
+                        const soldHex = '0x' + result.slice(66, 130);
+                        const sold = parseInt(soldHex, 16) / 1e18;
+                        
+                        // Extract remaining amount (third 32 bytes)
+                        const remainingHex = '0x' + result.slice(130, 194);
+                        const remaining = parseInt(remainingHex, 16) / 1e18;
+                        
+                        const total = sold + remaining;
+                        
+                        document.getElementById('tokens-sold').textContent = 
+                            `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
+                    }
+                } catch (callError) {
+                    debug('Contract call error', callError.message);
+                }
+                
+            } catch (error) {
+                debug('loadPresaleInfo error', error.message);
             }
         }
         
         // Handle connection
         async function handleConnection(address) {
+            debug('Connected with address', address);
             userAddress = address;
             isConnected = true;
-            
-            // Create ethers objects for web browsers
-            if (!isFarcasterFrame && provider) {
-                ethersProvider = new ethers.providers.Web3Provider(provider);
-                ethersSigner = ethersProvider.getSigner();
-                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, ethersSigner);
-                
-                // Check network
-                const network = await ethersProvider.getNetwork();
-                if (network.chainId !== 8453) {
-                    showError('Please switch to Base network (Chain ID: 8453)');
-                    try {
-                        await provider.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{ chainId: '0x2105' }] // 8453 in hex
-                        });
-                    } catch (switchError) {
-                        console.error('Failed to switch network:', switchError);
-                    }
-                }
-            }
-            
             updateUIForConnected();
-            clearMessage();
+            hideError();
+            showSuccess(`Connected: ${address.slice(0, 6)}...${address.slice(-4)}`);
+            setTimeout(hideSuccess, 3000);
         }
         
         // Update UI for connected state
@@ -502,15 +597,74 @@
         
         // Connect wallet
         async function connectWallet() {
+            debug('Connect wallet clicked');
+            
+            if (!provider) {
+                showError('Please open this app in Warpcast or another Farcaster client');
+                return;
+            }
+            
             try {
-                clearMessage();
+                hideError();
+                hideSuccess();
                 const button = document.getElementById('action-button');
                 button.textContent = 'Connecting...';
                 button.disabled = true;
                 
+                // Check network first
+                const chainId = await provider.request({ method: 'eth_chainId' });
+                debug('Current chain ID', chainId);
+                
+                // Base chain ID is 8453 (0x2105 in hex)
+                if (chainId !== '0x2105' && parseInt(chainId, 16) !== 8453) {
+                    debug('Wrong network, requesting switch to Base...');
+                    try {
+                        await provider.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0x2105' }]
+                        });
+                        debug('Switched to Base network');
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            // Chain not added, try to add it
+                            debug('Adding Base network...');
+                            try {
+                                await provider.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [{
+                                        chainId: '0x2105',
+                                        chainName: 'Base',
+                                        nativeCurrency: {
+                                            name: 'Ether',
+                                            symbol: 'ETH',
+                                            decimals: 18
+                                        },
+                                        rpcUrls: ['https://mainnet.base.org'],
+                                        blockExplorerUrls: ['https://basescan.org']
+                                    }]
+                                });
+                                debug('Base network added');
+                            } catch (addError) {
+                                debug('Add chain error', addError.message);
+                                showError('Please add Base network to your wallet');
+                                updateUIForDisconnected();
+                                return;
+                            }
+                        } else {
+                            debug('Network switch error', switchError.message);
+                            showError('Please switch to Base network');
+                            updateUIForDisconnected();
+                            return;
+                        }
+                    }
+                }
+                
+                debug('Requesting accounts...');
                 const accounts = await provider.request({ 
                     method: 'eth_requestAccounts' 
                 });
+                
+                debug('Accounts received', accounts);
                 
                 if (accounts && accounts.length > 0) {
                     await handleConnection(accounts[0]);
@@ -520,11 +674,12 @@
                 }
                 
             } catch (error) {
+                debug('Connect error', error);
                 console.error('Connect error:', error);
                 if (error.code === 4001) {
                     showError('Connection cancelled');
                 } else {
-                    showError('Failed to connect wallet');
+                    showError('Failed to connect: ' + (error.message || 'Unknown error'));
                 }
                 updateUIForDisconnected();
             }
@@ -532,207 +687,160 @@
         
         // Buy tokens
         async function buyTokens() {
-            const amount = document.getElementById('amount-input').value;
+            const amountInput = document.getElementById('amount-input');
+            const amount = amountInput.value;
             
             if (!amount || parseFloat(amount) <= 0) {
-                showError('Please select an amount');
+                showError('Please enter a valid amount');
+                return;
+            }
+            
+            if (parseFloat(amount) > 0.05) {
+                showError('Maximum 0.05 ETH (5M FARC)');
                 return;
             }
             
             try {
-                clearMessage();
+                hideError();
+                hideSuccess();
                 const button = document.getElementById('action-button');
                 button.textContent = 'Processing...';
                 button.disabled = true;
                 
+                // Calculate tokens
                 const ethAmount = parseFloat(amount);
-                const tokensToReceive = ethAmount * 100;
+                const tokensToReceive = ethAmount * 100; // 100M tokens per ETH
                 
-                console.log('Sending transaction...');
-                console.log('Amount:', ethAmount, 'ETH');
-                console.log('Environment:', isFarcasterFrame ? 'Farcaster' : 'Web');
+                // Convert ETH to wei using BigInt for precision
+                const weiAmount = BigInt(Math.floor(ethAmount * 1e18));
+                const hexValue = '0x' + weiAmount.toString(16);
                 
-                if (isFarcasterFrame) {
-                    // Farcaster Frame - Simple ETH transfer (no data field!)
-                    console.log('Using Farcaster simple ETH transfer...');
-                    
-                    const weiValue = Math.floor(ethAmount * 1e18);
-                    const hexValue = '0x' + weiValue.toString(16);
-                    
-                    // ETH TRANSFER with from address for Farcaster
-                    const transaction = {
-                        from: userAddress.toLowerCase(), // Farcaster needs this
-                        to: CONTRACT_ADDRESS.toLowerCase(),
-                        value: hexValue
-                        // NO data field - just ETH!
-                    };
-                    
-                    console.log('Farcaster ETH transfer:', transaction);
-                    
-                    try {
-                        const txHash = await provider.request({
-                            method: 'eth_sendTransaction',
-                            params: [transaction]
-                        });
-                        
-                        console.log('Success! Transaction sent:', txHash);
-                        showSuccess(
-                            `✅ Transaction sent!\n` +
-                            `You will receive: ${tokensToReceive}M FARC\n` +
-                            `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
-                        );
-                        
-                        setTimeout(() => loadPresaleInfo(), 5000);
-                        
-                    } catch (txError) {
-                        console.error('Farcaster transaction failed:', txError);
-                        
-                        if (txError.code === 4001) {
-                            showError('Transaction cancelled');
+                debug('Transaction details', {
+                    eth: ethAmount,
+                    wei: weiAmount.toString(),
+                    hex: hexValue,
+                    tokens: tokensToReceive + 'M'
+                });
+                
+                // First, estimate gas to check if transaction would succeed
+                let gasEstimate = '0x30d40'; // Default 200000
+                try {
+                    debug('Estimating gas...');
+                    const estimate = await provider.request({
+                        method: 'eth_estimateGas',
+                        params: [{
+                            to: CONTRACT_ADDRESS,
+                            from: userAddress,
+                            value: hexValue,
+                            data: '0xec8ac4d8' // buyTokens() function selector
+                        }]
+                    });
+                    // Add 20% buffer to gas estimate
+                    gasEstimate = '0x' + Math.floor(parseInt(estimate, 16) * 1.2).toString(16);
+                    debug('Gas estimate with buffer', gasEstimate);
+                } catch (gasError) {
+                    debug('Gas estimation failed', gasError.message);
+                    if (gasError.message?.includes('execution reverted')) {
+                        // Try to get more specific error
+                        if (gasError.message?.includes('Presale not active')) {
+                            showError('Presale is not active yet');
+                        } else if (gasError.message?.includes('Exceeds maximum')) {
+                            showError('Exceeds maximum purchase limit (5M FARC)');
+                        } else if (gasError.message?.includes('Sold out')) {
+                            showError('Presale is sold out');
                         } else {
-                            showError('Transaction failed. Please try again.');
+                            showError('Transaction would fail. Check presale status and limits');
                         }
-                    }
-                    
-                } else {
-                    // Web browser transaction (MetaMask, etc.)
-                    console.log('Using ethers.js transaction method...');
-                    
-                    if (!contract) {
-                        showError('Contract not initialized. Please reconnect wallet.');
+                        updateUIForConnected();
                         return;
                     }
-                    
-                    const tx = await contract.buyTokens({
-                        value: ethers.utils.parseEther(amount.toString())
-                    });
-                    
-                    console.log('Transaction sent:', tx.hash);
-                    showSuccess(`Transaction sent! Hash: ${tx.hash.slice(0, 10)}...`);
-                    
-                    // Wait for confirmation
-                    button.textContent = 'Confirming...';
-                    const receipt = await tx.wait();
-                    
-                    console.log('Transaction confirmed:', receipt);
-                    showSuccess(
-                        `✅ Success! You bought ${tokensToReceive}M FARC\n` +
-                        `Tx: ${tx.hash.slice(0, 10)}...${tx.hash.slice(-8)}`
-                    );
-                    
-                    setTimeout(() => loadPresaleInfo(), 3000);
+                    // Continue with default gas if estimation fails
+                    debug('Using default gas limit');
                 }
                 
-            } catch (error) {
-                console.error('Transaction error:', error);
+                // Prepare transaction
+                const transaction = {
+                    to: CONTRACT_ADDRESS,
+                    from: userAddress,
+                    value: hexValue,
+                    data: '0xec8ac4d8', // buyTokens() function selector
+                    gas: gasEstimate
+                };
                 
-                if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
+                debug('Sending transaction', transaction);
+                
+                // Send transaction
+                const txHash = await provider.request({
+                    method: 'eth_sendTransaction',
+                    params: [transaction]
+                });
+                
+                debug('Transaction sent', txHash);
+                
+                showSuccess(
+                    `✅ Transaction Sent! You will receive ${tokensToReceive}M FARC. ` +
+                    `Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
+                );
+                
+                // Clear input
+                amountInput.value = '';
+                
+                // Reload presale info after a delay
+                setTimeout(() => {
+                    loadPresaleInfo();
+                }, 5000);
+                
+            } catch (error) {
+                debug('Buy error', error);
+                console.error('Buy error:', error);
+                
+                if (error.code === 4001) {
                     showError('Transaction cancelled');
-                } else if (error.code === 'INSUFFICIENT_FUNDS' || error.message?.includes('insufficient funds')) {
+                } else if (error.code === -32000) {
+                    showError('Insufficient funds for gas + amount');
+                } else if (error.message?.includes('insufficient funds')) {
                     showError('Insufficient ETH balance');
-                } else if (error.message?.includes('UnsupportedMethodError')) {
-                    showError(
-                        'Wallet compatibility issue. Please try:\n' +
-                        '• Buy directly on BaseScan (link below)\n' +
-                        '• Use the web version at farc.vercel.app'
-                    );
-                } else if (error.reason) {
-                    showError(`Failed: ${error.reason}`);
+                } else if (error.message?.includes('execution reverted')) {
+                    showError('Transaction failed - check purchase limits or presale status');
                 } else {
-                    showError('Transaction failed. Try alternative methods below.');
+                    showError('Transaction failed: ' + (error.message || error.code || 'Unknown error'));
                 }
             } finally {
                 updateUIForConnected();
             }
         }
         
-        // Load presale info
-        async function loadPresaleInfo() {
-            try {
-                if (isFarcasterFrame && provider) {
-                    // Try Farcaster with new contract's getInfo function
-                    try {
-                        const data = '0x5a9b0826'; // getInfo() selector
-                        const result = await provider.request({
-                            method: 'eth_call',
-                            params: [{
-                                to: CONTRACT_ADDRESS,
-                                data: data
-                            }, 'latest']
-                        });
-                        
-                        if (result && result !== '0x') {
-                            // Decode getInfo return values
-                            const sold = parseInt(result.slice(130, 194), 16) / 1e18;
-                            const remaining = parseInt(result.slice(194, 258), 16) / 1e18;
-                            const total = sold + remaining;
-                            
-                            document.getElementById('tokens-sold').textContent = 
-                                `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
-                        }
-                    } catch (e) {
-                        console.log('Farcaster call failed, using static:', e);
-                        document.getElementById('tokens-sold').textContent = '0M / 1000M';
-                    }
-                } else if (ethersProvider) {
-                    // Web browser - use ethers
-                    const readContract = new ethers.Contract(
-                        CONTRACT_ADDRESS, 
-                        CONTRACT_ABI, 
-                        ethersProvider
-                    );
-                    
-                    const info = await readContract.getInfo();
-                    const sold = parseFloat(ethers.utils.formatUnits(info.sold, 18));
-                    const remaining = parseFloat(ethers.utils.formatUnits(info.remaining, 18));
-                    const total = sold + remaining;
-                    
-                    document.getElementById('tokens-sold').textContent = 
-                        `${(sold / 1e6).toFixed(0)}M / ${(total / 1e6).toFixed(0)}M`;
-                } else {
-                    // Fallback
-                    document.getElementById('tokens-sold').textContent = '0M / 1000M';
-                }
-                    
-            } catch (error) {
-                console.error('Error loading presale info:', error);
-                document.getElementById('tokens-sold').textContent = '0M / 1000M';
-            }
-        }
-        
-        // Message functions
+        // Show error
         function showError(message) {
-            const messageArea = document.getElementById('message-area');
-            messageArea.innerHTML = `<div class="error">${message}</div>`;
+            const errorEl = document.getElementById('error-message');
+            errorEl.textContent = message;
+            errorEl.classList.remove('hidden');
+            hideSuccess();
         }
         
+        // Hide error
+        function hideError() {
+            const errorEl = document.getElementById('error-message');
+            errorEl.classList.add('hidden');
+        }
+        
+        // Show success
         function showSuccess(message) {
-            const messageArea = document.getElementById('message-area');
-            messageArea.innerHTML = `<div class="success">${message}</div>`;
+            const successEl = document.getElementById('success-message');
+            successEl.textContent = message;
+            successEl.classList.remove('hidden');
+            hideError();
         }
         
-        function clearMessage() {
-            document.getElementById('message-area').innerHTML = '';
+        // Hide success
+        function hideSuccess() {
+            const successEl = document.getElementById('success-message');
+            successEl.classList.add('hidden');
         }
         
-        // Helper functions
-        window.setAmount = function(amount) {
-            document.getElementById('amount-input').value = amount;
-            
-            // Update active button
-            document.querySelectorAll('.button-amount').forEach(btn => {
-                if (btn.getAttribute('data-amount') === amount.toString()) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-            
-            clearMessage();
-        }
-        
+        // Share function
         window.shareToken = function() {
-            const text = 'Check out $FARC - The Community Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farcaster.xyz/miniapps/zp8WXCloRpka/farc-token';
+            const text = 'Check out $FARC - The Official Farcaster Token! 🚀\n\nPresale: 0.01 ETH = 1M FARC\nMax 5M per wallet\n\n🟣 Farcaster exclusive\n\nhttps://farc.vercel.app';
             
             if (navigator.share) {
                 navigator.share({
@@ -747,15 +855,43 @@
         }
         
         function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
                 showSuccess('Share text copied!');
-            }).catch(() => {
+                setTimeout(hideSuccess, 3000);
+            } catch (err) {
                 showError('Failed to copy');
-            });
+            }
+            
+            document.body.removeChild(textarea);
         }
         
-        // Start app
-        window.addEventListener('DOMContentLoaded', init);
+        // Toggle debug info
+        window.toggleDebug = function() {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.classList.toggle('hidden');
+        }
+        
+        // Wait for window to fully load to avoid conflicts
+        window.addEventListener('load', () => {
+            // Give wallet extensions time to initialize
+            setTimeout(init, 100);
+        });
+        
+        // Add keyboard shortcut for debug info (Ctrl+D)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                window.toggleDebug();
+            }
+        });
     </script>
 </body>
 </html>
