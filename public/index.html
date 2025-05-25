@@ -718,8 +718,7 @@
             
             clearMessage();
         }
-        
-       // Farcaster native sharing
+  // Farcaster native sharing
                     console.log('Using Farcaster native share...');
                     
                     // Create share intent
@@ -764,6 +763,76 @@
             copyToClipboard(text);
         }
         
+        // Load and display leaderboard
+        async function loadLeaderboard() {
+            try {
+                let leaderboardData = [];
+                
+                if (ethersProvider) {
+                    // Load from contract
+                    const readContract = new ethers.Contract(
+                        CONTRACT_ADDRESS, 
+                        CONTRACT_ABI, 
+                        ethersProvider
+                    );
+                    
+                    try {
+                        const result = await readContract.getLeaderboard();
+                        const buyers = result[0] || result.buyers || [];
+                        const amounts = result[1] || result.amounts || [];
+                        
+                        // Combine and sort
+                        leaderboardData = buyers.map(function(buyer, i) {
+                            return {
+                                address: buyer,
+                                amount: parseFloat(ethers.utils.formatUnits(amounts[i], 18))
+                            };
+                        }).filter(function(item) {
+                            return item.amount > 0;
+                        }).sort(function(a, b) {
+                            return b.amount - a.amount;
+                        }).slice(0, 5); // Top 5
+                        
+                    } catch (contractError) {
+                        console.error('Contract call error:', contractError);
+                    }
+                }
+                
+                // Display leaderboard
+                const leaderboardEl = document.getElementById('leaderboard');
+                if (!leaderboardEl) return;
+                
+                if (leaderboardData.length === 0) {
+                    leaderboardEl.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.7;">Be the first to buy FARC! 🚀</div>';
+                } else {
+                    let html = '';
+                    for (let i = 0; i < leaderboardData.length; i++) {
+                        const item = leaderboardData[i];
+                        const rank = i + 1;
+                        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '#' + rank;
+                        const shortAddress = item.address.slice(0, 6) + '...' + item.address.slice(-4);
+                        const amount = (item.amount / 1e6).toFixed(2);
+                        
+                        html += '<div class="leaderboard-item">' +
+                            '<div class="leaderboard-rank">' + medal + '</div>' +
+                            '<div class="leaderboard-user">' +
+                            '<span>' + shortAddress + '</span>' +
+                            (isFarcasterFrame ? '<span style="opacity: 0.7; font-size: 12px;">@farcaster</span>' : '') +
+                            '</div>' +
+                            '<div class="leaderboard-amount">' + amount + 'M FARC</div>' +
+                            '</div>';
+                    }
+                    leaderboardEl.innerHTML = html;
+                }
+                
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                const leaderboardEl = document.getElementById('leaderboard');
+                if (leaderboardEl) {
+                    leaderboardEl.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.7;">Leaderboard unavailable</div>';
+                }
+            }
+        }
         
         // Start app
         window.addEventListener('DOMContentLoaded', init);
