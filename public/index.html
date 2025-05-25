@@ -386,22 +386,43 @@
                     console.log('Web browser mode - checking for wallet...');
                     
                     // Wait a bit for wallet extensions to initialize
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     
-                    if (typeof window.ethereum !== 'undefined') {
-                        provider = window.ethereum;
-                        console.log('MetaMask or Web3 wallet detected');
+                    // Check multiple wallet providers
+                    if (window.ethereum) {
+                        // Handle multiple wallet providers
+                        if (window.ethereum.providers?.length) {
+                            console.log('Multiple wallet providers detected');
+                            // Try to find MetaMask
+                            const metamaskProvider = window.ethereum.providers.find(
+                                (provider) => provider.isMetaMask
+                            );
+                            provider = metamaskProvider || window.ethereum;
+                        } else {
+                            provider = window.ethereum;
+                        }
                         
-                        // Create ethers provider immediately
-                        ethersProvider = new ethers.providers.Web3Provider(provider);
+                        console.log('Wallet detected:', {
+                            isMetaMask: provider.isMetaMask,
+                            isCoinbaseWallet: provider.isCoinbaseWallet,
+                            isRabby: provider.isRabby
+                        });
                         
-                        // Check if provider is ready
+                        // Create ethers provider
+                        try {
+                            ethersProvider = new ethers.providers.Web3Provider(provider);
+                            console.log('Ethers provider created');
+                        } catch (e) {
+                            console.error('Failed to create ethers provider:', e);
+                        }
+                        
+                        // Test provider
                         try {
                             await provider.request({ method: 'eth_chainId' });
                             console.log('Provider is ready');
                         } catch (e) {
-                            console.log('Provider not ready, waiting...');
-                            await new Promise(resolve => setTimeout(resolve, 500));
+                            console.log('Provider test failed:', e);
+                            // Continue anyway, might work later
                         }
                     } else {
                         showError('Please install MetaMask or another Web3 wallet');
@@ -570,46 +591,94 @@
                 button.textContent = 'Connecting...';
                 button.disabled = true;
                 
-                // First check/switch to Base network
+                // First check if MetaMask is unlocked
                 try {
-                    const chainId = await provider.request({ method: 'eth_chainId' });
-                    console.log('Current chain ID:', chainId);
-                    
-                    if (chainId !== '0x2105') {
-                        console.log('Switching to Base network...');
+                    const accounts = await provider.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        // Already connected, just handle it
+                        await handleConnection(accounts[0]);
+                        return;
+                    }
+                } catch (e) {
+                    console.log('eth_accounts check failed:', e);
+                }
+                
+                // Check and switch network BEFORE requesting accounts
+                let currentChainId;
+                try {
+                    currentChainId = await provider.request({ method: 'eth_chainId' });
+                    console.log('Current chain ID:', currentChainId);
+                } catch (chainError) {
+                    console.error('Failed to get chain ID:', chainError);
+                    showError('Failed to connect to wallet. Please try again.');
+                    updateUIForDisconnected();
+                    return;
+                }
+                
+                // Switch to Base network if needed
+                if (currentChainId !== '0x2105') {
+                    console.log('Switching to Base network...');
+                    try {
                         await provider.request({
                             method: 'wallet_switchEthereumChain',
                             params: [{ chainId: '0x2105' }]
                         });
-                    }
-                } catch (switchError) {
-                    if (switchError.code === 4902) {
-                        // Chain not added, add it
-                        console.log('Adding Base network...');
-                        await provider.request({
-                            method: 'wallet_addEthereumChain',
-                            params: [{
-                                chainId: '0x2105',
-                                chainName: 'Base',
-                                nativeCurrency: {
-                                    name: 'Ether',
-                                    symbol: 'ETH',
-                                    decimals: 18
-                                },
-                                rpcUrls: ['https://mainnet.base.org'],
-                                blockExplorerUrls: ['https://basescan.org']
-                            }]
-                        });
+                        console.log('Switched to Base network');
+                    } catch (switchError) {
+                        console.error('Switch error:', switchError);
+                        if (switchError.code === 4902) {
+                            // Chain not added, add it
+                            console.log('Adding Base network...');
+                            try {
+                                await provider.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [{
+                                        chainId: '0x2105',
+                                        chainName: 'Base',
+                                        nativeCurrency: {
+                                            name: 'Ether',
+                                            symbol: 'ETH',
+                                            decimals: 18
+                                        },
+                                        rpcUrls: ['https://mainnet.base.org'],
+                                        blockExplorerUrls: ['https://basescan.org']
+                                    }]
+                                });
+                                console.log('Base network added');
+                            } catch (addError) {
+                                console.error('Failed to add network:', addError);
+                                showError('Failed to add Base network. Please add it manually.');
+                                updateUIForDisconnected();
+                                return;
+                            }
+                        } else if (switchError.code === 4001) {
+                            showError('Network switch cancelled');
+                            updateUIForDisconnected();
+                            return;
+                        }
                     }
                 }
                 
                 // Now request accounts
                 console.log('Requesting accounts...');
-                const accounts = await provider.request({ 
-                    method: 'eth_requestAccounts' 
-                });
-                
-                console.log('Accounts received:', accounts);
+                let accounts;
+                try {
+                    accounts = await provider.request({ 
+                        method: 'eth_requestAccounts' 
+                    });
+                    console.log('Accounts received:', accounts);
+                } catch (requestError) {
+                    console.error('eth_requestAccounts failed:', requestError);
+                    if (requestError.code === 4001) {
+                        showError('Connection cancelled');
+                    } else if (requestError.code === -32002) {
+                        showError('Please check MetaMask - a connection request may be pending');
+                    } else {
+                        showError('Failed to connect wallet. Please try again.');
+                    }
+                    updateUIForDisconnected();
+                    return;
+                }
                 
                 if (accounts && accounts.length > 0) {
                     await handleConnection(accounts[0]);
@@ -620,13 +689,7 @@
                 
             } catch (error) {
                 console.error('Connect error:', error);
-                if (error.code === 4001) {
-                    showError('Connection cancelled');
-                } else if (error.code === -32002) {
-                    showError('Please check MetaMask - a connection request may be pending');
-                } else {
-                    showError('Failed to connect: ' + (error.message || 'Unknown error'));
-                }
+                showError('Connection failed. Please try again.');
                 updateUIForDisconnected();
             }
         }
