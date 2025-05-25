@@ -373,6 +373,7 @@
                     console.log('Farcaster Provider:', provider);
                     
                 } else {
+                    
                     // Regular web browser initialization
                     console.log('Web browser mode - checking for wallet...');
                     
@@ -380,6 +381,9 @@
                         provider = window.ethereum;
                         ethersProvider = new ethers.providers.Web3Provider(provider);
                         console.log('MetaMask or Web3 wallet detected');
+                        
+                        // Show connect button
+                        updateUIForDisconnected();
                     } else {
                         showError('Please install MetaMask or another Web3 wallet');
                         disableActions();
